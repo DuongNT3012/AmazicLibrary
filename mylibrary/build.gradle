@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace 'com.amazic.mylibrary'
+    namespace 'com.amazic.library'
     compileSdk 34
 
     defaultConfig {
@@ -27,8 +27,22 @@ android {
         sourceCompatibility JavaVersion.VERSION_11
         targetCompatibility JavaVersion.VERSION_11
     }
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
 }
-
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.amazic.library'
+            artifactId = 'library'
+            version = '1.0.0'
+        }
+    }
+}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'androidx.appcompat:appcompat:1.7.0'
@@ -38,4 +52,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
     //image to text
     implementation 'com.google.android.gms:play-services-vision:20.1.3'
+    //billing
+    implementation "com.android.billingclient:billing:7.0.0"
+    implementation 'com.google.guava:guava:31.1-jre'
 }

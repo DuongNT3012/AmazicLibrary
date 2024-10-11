@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowMetrics;
 import android.widget.Button;
@@ -18,6 +19,7 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
+import com.amazic.library.ads.Utils.NetworkUtil;
 import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.NativeCallback;
@@ -50,6 +52,7 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
 
+import java.util.ArrayList;
 import java.util.Locale;
 
 public class Admob {
@@ -158,16 +161,32 @@ public class Admob {
     //end inter ads
 
     //Start banner ads
-    public void loadBannerAds(Activity activity, FrameLayout adContainerView, BannerCallback bannerCallback) {
+    public void loadBannerAdsFloor(Activity activity, ArrayList<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback) {
+        if (listIdBanner.size() > 0){
+            loadBannerAds(activity, listIdBanner.get(0), adContainerView, new BannerCallback(){
+                @Override
+                public void onAdFailedToLoad() {
+                    super.onAdFailedToLoad();
+                    listIdBanner.remove(0);
+                }
+            });
+        }
+    }
+
+    public void loadBannerAds(Activity activity, String idBanner, FrameLayout adContainerView, BannerCallback bannerCallback) {
+        //Check network
+        if (!NetworkUtil.isNetworkActive(activity)) {
+            adContainerView.removeAllViews();
+            return;
+        }
+        //Show loading shimmer
+        View shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
+        adContainerView.addView(shimmerBanner);
         // [START create_ad_view]
         // Create a new ad view.
         AdView adView = new AdView(activity);
-        adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+        adView.setAdUnitId(idBanner);
         adView.setAdSize(getAdSize(activity));
-
-        // Replace ad container with new ad view.
-        adContainerView.removeAllViews();
-        adContainerView.addView(adView);
         // [END create_ad_view]
 
         // [START load_ad]
@@ -202,6 +221,9 @@ public class Admob {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
+                // Replace ad container with new ad view.
+                adContainerView.removeAllViews();
+                adContainerView.addView(adView);
                 bannerCallback.onAdLoaded();
             }
 

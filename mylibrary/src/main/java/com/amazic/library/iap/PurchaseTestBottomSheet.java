@@ -4,10 +4,9 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 
-import com.amazic.library.R;
+import com.amazic.mylibrary.R;
 import com.android.billingclient.api.ProductDetails;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 

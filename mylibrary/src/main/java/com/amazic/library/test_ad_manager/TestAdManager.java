@@ -1,4 +1,4 @@
-package com.amazic.library.detect_test_ad;
+package com.amazic.library.test_ad_manager;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -14,14 +14,14 @@ import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 
-public class DetectTestAd {
+public class TestAdManager {
     public static String testAd = "Test Ad";
     private boolean showAds = false;
-    public static DetectTestAd INSTANCE;
+    public static TestAdManager INSTANCE;
 
-    public static DetectTestAd getInstance() {
+    public static TestAdManager getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new DetectTestAd();
+            INSTANCE = new TestAdManager();
         }
         return INSTANCE;
     }

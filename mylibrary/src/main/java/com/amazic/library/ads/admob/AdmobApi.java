@@ -1,16 +1,13 @@
 package com.amazic.library.ads.admob;
 
-import android.app.Activity;
 import android.content.Context;
-import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.util.Log;
 
+import com.amazic.library.ads.Utils.NetworkUtil;
 import com.amazic.library.ads.call_api.AdsModel;
 import com.amazic.library.ads.call_api.ApiService;
 import com.amazic.library.ads.callback.ApiCallback;
-import com.amazic.library.ads.callback.BannerCallback;
-import com.google.android.gms.ads.AdView;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -119,7 +116,7 @@ public class AdmobApi {
                 .create(ApiService.class);
 
         Log.i(TAG, "link Server:" + baseURL);
-        if (isNetworkConnected()) {
+        if (NetworkUtil.isNetworkActive(context)) {
             fetchData(callBack);
         } else {
             new Handler().postDelayed(() -> callBack.onReady(), 2000);
@@ -167,11 +164,6 @@ public class AdmobApi {
             e.printStackTrace();
             new Handler().postDelayed(() -> callBack.onReady(), 2000);
         }
-    }
-
-    private boolean isNetworkConnected() {
-        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        return cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isConnected();
     }
 
     /*public void loadBanner(final Activity activity) {

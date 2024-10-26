@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
-import com.amazic.library.ads.app_open.AppOpenManager;
+import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.ApiCallback;
 import com.amazic.sample.databinding.ActivitySplashBinding;
 

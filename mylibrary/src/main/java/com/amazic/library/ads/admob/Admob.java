@@ -60,7 +60,7 @@ public class Admob {
     private static Admob INSTANCE;
     private static final String TAG = "Admob";
     private LoadingAdsDialog loadingAdsDialog;
-    private boolean isInterShowing = false;
+    private boolean isInterOrRewardedShowing = false;
     private boolean isShowAllAds = true;
 
     public static Admob getInstance() {
@@ -80,17 +80,19 @@ public class Admob {
         }).start();
     }
 
-    public boolean isInterShowing() {
-        return isInterShowing;
+    public boolean isInterOrRewardedShowing() {
+        return isInterOrRewardedShowing;
     }
+
     public void setShowAllAds(boolean isShowAllAds) {
         this.isShowAllAds = isShowAllAds;
     }
+
     public boolean getShowAllAds() {
         return isShowAllAds;
     }
 
-    //Start inter ads
+    //================================Start inter ads================================
     public void loadInterAds(Activity activity, List<String> listIdInter, InterCallback interCallback) {
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdInter.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
@@ -143,7 +145,7 @@ public class Admob {
                     // Set the ad reference to null so you don't show the ad a second time.
                     Log.d(TAG, "Ad dismissed fullscreen content.");
                     interCallback.onAdDismissedFullScreenContent();
-                    isInterShowing = false;
+                    isInterOrRewardedShowing = false;
                 }
 
                 @Override
@@ -171,25 +173,29 @@ public class Admob {
                     if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         loadingAdsDialog.dismiss();
                     }
-                    isInterShowing = true;
+                    isInterOrRewardedShowing = true;
                 }
             });
             mInterstitialAd.show(activity);
         }, 500);
     }
 
-    //end inter ads
+    //================================end inter ads================================
 
-    //Start banner ads
-    public void loadBannerAds(Activity activity, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback) {
+    //================================Start banner ads================================
+    public void loadBannerAds(Activity activity, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+        if (adContainerView != null) {
+            adContainerView.removeAllViews();
+        }
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
-            adContainerView.removeAllViews();
             return;
         }
         //Show loading shimmer
         View shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
-        adContainerView.addView(shimmerBanner);
+        if (adContainerView != null) {
+            adContainerView.addView(shimmerBanner);
+        }
         // [START create_ad_view]
         // Create a new ad view.
         AdView adView = new AdView(activity);
@@ -219,21 +225,24 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdBanner.remove(0);
-                loadBannerAds(activity, listIdBanner, adContainerView, bannerCallback);
+                loadBannerAds(activity, listIdBanner, adContainerView, bannerCallback, iOnAdsImpression);
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
                 bannerCallback.onAdImpression();
+                iOnAdsImpression.onAdsImpression();
             }
 
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
                 // Replace ad container with new ad view.
-                adContainerView.removeAllViews();
-                adContainerView.addView(adView);
+                if (adContainerView != null) {
+                    adContainerView.removeAllViews();
+                    adContainerView.addView(adView);
+                }
                 bannerCallback.onAdLoaded();
             }
 
@@ -251,19 +260,102 @@ public class Admob {
         });
         // [END load_ad]
     }
-    //End banner ads
 
-    //Start collapse banner ads
-    public void loadCollapseBanner(Activity activity, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback) {
-        //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+    //can load banner ads in fragment
+    public void loadBannerAds(Context context, int adWidth, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+        if (adContainerView != null) {
             adContainerView.removeAllViews();
+        }
+        //Check network
+        if (!NetworkUtil.isNetworkActive(context) || listIdBanner.size() == 0 || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
             return;
         }
         //Show loading shimmer
-        View shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
-        adContainerView.addView(shimmerBanner);
+        View shimmerBanner = LayoutInflater.from(context).inflate(R.layout.layout_shimmer_banner, null);
+        if (adContainerView != null) {
+            adContainerView.addView(shimmerBanner);
+        }
+        // [START create_ad_view]
+        // Create a new ad view.
+        AdView adView = new AdView(context);
+        adView.setAdUnitId(listIdBanner.get(0));
+        adView.setAdSize(getAdSizeFragment(context, adWidth));
+        // [END create_ad_view]
 
+        // [START load_ad]
+        // Start loading the ad in the background.
+        AdRequest adRequest = new AdRequest.Builder().build();
+        adView.loadAd(adRequest);
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                bannerCallback.onAdClicked();
+            }
+
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                bannerCallback.onAdClosed();
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
+                bannerCallback.onAdFailedToLoad();
+                listIdBanner.remove(0);
+                loadBannerAds(context, adWidth, listIdBanner, adContainerView, bannerCallback, iOnAdsImpression);
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                bannerCallback.onAdImpression();
+                iOnAdsImpression.onAdsImpression();
+            }
+
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                // Replace ad container with new ad view.
+                if (adContainerView != null) {
+                    adContainerView.removeAllViews();
+                    adContainerView.addView(adView);
+                }
+                bannerCallback.onAdLoaded();
+            }
+
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
+                bannerCallback.onAdOpened();
+            }
+
+            @Override
+            public void onAdSwipeGestureClicked() {
+                super.onAdSwipeGestureClicked();
+                bannerCallback.onAdSwipeGestureClicked();
+            }
+        });
+        // [END load_ad]
+    }
+    //end can load banner ads in fragment
+    //================================End banner ads================================
+
+    //================================Start collapse banner ads================================
+    public AdView loadCollapseBanner(Activity activity, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+        if (adContainerView != null) {
+            adContainerView.removeAllViews();
+        }
+        //Check network
+        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+            return null;
+        }
+        //Show loading shimmer
+        View shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
+        if (adContainerView != null) {
+            adContainerView.addView(shimmerBanner);
+        }
         AdView adView = new AdView(activity);
         adView.setAdUnitId(listIdCollapseBanner.get(0));
 
@@ -300,13 +392,14 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdCollapseBanner.remove(0);
-                loadCollapseBanner(activity, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback);
+                loadCollapseBanner(activity, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression);
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
                 bannerCallback.onAdImpression();
+                iOnAdsImpression.onAdsImpression();
             }
 
             @Override
@@ -314,8 +407,10 @@ public class Admob {
                 super.onAdLoaded();
                 bannerCallback.onAdLoaded();
                 // Replace ad container with new ad view.
-                adContainerView.removeAllViews();
-                adContainerView.addView(adView);
+                if (adContainerView != null) {
+                    adContainerView.removeAllViews();
+                    adContainerView.addView(adView);
+                }
             }
 
             @Override
@@ -330,11 +425,97 @@ public class Admob {
                 bannerCallback.onAdSwipeGestureClicked();
             }
         });
+        return adView;
     }
 
-    //End collapse banner ads
+    public AdView loadCollapseBanner(Context context, int adWidth, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+        if (adContainerView != null) {
+            adContainerView.removeAllViews();
+        }
+        //Check network
+        if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.size() == 0 || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+            return null;
+        }
+        //Show loading shimmer
+        View shimmerBanner = LayoutInflater.from(context).inflate(R.layout.layout_shimmer_banner, null);
+        if (adContainerView != null) {
+            adContainerView.addView(shimmerBanner);
+        }
+        AdView adView = new AdView(context);
+        adView.setAdUnitId(listIdCollapseBanner.get(0));
 
-    // Get the ad size with screen width.
+        AdSize adSize = getAdSizeFragment(context, adWidth);
+        adView.setAdSize(adSize);
+        // Create an extra parameter that aligns the bottom of the expanded ad to
+        // the bottom of the bannerView.
+        Bundle extras = new Bundle();
+        if (isGravityBottom) {
+            extras.putString("collapsible", "bottom");
+        } else {
+            extras.putString("collapsible", "top");
+        }
+
+        AdRequest adRequest = new AdRequest.Builder()
+                .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+                .build();
+        adView.loadAd(adRequest);
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                bannerCallback.onAdClicked();
+            }
+
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                bannerCallback.onAdClosed();
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
+                bannerCallback.onAdFailedToLoad();
+                listIdCollapseBanner.remove(0);
+                loadCollapseBanner(context, adWidth, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression);
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                bannerCallback.onAdImpression();
+                iOnAdsImpression.onAdsImpression();
+            }
+
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                bannerCallback.onAdLoaded();
+                // Replace ad container with new ad view.
+                if (adContainerView != null) {
+                    adContainerView.removeAllViews();
+                    adContainerView.addView(adView);
+                }
+            }
+
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
+                bannerCallback.onAdOpened();
+            }
+
+            @Override
+            public void onAdSwipeGestureClicked() {
+                super.onAdSwipeGestureClicked();
+                bannerCallback.onAdSwipeGestureClicked();
+            }
+        });
+        return adView;
+    }
+
+    //================================End collapse banner ads================================
+
+    //Get the ad size with screen width.
     private AdSize getAdSize(Activity activity) {
         DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
         int adWidthPixels = displayMetrics.widthPixels;
@@ -349,17 +530,24 @@ public class Admob {
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth);
     }
 
-    //Start native ads
-    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback) {
+    private AdSize getAdSizeFragment(Context context, int adWidth) {
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth);
+    }
+
+    //================================Start native ads================================
+    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression) {
+        if (adContainerView != null) {
+            adContainerView.removeAllViews();
+        }
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdNative.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
-            adContainerView.removeAllViews();
             return;
         }
         //Show loading shimmer
         View shimmerNative = LayoutInflater.from(activity).inflate(layoutShimmerNative, null);
-        adContainerView.addView(shimmerNative);
-
+        if (adContainerView != null) {
+            adContainerView.addView(shimmerNative);
+        }
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
         builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
             // OnLoadedListener implementation.
@@ -382,10 +570,97 @@ public class Admob {
                         }*/
                 nativeCallback.onNativeAdLoaded(nativeAd);
                 if (setShowNativeAfterLoaded) {
-                    NativeAdView adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
+                    NativeAdView adView;
+                    String mediationAdapterClassName = "";
+                    if (nativeAd.getResponseInfo() != null) {
+                        mediationAdapterClassName = nativeAd.getResponseInfo().getMediationAdapterClassName();
+                    }
+                    if (mediationAdapterClassName != null && mediationAdapterClassName.toLowerCase().contains("facebook")) {
+                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNativeMeta, adContainerView, false);
+                    } else {
+                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
+                    }
                     Admob.getInstance().populateNativeAdView(nativeAd, adView);
-                    adContainerView.removeAllViews();
-                    adContainerView.addView(adView);
+                    if (adContainerView != null) {
+                        adContainerView.removeAllViews();
+                        adContainerView.addView(adView);
+                    }
+                }
+                iOnAdsImpression.onAdsImpression();
+            }
+        });
+
+        VideoOptions videoOptions =
+                new VideoOptions.Builder().setStartMuted(true).build();
+
+        NativeAdOptions adOptions = new NativeAdOptions.Builder().setVideoOptions(videoOptions).build();
+
+        builder.withNativeAdOptions(adOptions);
+
+        AdLoader adLoader = builder.withAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                String error = String.format(Locale.getDefault(), "domain: %s, code: %d, message: %s", loadAdError.getDomain(), loadAdError.getCode(), loadAdError.getMessage());
+                Log.d(TAG, "Failed to load native ad with error " + error);
+                nativeCallback.onAdFailedToLoad();
+                listIdNative.remove(0);
+                loadNativeAds(activity, listIdNative, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback, iOnAdsImpression);
+            }
+        }).build();
+
+        adLoader.loadAd(new AdRequest.Builder().build());
+    }
+
+    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback) {
+        if (adContainerView != null) {
+            adContainerView.removeAllViews();
+        }
+        //Check network
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+            return;
+        }
+        //Show loading shimmer
+        View shimmerNative = LayoutInflater.from(activity).inflate(layoutShimmerNative, null);
+        if (adContainerView != null) {
+            adContainerView.addView(shimmerNative);
+        }
+        AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
+        builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
+            // OnLoadedListener implementation.
+            @Override
+            public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
+                // If this callback occurs after the activity is destroyed, you must call
+                // destroy and return or you may get a memory leak.
+                        /*boolean isDestroyed = false;
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                            isDestroyed = activity.isDestroyed();
+                        }
+                        if (isDestroyed || activity.isFinishing() || activity.isChangingConfigurations()) {
+                            nativeAd.destroy();
+                            return;
+                        }
+                        // You must call destroy on old ads when you are done with them,
+                        // otherwise you will have a memory leak.
+                        if (nativeAd != null) {
+                            nativeAd.destroy();
+                        }*/
+                nativeCallback.onNativeAdLoaded(nativeAd);
+                if (setShowNativeAfterLoaded) {
+                    NativeAdView adView;
+                    String mediationAdapterClassName = "";
+                    if (nativeAd.getResponseInfo() != null) {
+                        mediationAdapterClassName = nativeAd.getResponseInfo().getMediationAdapterClassName();
+                    }
+                    if (mediationAdapterClassName != null && mediationAdapterClassName.toLowerCase().contains("facebook")) {
+                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNativeMeta, adContainerView, false);
+                    } else {
+                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
+                    }
+                    Admob.getInstance().populateNativeAdView(nativeAd, adView);
+                    if (adContainerView != null) {
+                        adContainerView.removeAllViews();
+                        adContainerView.addView(adView);
+                    }
                 }
             }
         });
@@ -404,7 +679,7 @@ public class Admob {
                 Log.d(TAG, "Failed to load native ad with error " + error);
                 nativeCallback.onAdFailedToLoad();
                 listIdNative.remove(0);
-                loadNativeAds(activity, listIdNative, adContainerView, layoutNative, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback);
+                loadNativeAds(activity, listIdNative, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback);
             }
         }).build();
 
@@ -535,9 +810,9 @@ public class Admob {
             Log.d(TAG, "Video status: Ad does not contain a video asset.");
         }
     }
-    //End native ads
+    //================================End native ads================================
 
-    //Start reward ads
+    //================================Start reward ads================================
     public void loadRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback) {
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
@@ -586,6 +861,7 @@ public class Admob {
                 // Set the ad reference to null so you don't show the ad a second time.
                 Log.d(TAG, "Ad dismissed fullscreen content.");
                 rewardedCallback.onAdDismissedFullScreenContent();
+                isInterOrRewardedShowing = false;
             }
 
             @Override
@@ -613,6 +889,7 @@ public class Admob {
                 if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     loadingAdsDialog.dismiss();
                 }
+                isInterOrRewardedShowing = true;
             }
         });
         rewardedAd.show(activity, new OnUserEarnedRewardListener() {
@@ -626,9 +903,9 @@ public class Admob {
             }
         });
     }
-    //End reward ads
+    //================================End reward ads================================
 
-    //Start reward inter
+    //================================Start reward inter================================
     public void loadRewardInterAds(Activity activity, List<String> listIdRewardedInter, RewardedInterCallback rewardedInterCallback) {
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
@@ -675,6 +952,7 @@ public class Admob {
                 // Set the ad reference to null so you don't show the ad a second time.
                 Log.d(TAG, "Ad dismissed fullscreen content.");
                 rewardedInterCallback.onAdDismissedFullScreenContent();
+                isInterOrRewardedShowing = false;
             }
 
             @Override
@@ -702,6 +980,7 @@ public class Admob {
                 if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     loadingAdsDialog.dismiss();
                 }
+                isInterOrRewardedShowing = true;
             }
         });
         rewardedInterstitialAd.show(activity, new OnUserEarnedRewardListener() {
@@ -711,5 +990,5 @@ public class Admob {
             }
         });
     }
-    //End reward inter
+    //================================End reward inter================================
 }

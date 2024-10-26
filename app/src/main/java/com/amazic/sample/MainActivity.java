@@ -6,14 +6,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
-import com.amazic.library.ads.callback.BannerCallback;
+import com.amazic.library.ads.banner_ads.BannerBuilder;
+import com.amazic.library.ads.banner_ads.BannerManager;
 import com.amazic.library.ads.callback.InterCallback;
-import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
+import com.amazic.library.ads.native_ads.NativeBuilder;
+import com.amazic.library.ads.native_ads.NativeManager;
 import com.amazic.sample.databinding.ActivityMainBinding;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
@@ -25,26 +28,25 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        /*Admob.getInstance().loadBannerAds(this, AdmobApi.getInstance().getListIDBannerAll(), binding.adViewContainer, new BannerCallback() {
+        BannerBuilder bannerBuilder = new BannerBuilder().isIdApi();
+        BannerManager bannerManager = new BannerManager(this, binding.adViewContainer, this, bannerBuilder);
+        bannerManager.setAlwaysReloadOnResume(true);
+        bannerManager.setIntervalReloadBanner(5000L);
 
-        });*/
-        Admob.getInstance().loadCollapseBanner(
-                this,
-                AdmobApi.getInstance().getListIDCollapseBannerAll(),
-                binding.adViewContainer,
-                true,
-                new BannerCallback()
-        );
+        /*CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder().isIdApi();
+        CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder);
+        collapseBannerManager.setAlwaysReloadOnResume(true);
+        collapseBannerManager.setIntervalReloadBanner(5000L);*/
 
-        Admob.getInstance().loadNativeAds(
-                this,
-                AdmobApi.getInstance().getListIDNativeAll(),
-                binding.frAdsNative,
-                com.amazic.mylibrary.R.layout.layout_native_adview,
+        NativeBuilder nativeBuilder = new NativeBuilder(
+                this, binding.frAdsNative,
                 com.amazic.mylibrary.R.layout.layout_shimmer_native,
-                true,
-                new NativeCallback()
-        );
+                com.amazic.mylibrary.R.layout.layout_native_adview,
+                com.amazic.mylibrary.R.layout.layout_native_adview);
+        nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDNativeAll());
+        NativeManager nativeManager = new NativeManager(this, this, nativeBuilder);
+        nativeManager.setAlwaysReloadOnResume(true);
+        nativeManager.setIntervalReloadNative(5000L);
 
         binding.tvShowInter.setOnClickListener(view -> {
             Admob.getInstance().loadInterAds(this, AdmobApi.getInstance().getListIDInterAll(), new InterCallback() {
@@ -74,8 +76,14 @@ public class MainActivity extends AppCompatActivity {
             });
         });
         binding.tvShowRewardInter.setOnClickListener(view -> {
-            Admob.getInstance().loadRewardInterAds(this, AdmobApi.getInstance().getListIDByName("rewarded"), new RewardedInterCallback() {
+            Admob.getInstance().loadRewardInterAds(this, AdmobApi.getInstance().getListIDByName("rewarded_inter"), new RewardedInterCallback() {
+                @Override
+                public void onAdLoaded(RewardedInterstitialAd ad) {
+                    super.onAdLoaded(ad);
+                    Admob.getInstance().showRewardInterAds(MainActivity.this, ad, new RewardedInterCallback() {
 
+                    });
+                }
             });
         });
     }

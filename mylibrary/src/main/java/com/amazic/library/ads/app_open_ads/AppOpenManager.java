@@ -1,4 +1,4 @@
-package com.amazic.library.ads.app_open;
+package com.amazic.library.ads.app_open_ads;
 
 import android.app.Activity;
 import android.app.Application;
@@ -16,7 +16,7 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 import com.amazic.library.ads.Utils.NetworkUtil;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.callback.AppOpenCallback;
-import com.amazic.library.dialog.LoadingAdsDialog;
+import com.amazic.library.dialog.LoadingAdsResumeDialog;
 import com.amazic.library.ump.AdsConsentManager;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
@@ -36,7 +36,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private long loadTime = 0;
     private Activity currentActivity;
     private Application application;
-    private LoadingAdsDialog loadingAdsDialog;
+    private LoadingAdsResumeDialog loadingAdsResumeDialog;
     private AppOpenCallback appOpenCallback;
     private List<String> listIdOpenResumeAd;
 
@@ -110,28 +110,28 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         });
     }
 
-    public void showAdIfAvailable(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, @NonNull OnShowAdCompleteListener onShowAdCompleteListener) {
+    public void showAdIfAvailable(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
         // If the app open ad is already showing, do not show the ad again.
         if (isShowingAd) {
             Log.d(TAG, "The app open ad is already showing.");
             return;
         }
         // Not show open ads if inter is showing
-        if (Admob.getInstance().isInterShowing()) {
+        if (Admob.getInstance().isInterOrRewardedShowing()) {
             Log.d(TAG, "Not show open ads because inter is showing.");
             return;
         }
         // If the app open ad is not available yet, invoke the callback then load the ad.
         if (!isAdAvailable()) {
             Log.d(TAG, "The app open ad is not ready yet.");
-            onShowAdCompleteListener.onShowAdComplete();
+            //onShowAdCompleteListener.onShowAdComplete();
             loadAd(activity, listIdOpenResume, appOpenCallback);
             return;
         }
 
-        loadingAdsDialog = new LoadingAdsDialog(activity);
-        if (!loadingAdsDialog.isShowing()) {
-            loadingAdsDialog.show();
+        loadingAdsResumeDialog = new LoadingAdsResumeDialog(activity);
+        if (!loadingAdsResumeDialog.isShowing()) {
+            loadingAdsResumeDialog.show();
         }
 
         appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
@@ -144,8 +144,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 appOpenAd = null;
                 isShowingAd = false;
 
-                onShowAdCompleteListener.onShowAdComplete();
+                if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                    loadingAdsResumeDialog.dismiss();
+                }
                 loadAd(activity, listIdOpenResume, appOpenCallback);
+                appOpenCallback.onAdDismissedFullScreenContent();
             }
 
             @Override
@@ -157,26 +160,32 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 appOpenAd = null;
                 isShowingAd = false;
 
-                onShowAdCompleteListener.onShowAdComplete();
+                if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                    loadingAdsResumeDialog.dismiss();
+                }
                 loadAd(activity, listIdOpenResume, appOpenCallback);
+                appOpenCallback.onAdFailedToShowFullScreenContent();
             }
 
             @Override
             public void onAdShowedFullScreenContent() {
                 // Called when fullscreen content is shown.
                 Log.d(TAG, "Ad showed fullscreen content.");
+                appOpenCallback.onAdShowedFullScreenContent();
             }
 
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
                 Log.d(TAG, "onAdClicked.");
+                appOpenCallback.onAdClicked();
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
                 Log.d(TAG, "onAdImpression");
+                appOpenCallback.onAdImpression();
             }
         });
         isShowingAd = true;
@@ -190,6 +199,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
+        Log.d(TAG, "onActivityStarted: " + currentActivity);
         currentActivity = activity;
     }
 
@@ -221,28 +231,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
-        Log.d(TAG, "onStart: ");
-    }
-
-    @Override
-    public void onResume(@NonNull LifecycleOwner owner) {
-        DefaultLifecycleObserver.super.onResume(owner);
-        Log.d(TAG, "onResume: ");
-        if (currentActivity != null) {
-            Log.d(TAG, "onResume: " + currentActivity);
-            new Handler(Looper.getMainLooper()).postDelayed(() -> showAdIfAvailable(currentActivity), 500);
-        }
-    }
-
-    /**
-     * Show the ad if one isn't already showing.
-     */
-    private void showAdIfAvailable(@NonNull final Activity activity) {
-        showAdIfAvailable(activity, listIdOpenResumeAd, appOpenCallback, () -> {
-            // Empty because the user will go back to the activity that shows the ad.
-            if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                loadingAdsDialog.dismiss();
+        Log.d(TAG, "onStart: " + currentActivity);
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (currentActivity != null) {
+                showAdIfAvailable(currentActivity, listIdOpenResumeAd, appOpenCallback);
             }
-        });
+        }, 150);
     }
 }

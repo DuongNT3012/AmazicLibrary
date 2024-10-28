@@ -1,13 +1,19 @@
 package com.amazic.library.ads.admob;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
-import com.amazic.library.ads.Utils.NetworkUtil;
+import androidx.annotation.NonNull;
+
+import com.amazic.library.Utils.NetworkUtil;
+import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.call_api.AdsModel;
 import com.amazic.library.ads.call_api.ApiService;
 import com.amazic.library.ads.callback.ApiCallback;
+import com.amazic.library.ads.callback.AppOpenCallback;
+import com.amazic.library.ads.callback.InterCallback;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -119,7 +125,7 @@ public class AdmobApi {
         if (NetworkUtil.isNetworkActive(context)) {
             fetchData(callBack);
         } else {
-            new Handler().postDelayed(() -> callBack.onReady(), 2000);
+            new Handler().postDelayed(callBack::onReady, 2000);
         }
 
     }
@@ -131,13 +137,9 @@ public class AdmobApi {
             Log.i(TAG, "link Server query :" + linkServer + "/api/getidv2/" + appID_package);
             apiService.callAds(appID_package).enqueue(new Callback<List<AdsModel>>() {
                 @Override
-                public void onResponse(Call<List<AdsModel>> call, Response<List<AdsModel>> response) {
-                    if (response.body() == null) {
-                        new Handler().postDelayed(() -> callBack.onReady(), 2000);
-                        return;
-                    }
-                    if (response.body().size() == 0) {
-                        new Handler().postDelayed(() -> callBack.onReady(), 2000);
+                public void onResponse(@NonNull Call<List<AdsModel>> call, @NonNull Response<List<AdsModel>> response) {
+                    if (response.body() == null || response.body().size() == 0) {
+                        new Handler().postDelayed(callBack::onReady, 2000);
                         return;
                     }
                     for (AdsModel ads : response.body()) {
@@ -155,34 +157,21 @@ public class AdmobApi {
                 }
 
                 @Override
-                public void onFailure(Call<List<AdsModel>> call, Throwable t) {
-                    Log.e(TAG, "onFailure: " + t.toString());
-                    new Handler().postDelayed(() -> callBack.onReady(), 2000);
+                public void onFailure(@NonNull Call<List<AdsModel>> call, @NonNull Throwable t) {
+                    Log.e(TAG, "onFailure: " + t);
+                    new Handler().postDelayed(callBack::onReady, 2000);
                 }
             });
         } catch (Exception e) {
             e.printStackTrace();
-            new Handler().postDelayed(() -> callBack.onReady(), 2000);
+            new Handler().postDelayed(callBack::onReady, 2000);
         }
     }
 
-    /*public void loadBanner(final Activity activity) {
-        Admob.getInstance().loadBannerFloor(activity, getListIDBannerAll());
+    public void loadOpenAppAdSplashFloor(Activity activity, AppOpenCallback appOpenCallback) {
+        AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(activity, AdmobApi.getInstance().getListIDOpenSplash(), appOpenCallback);
     }
-
-    public void loadBanner(final Activity activity, BannerCallback bannerCallBack) {
-        Admob.getInstance().loadBannerFloor(activity, getListIDBannerAll(), bannerCallBack);
+    public void loadInterAdSplashFloor(Activity activity, InterCallback interCallback) {
+        Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDInterSplash(), interCallback);
     }
-
-    public void loadCollapsibleBanner(final Activity activity) {
-        Admob.getInstance().loadCollapsibleBannerFloor(activity, getListIDCollapseBannerAll(), "bottom");
-    }
-
-    public void loadCollapsibleBanner(final Activity activity, BannerCallback bannerCallBack) {
-        Admob.getInstance().loadCollapsibleBannerFloor(activity, getListIDCollapseBannerAll(), "bottom", bannerCallBack);
-    }
-
-    public AdView loadCollapsibleBannerFloorWithReload(final Activity activity, BannerCallback bannerCallBack) {
-        return Admob.getInstance().loadCollapsibleBannerFloorWithReload(activity, getListIDCollapseBannerAll(), "bottom", bannerCallBack);
-    }*/
 }

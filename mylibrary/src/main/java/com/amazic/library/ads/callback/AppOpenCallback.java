@@ -28,4 +28,8 @@ public class AppOpenCallback {
     public void onAdImpression() {
 
     }
+
+    public void onNextAction() {
+
+    }
 }

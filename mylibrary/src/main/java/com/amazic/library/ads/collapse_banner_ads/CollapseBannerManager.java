@@ -123,7 +123,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
                     countDownTimer.cancel();
                     countDownTimer.start();
                 }
-            });
+            }, builder.getCollapseTypeClose(), builder.getValueCountDownOrCountClick());
         } else {
             frContainer.setVisibility(View.GONE);
         }
@@ -140,7 +140,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
                     countDownTimer.cancel();
                     countDownTimer.start();
                 }
-            });
+            }, builder.getCollapseTypeClose(), builder.getValueCountDownOrCountClick());
         } else {
             frContainer.setVisibility(View.GONE);
         }

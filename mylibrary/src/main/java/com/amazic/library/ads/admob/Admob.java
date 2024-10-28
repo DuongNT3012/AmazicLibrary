@@ -10,6 +10,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowMetrics;
 import android.widget.Button;
 import android.widget.FrameLayout;
@@ -19,12 +20,15 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 
-import com.amazic.library.ads.Utils.NetworkUtil;
+import com.amazic.library.Utils.AdjustUtil;
+import com.amazic.library.Utils.NetworkUtil;
+import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
+import com.amazic.library.ads.collapse_banner_ads.CollapseBannerHelper;
 import com.amazic.library.dialog.LoadingAdsDialog;
 import com.amazic.library.ump.AdsConsentManager;
 import com.amazic.mylibrary.R;
@@ -62,6 +66,13 @@ public class Admob {
     private LoadingAdsDialog loadingAdsDialog;
     private boolean isInterOrRewardedShowing = false;
     private boolean isShowAllAds = true;
+    private InterstitialAd mInterstitialAdSplash;
+    private boolean isFailToShowAdSplash = false;
+    private long timeInterval = 0L;
+    private long lastTimeDismissInter = 0L;
+    private long timeIntervalFromStart = 0L;
+    private long timeStart = 0L;
+    private String tokenEventAdjust = "";
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -70,14 +81,33 @@ public class Admob {
         return INSTANCE;
     }
 
-    public void initAdmob(Context context, IOnInitAdmobDone iOnInitAdmobDone) {
+    public void initAdmob(Activity activity, IOnInitAdmobDone iOnInitAdmobDone) {
+        timeStart = System.currentTimeMillis();
+        AppOpenManager.getInstance().setApplication(activity.getApplication());
         new Thread(() -> {
             // Initialize the Google Mobile Ads SDK on a background thread.
-            MobileAds.initialize(context, initializationStatus -> {
+            MobileAds.initialize(activity, initializationStatus -> {
                 Log.d(TAG, "initAdmob: " + initializationStatus.getAdapterStatusMap());
                 iOnInitAdmobDone.onInitAdmobDone();
             });
         }).start();
+    }
+
+    public void setTimeInterval(long timeInterval) {
+        this.lastTimeDismissInter = 0L;
+        this.timeInterval = timeInterval;
+    }
+
+    public void setTimeIntervalFromStart(long timeIntervalFromStart) {
+        this.timeIntervalFromStart = timeIntervalFromStart;
+    }
+
+    public void setTokenEventAdjust(String tokenEventAdjust) {
+        this.tokenEventAdjust = tokenEventAdjust;
+    }
+
+    public String getTokenEventAdjust() {
+        return this.tokenEventAdjust;
     }
 
     public boolean isInterOrRewardedShowing() {
@@ -93,14 +123,15 @@ public class Admob {
     }
 
     //================================Start inter ads================================
-    public void loadInterAds(Activity activity, List<String> listIdInter, InterCallback interCallback) {
-        //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdInter.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+    public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback) {
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(context) || listIdInter.size() == 0 || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+            interCallback.onNextAction();
             return;
         }
         AdRequest adRequest = new AdRequest.Builder().build();
 
-        InterstitialAd.load(activity, listIdInter.get(0), adRequest,
+        InterstitialAd.load(context, listIdInter.get(0), adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
@@ -108,6 +139,11 @@ public class Admob {
                         // an ad is loaded.
                         interCallback.onAdLoaded(interstitialAd);
                         Log.i(TAG, "onAdLoaded");
+                        //Tracking revenue
+                        interstitialAd.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
                     }
 
                     @Override
@@ -116,14 +152,25 @@ public class Admob {
                         Log.d(TAG, loadAdError.toString());
                         interCallback.onAdFailedToLoad();
                         listIdInter.remove(0);
-                        loadInterAds(activity, listIdInter, interCallback);
+                        loadInterAds(context, listIdInter, interCallback);
                     }
                 });
     }
 
     public void showInterAds(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback) {
+        if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
+            Log.d(TAG, "Not show interstitial because the time interval.");
+            interCallback.onNextAction();
+            return;
+        }
+        if (System.currentTimeMillis() - timeStart < timeIntervalFromStart) {
+            Log.d(TAG, "Not show interstitial because the time interval from start.");
+            interCallback.onNextAction();
+            return;
+        }
         if (mInterstitialAd == null) {
             Log.d(TAG, "The interstitial ad wasn't ready yet.");
+            interCallback.onNextAction();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -145,7 +192,9 @@ public class Admob {
                     // Set the ad reference to null so you don't show the ad a second time.
                     Log.d(TAG, "Ad dismissed fullscreen content.");
                     interCallback.onAdDismissedFullScreenContent();
+                    interCallback.onNextAction();
                     isInterOrRewardedShowing = false;
+                    lastTimeDismissInter = System.currentTimeMillis();
                 }
 
                 @Override
@@ -153,6 +202,7 @@ public class Admob {
                     // Called when ad fails to show.
                     Log.e(TAG, "Ad failed to show fullscreen content.");
                     interCallback.onAdFailedToShowFullScreenContent();
+                    interCallback.onNextAction();
                     if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         loadingAdsDialog.dismiss();
                     }
@@ -177,7 +227,108 @@ public class Admob {
                 }
             });
             mInterstitialAd.show(activity);
-        }, 500);
+        }, 250);
+    }
+
+    public void showInterAdsSplash(Activity activity, InterCallback interCallback) {
+        if (mInterstitialAdSplash == null) {
+            Log.d(TAG, "The interstitial ad wasn't ready yet.");
+            interCallback.onNextAction();
+            return;
+        }
+        loadingAdsDialog = new LoadingAdsDialog(activity);
+        if (!loadingAdsDialog.isShowing()) {
+            loadingAdsDialog.show();
+        }
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdClicked() {
+                    // Called when a click is recorded for an ad.
+                    Log.d(TAG, "Ad was clicked.");
+                    interCallback.onAdClicked();
+                }
+
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    // Called when ad is dismissed.
+                    // Set the ad reference to null so you don't show the ad a second time.
+                    Log.d(TAG, "Ad dismissed fullscreen content.");
+                    interCallback.onAdDismissedFullScreenContent();
+                    interCallback.onNextAction();
+                    isInterOrRewardedShowing = false;
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    // Called when ad fails to show.
+                    Log.e(TAG, "Ad failed to show fullscreen content.");
+                    interCallback.onAdFailedToShowFullScreenContent();
+                    //interCallback.onNextAction();
+                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        loadingAdsDialog.dismiss();
+                    }
+                    isFailToShowAdSplash = true;
+                }
+
+                @Override
+                public void onAdImpression() {
+                    // Called when an impression is recorded for an ad.
+                    Log.d(TAG, "Ad recorded an impression.");
+                    interCallback.onAdImpression();
+                }
+
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    // Called when ad is shown.
+                    Log.d(TAG, "Ad showed fullscreen content.");
+                    interCallback.onAdShowedFullScreenContent();
+                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        loadingAdsDialog.dismiss();
+                    }
+                    isInterOrRewardedShowing = true;
+                    isFailToShowAdSplash = false;
+                }
+            });
+            mInterstitialAdSplash.show(activity);
+        }, 250);
+    }
+
+    public void loadAndShowInterAdSplash(Activity activity, List<String> listIdInter, InterCallback interCallback) {
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInter.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+            interCallback.onNextAction();
+            return;
+        }
+        AdRequest adRequest = new AdRequest.Builder().build();
+
+        InterstitialAd.load(activity, listIdInter.get(0), adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        Log.i(TAG, "onAdLoaded");
+                        interCallback.onAdLoaded(interstitialAd);
+                        mInterstitialAdSplash = interstitialAd;
+                        showInterAdsSplash(activity, interCallback);
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.d(TAG, loadAdError.toString());
+                        interCallback.onAdFailedToLoad();
+                        listIdInter.remove(0);
+                        loadAndShowInterAdSplash(activity, listIdInter, interCallback);
+                    }
+                });
+    }
+
+    public void onCheckShowSplashWhenFail(Activity activity, InterCallback interCallback) {
+        if (isFailToShowAdSplash) {
+            showInterAdsSplash(activity, interCallback);
+        }
     }
 
     //================================end inter ads================================
@@ -232,6 +383,7 @@ public class Admob {
             public void onAdImpression() {
                 super.onAdImpression();
                 bannerCallback.onAdImpression();
+                //use for auto reload banner after x seconds
                 iOnAdsImpression.onAdsImpression();
             }
 
@@ -244,6 +396,14 @@ public class Admob {
                     adContainerView.addView(adView);
                 }
                 bannerCallback.onAdLoaded();
+
+                //Tracking revenue
+                adView.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (adView.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
             }
 
             @Override
@@ -311,6 +471,7 @@ public class Admob {
             public void onAdImpression() {
                 super.onAdImpression();
                 bannerCallback.onAdImpression();
+                //use for auto reload banner after x seconds
                 iOnAdsImpression.onAdsImpression();
             }
 
@@ -323,6 +484,13 @@ public class Admob {
                     adContainerView.addView(adView);
                 }
                 bannerCallback.onAdLoaded();
+                //Tracking revenue
+                adView.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (adView.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
             }
 
             @Override
@@ -343,7 +511,7 @@ public class Admob {
     //================================End banner ads================================
 
     //================================Start collapse banner ads================================
-    public AdView loadCollapseBanner(Activity activity, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+    public AdView loadCollapseBanner(Activity activity, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String collapseTypeClose, long valueCountDownOrCountClick) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
@@ -392,7 +560,7 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdCollapseBanner.remove(0);
-                loadCollapseBanner(activity, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression);
+                loadCollapseBanner(activity, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, collapseTypeClose, valueCountDownOrCountClick);
             }
 
             @Override
@@ -411,12 +579,20 @@ public class Admob {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
                 }
+                //Tracking revenue
+                adView.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (adView.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
             }
 
             @Override
             public void onAdOpened() {
                 super.onAdOpened();
                 bannerCallback.onAdOpened();
+                applyTechForCollapseBanner(collapseTypeClose, valueCountDownOrCountClick);
             }
 
             @Override
@@ -428,7 +604,7 @@ public class Admob {
         return adView;
     }
 
-    public AdView loadCollapseBanner(Context context, int adWidth, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+    public AdView loadCollapseBanner(Context context, int adWidth, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String collapseTypeClose, long valueCountDownOrCountClick) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
@@ -477,7 +653,7 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdCollapseBanner.remove(0);
-                loadCollapseBanner(context, adWidth, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression);
+                loadCollapseBanner(context, adWidth, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, collapseTypeClose, valueCountDownOrCountClick);
             }
 
             @Override
@@ -496,12 +672,20 @@ public class Admob {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
                 }
+                //Tracking revenue
+                adView.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (adView.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
             }
 
             @Override
             public void onAdOpened() {
                 super.onAdOpened();
                 bannerCallback.onAdOpened();
+                applyTechForCollapseBanner(collapseTypeClose, valueCountDownOrCountClick);
             }
 
             @Override
@@ -511,6 +695,24 @@ public class Admob {
             }
         });
         return adView;
+    }
+
+    private void applyTechForCollapseBanner(String collapseTypeClose, long valueCountDownOrCountClick) {
+        if (CollapseBannerHelper.getWindowManagerViews() != null) {
+            Log.d("TAGvvv", "run: " + CollapseBannerHelper.getWindowManagerViews().size());
+        }
+        CollapseBannerHelper.listChildViews.clear();
+        for (int i = 0; i < CollapseBannerHelper.getWindowManagerViews().size(); i++) {
+            Object object = CollapseBannerHelper.getWindowManagerViews().get(i);
+            if (object instanceof ViewGroup && ((ViewGroup) object).getClass().getName().contains("android.widget.PopupWindow")) {
+                Log.d("CollapseBannerHelper", "ViewGroup: " + object + "\n=================================================================");
+                if (collapseTypeClose.equals(CollapseBannerHelper.COUNT_DOWN)) {
+                    CollapseBannerHelper.getAllChildViews((ViewGroup) object, collapseTypeClose, valueCountDownOrCountClick, object);
+                } else if (collapseTypeClose.equals(CollapseBannerHelper.COUNT_CLICK)) {
+                    CollapseBannerHelper.getAllChildViews((ViewGroup) object, collapseTypeClose, valueCountDownOrCountClick, object);
+                }
+            }
+        }
     }
 
     //================================End collapse banner ads================================
@@ -587,6 +789,13 @@ public class Admob {
                     }
                 }
                 iOnAdsImpression.onAdsImpression();
+                //Tracking revenue
+                nativeAd.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (nativeAd.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
             }
         });
 
@@ -662,6 +871,13 @@ public class Admob {
                         adContainerView.addView(adView);
                     }
                 }
+                //Tracking revenue
+                nativeAd.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (nativeAd.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
             }
         });
 
@@ -834,6 +1050,12 @@ public class Admob {
                     public void onAdLoaded(@NonNull RewardedAd ad) {
                         Log.d(TAG, "Ad was loaded.");
                         rewardedCallback.onAdLoaded(ad);
+                        //Tracking revenue
+                        ad.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            ad.getResponseInfo();
+                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
                     }
                 });
     }
@@ -914,13 +1136,19 @@ public class Admob {
         RewardedInterstitialAd.load(activity, listIdRewardedInter.get(0),
                 new AdRequest.Builder().build(), new RewardedInterstitialAdLoadCallback() {
                     @Override
-                    public void onAdLoaded(RewardedInterstitialAd ad) {
+                    public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
                         Log.d(TAG, "Ad was loaded.");
                         rewardedInterCallback.onAdLoaded(ad);
+                        //Tracking revenue
+                        ad.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            ad.getResponseInfo();
+                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
                     }
 
                     @Override
-                    public void onAdFailedToLoad(LoadAdError loadAdError) {
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         Log.d(TAG, loadAdError.toString());
                         rewardedInterCallback.onAdFailedToLoad();
                         listIdRewardedInter.remove(0);

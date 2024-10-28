@@ -1,4 +1,4 @@
-package com.amazic.library.ads.Utils;
+package com.amazic.library.Utils;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

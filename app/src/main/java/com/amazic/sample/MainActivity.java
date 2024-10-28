@@ -1,13 +1,16 @@
 package com.amazic.sample;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
+import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.banner_ads.BannerBuilder;
 import com.amazic.library.ads.banner_ads.BannerManager;
+import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
@@ -31,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         BannerBuilder bannerBuilder = new BannerBuilder().isIdApi();
         BannerManager bannerManager = new BannerManager(this, binding.adViewContainer, this, bannerBuilder);
         bannerManager.setAlwaysReloadOnResume(true);
-        bannerManager.setIntervalReloadBanner(5000L);
+        //bannerManager.setIntervalReloadBanner(5000L);
 
         /*CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder().isIdApi();
         CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder);
@@ -46,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDNativeAll());
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder);
         nativeManager.setAlwaysReloadOnResume(true);
-        nativeManager.setIntervalReloadNative(5000L);
+        //nativeManager.setIntervalReloadNative(5000L);
 
         binding.tvShowInter.setOnClickListener(view -> {
             Admob.getInstance().loadInterAds(this, AdmobApi.getInstance().getListIDInterAll(), new InterCallback() {
@@ -54,6 +57,11 @@ public class MainActivity extends AppCompatActivity {
                 public void onAdLoaded(InterstitialAd interstitialAd) {
                     super.onAdLoaded(interstitialAd);
                     Admob.getInstance().showInterAds(MainActivity.this, interstitialAd, new InterCallback() {
+                        @Override
+                        public void onNextAction() {
+                            super.onNextAction();
+                            Toast.makeText(MainActivity.this, "On next action inter.", Toast.LENGTH_SHORT).show();
+                        }
                     });
                 }
             });
@@ -83,6 +91,15 @@ public class MainActivity extends AppCompatActivity {
                     Admob.getInstance().showRewardInterAds(MainActivity.this, ad, new RewardedInterCallback() {
 
                     });
+                }
+            });
+        });
+        binding.tvShowOpenResume.setOnClickListener(view -> {
+            AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(MainActivity.this, AdmobApi.getInstance().getListIDAppOpenResume(), new AppOpenCallback() {
+                @Override
+                public void onNextAction() {
+                    super.onNextAction();
+                    Toast.makeText(MainActivity.this, "On next action open resume.", Toast.LENGTH_SHORT).show();
                 }
             });
         });

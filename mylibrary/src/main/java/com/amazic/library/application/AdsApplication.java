@@ -76,5 +76,5 @@ public abstract class AdsApplication extends Application implements Application.
     @NonNull
     public abstract String getFacebookID();
 
-    public abstract Boolean buildDebug();
+    //public abstract Boolean buildDebug();
 }

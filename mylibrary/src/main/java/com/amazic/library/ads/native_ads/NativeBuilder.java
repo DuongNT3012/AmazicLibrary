@@ -60,11 +60,6 @@ public class NativeBuilder {
         this.layoutNativeAdmob = idLayoutNative;
         this.layoutNativeMeta = idLayoutNativeMeta;
         this.layoutShimmerNative = idLayoutShimmer;
-        flAd.removeAllViews();
-        flAd.addView(nativeMetaAdView);
-        flAd.addView(nativeAdView);
-        flAd.addView(shimmerFrameLayout);
-        showLoading();
     }
 
     public int getLayoutShimmerNative() {
@@ -102,28 +97,5 @@ public class NativeBuilder {
 
     public void setCallback(NativeCallback callback) {
         this.callback = callback;
-    }
-
-    public void showAd() {
-        nativeAdView.setVisibility(View.VISIBLE);
-        shimmerFrameLayout.setVisibility(View.GONE);
-        nativeMetaAdView.setVisibility(View.GONE);
-    }
-
-    public void showAdMeta() {
-        nativeMetaAdView.setVisibility(View.VISIBLE);
-        nativeAdView.setVisibility(View.GONE);
-        shimmerFrameLayout.setVisibility(View.GONE);
-    }
-
-    public void showLoading() {
-        shimmerFrameLayout.setVisibility(View.VISIBLE);
-        nativeAdView.setVisibility(View.GONE);
-        nativeMetaAdView.setVisibility(View.GONE);
-    }
-
-    public void hideAd() {
-        shimmerFrameLayout.setVisibility(View.GONE);
-        nativeAdView.setVisibility(View.GONE);
     }
 }

@@ -2,12 +2,14 @@ package com.amazic.sample;
 
 import androidx.annotation.NonNull;
 
+import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.application.AdsApplication;
 
 public class Application extends AdsApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        Admob.getInstance().setTokenEventAdjust("xxxxxx");
     }
 
     @NonNull
@@ -20,10 +22,5 @@ public class Application extends AdsApplication {
     @Override
     public String getFacebookID() {
         return null;
-    }
-
-    @Override
-    public Boolean buildDebug() {
-        return false;
     }
 }

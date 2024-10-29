@@ -26,6 +26,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".WelcomeBackActivity"
+            android:exported="true" />
+        <activity
             android:name=".MainActivity"
             android:exported="true" />
 

@@ -47,7 +47,11 @@ public class SplashActivity extends AppCompatActivity {
                 @Override
                 public void onReady() {
                     super.onReady();
+                    AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
+                    AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
                     AppOpenManager.getInstance().init(AdmobApi.getInstance().getListIDAppOpenResume());
+                    AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
+                    AppOpenManager.getInstance().disableAppResumeWithActivity(WelcomeBackActivity.class);
                     Admob.getInstance().setTimeInterval(5000);
                     Admob.getInstance().setTimeIntervalFromStart(10000);
                     adsSplash = AdsSplash.init(true, true, "50_50");

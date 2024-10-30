@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
+import com.amazic.library.ads.admob.Admob;
 
 public abstract class AdsApplication extends Application implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "AdsApplication";
@@ -17,6 +18,7 @@ public abstract class AdsApplication extends Application implements Application.
     @Override
     public void onCreate() {
         super.onCreate();
+        Admob.getInstance().setTimeStart(System.currentTimeMillis());
         setUpAdjust();
         registerActivityLifecycleCallbacks(this);
     }
@@ -52,7 +54,6 @@ public abstract class AdsApplication extends Application implements Application.
     @Override
     public void onActivityPaused(@NonNull Activity activity) {
         Adjust.onPause();
-
     }
 
     @Override

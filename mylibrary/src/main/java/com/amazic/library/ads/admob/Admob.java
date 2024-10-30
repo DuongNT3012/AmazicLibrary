@@ -22,7 +22,6 @@ import androidx.annotation.NonNull;
 
 import com.amazic.library.Utils.AdjustUtil;
 import com.amazic.library.Utils.NetworkUtil;
-import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.NativeCallback;
@@ -73,6 +72,8 @@ public class Admob {
     private long timeIntervalFromStart = 0L;
     private long timeStart = 0L;
     private String tokenEventAdjust = "";
+    private Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
+    private Runnable runnable;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -82,8 +83,6 @@ public class Admob {
     }
 
     public void initAdmob(Activity activity, IOnInitAdmobDone iOnInitAdmobDone) {
-        timeStart = System.currentTimeMillis();
-        AppOpenManager.getInstance().setApplication(activity.getApplication());
         new Thread(() -> {
             // Initialize the Google Mobile Ads SDK on a background thread.
             MobileAds.initialize(activity, initializationStatus -> {
@@ -91,6 +90,10 @@ public class Admob {
                 iOnInitAdmobDone.onInitAdmobDone();
             });
         }).start();
+    }
+
+    public void setTimeStart(long timeStart) {
+        this.timeStart = timeStart;
     }
 
     public void setTimeInterval(long timeInterval) {
@@ -269,6 +272,9 @@ public class Admob {
                         loadingAdsDialog.dismiss();
                     }
                     isFailToShowAdSplash = true;
+                    if (handlerTimeoutSplash != null && runnable != null) {
+                        handlerTimeoutSplash.removeCallbacks(runnable);
+                    }
                 }
 
                 @Override
@@ -288,6 +294,9 @@ public class Admob {
                     }
                     isInterOrRewardedShowing = true;
                     isFailToShowAdSplash = false;
+                    if (handlerTimeoutSplash != null && runnable != null) {
+                        handlerTimeoutSplash.removeCallbacks(runnable);
+                    }
                 }
             });
             mInterstitialAdSplash.show(activity);
@@ -295,9 +304,19 @@ public class Admob {
     }
 
     public void loadAndShowInterAdSplash(Activity activity, List<String> listIdInter, InterCallback interCallback) {
+        //Set timeout ads splash 20s if cannot load
+        runnable = () -> {
+            if (interCallback != null) {
+                interCallback.onNextAction();
+            }
+        };
+        //handlerTimeoutSplash.postDelayed(runnable, 20000);
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInter.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             interCallback.onNextAction();
+            if (handlerTimeoutSplash != null && runnable != null) {
+                handlerTimeoutSplash.removeCallbacks(runnable);
+            }
             return;
         }
         AdRequest adRequest = new AdRequest.Builder().build();

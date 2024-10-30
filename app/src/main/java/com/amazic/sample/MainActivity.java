@@ -49,7 +49,7 @@ public class MainActivity extends AppCompatActivity {
         nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDNativeAll());
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder);
         nativeManager.setAlwaysReloadOnResume(true);
-        //nativeManager.setIntervalReloadNative(5000L);
+        nativeManager.setIntervalReloadNative(3000L);
 
         binding.tvShowInter.setOnClickListener(view -> {
             Admob.getInstance().loadInterAds(this, AdmobApi.getInstance().getListIDInterAll(), new InterCallback() {

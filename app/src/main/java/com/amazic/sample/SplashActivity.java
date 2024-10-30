@@ -49,7 +49,7 @@ public class SplashActivity extends AppCompatActivity {
                     super.onReady();
                     //AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
                     //AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
-                    AppOpenManager.getInstance().init(AdmobApi.getInstance().getListIDAppOpenResume());
+                    AppOpenManager.getInstance().init(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume());
                     AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
                     AppOpenManager.getInstance().disableAppResumeWithActivity(WelcomeBackActivity.class);
                     Admob.getInstance().setTimeInterval(5000);

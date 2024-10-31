@@ -963,58 +963,85 @@ public class Admob {
         }
 
         // The headline and mediaContent are guaranteed to be in every NativeAd.
-        ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
-        adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
+        if ((TextView) adView.getHeadlineView() != null) {
+            ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
+        }
+        if (adView.getMediaView() != null) {
+            adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
+        }
 
         // These assets aren't guaranteed to be in every NativeAd, so it's important to
         // check before trying to display them.
         if (nativeAd.getBody() == null) {
-            adView.getBodyView().setVisibility(View.INVISIBLE);
+            if (adView.getBodyView() != null)
+                adView.getBodyView().setVisibility(View.INVISIBLE);
         } else {
-            adView.getBodyView().setVisibility(View.VISIBLE);
-            ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
+            if (adView.getBodyView() != null) {
+                adView.getBodyView().setVisibility(View.VISIBLE);
+                ((TextView) adView.getBodyView()).setText(nativeAd.getBody());
+            }
         }
 
         if (nativeAd.getCallToAction() == null) {
-            adView.getCallToActionView().setVisibility(View.INVISIBLE);
+            if (adView.getCallToActionView() != null) {
+                adView.getCallToActionView().setVisibility(View.INVISIBLE);
+            }
         } else {
-            adView.getCallToActionView().setVisibility(View.VISIBLE);
-            ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+            if (adView.getCallToActionView() != null) {
+                adView.getCallToActionView().setVisibility(View.VISIBLE);
+                ((Button) adView.getCallToActionView()).setText(nativeAd.getCallToAction());
+            }
         }
 
         if (nativeAd.getIcon() == null) {
-            adView.getIconView().setVisibility(View.GONE);
+            if (adView.getIconView() != null) {
+                adView.getIconView().setVisibility(View.GONE);
+            }
         } else {
-            ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
-            adView.getIconView().setVisibility(View.VISIBLE);
+            if (((ImageView) adView.getIconView()) != null) {
+                ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
+                adView.getIconView().setVisibility(View.VISIBLE);
+            }
         }
 
         if (nativeAd.getPrice() == null) {
-            adView.getPriceView().setVisibility(View.INVISIBLE);
+            if (adView.getPriceView() != null)
+                adView.getPriceView().setVisibility(View.INVISIBLE);
         } else {
-            adView.getPriceView().setVisibility(View.VISIBLE);
-            ((TextView) adView.getPriceView()).setText(nativeAd.getPrice());
+            if (adView.getPriceView() != null) {
+                adView.getPriceView().setVisibility(View.VISIBLE);
+                ((TextView) adView.getPriceView()).setText(nativeAd.getPrice());
+            }
         }
 
         if (nativeAd.getStore() == null) {
-            adView.getStoreView().setVisibility(View.INVISIBLE);
+            if (adView.getStoreView() != null)
+                adView.getStoreView().setVisibility(View.INVISIBLE);
         } else {
-            adView.getStoreView().setVisibility(View.VISIBLE);
-            ((TextView) adView.getStoreView()).setText(nativeAd.getStore());
+            if (adView.getStoreView() != null) {
+                adView.getStoreView().setVisibility(View.VISIBLE);
+                ((TextView) adView.getStoreView()).setText(nativeAd.getStore());
+            }
         }
 
         if (nativeAd.getStarRating() == null) {
-            adView.getStarRatingView().setVisibility(View.INVISIBLE);
+            if (adView.getStarRatingView() != null)
+                adView.getStarRatingView().setVisibility(View.INVISIBLE);
         } else {
-            ((RatingBar) adView.getStarRatingView()).setRating(nativeAd.getStarRating().floatValue());
-            adView.getStarRatingView().setVisibility(View.VISIBLE);
+            if (((RatingBar) adView.getStarRatingView()) != null) {
+                ((RatingBar) adView.getStarRatingView()).setRating(nativeAd.getStarRating().floatValue());
+                adView.getStarRatingView().setVisibility(View.VISIBLE);
+            }
         }
 
         if (nativeAd.getAdvertiser() == null) {
-            adView.getAdvertiserView().setVisibility(View.INVISIBLE);
+            if (adView.getAdvertiserView() != null)
+                adView.getAdvertiserView().setVisibility(View.INVISIBLE);
         } else {
-            ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
-            adView.getAdvertiserView().setVisibility(View.VISIBLE);
+            if (((TextView) adView.getAdvertiserView()) != null) {
+                ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
+                adView.getAdvertiserView().setVisibility(View.VISIBLE);
+            }
         }
 
         // This method tells the Google Mobile Ads SDK that you have finished populating your
@@ -1023,24 +1050,28 @@ public class Admob {
 
         // Get the video controller for the ad. One will always be provided, even if the ad doesn't
         // have a video asset.
-        VideoController vc = nativeAd.getMediaContent().getVideoController();
-
+        VideoController vc = null;
+        if (nativeAd.getMediaContent() != null) {
+            vc = nativeAd.getMediaContent().getVideoController();
+        }
         // Updates the UI to say whether or not this ad has a video asset.
         if (nativeAd.getMediaContent() != null && nativeAd.getMediaContent().hasVideoContent()) {
 
             // Create a new VideoLifecycleCallbacks object and pass it to the VideoController. The
             // VideoController will call methods on this object when events occur in the video
             // lifecycle.
-            vc.setVideoLifecycleCallbacks(
-                    new VideoController.VideoLifecycleCallbacks() {
-                        @Override
-                        public void onVideoEnd() {
-                            // Publishers should allow native ads to complete video playback before
-                            // refreshing or replacing them with another ad in the same UI location.
-                            Log.d(TAG, "Video status: Video playback has ended.");
-                            super.onVideoEnd();
-                        }
-                    });
+            if (vc != null) {
+                vc.setVideoLifecycleCallbacks(
+                        new VideoController.VideoLifecycleCallbacks() {
+                            @Override
+                            public void onVideoEnd() {
+                                // Publishers should allow native ads to complete video playback before
+                                // refreshing or replacing them with another ad in the same UI location.
+                                Log.d(TAG, "Video status: Video playback has ended.");
+                                super.onVideoEnd();
+                            }
+                        });
+            }
         } else {
             Log.d(TAG, "Video status: Ad does not contain a video asset.");
         }

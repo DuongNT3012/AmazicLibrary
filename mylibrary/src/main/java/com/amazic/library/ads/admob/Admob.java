@@ -756,6 +756,46 @@ public class Admob {
     }
 
     //================================Start native ads================================
+    public void loadNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback) {
+        //Check network
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+            return;
+        }
+        AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
+        builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
+            @Override
+            public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
+                nativeCallback.onNativeAdLoaded(nativeAd);
+                //Tracking revenue
+                nativeAd.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (nativeAd.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
+            }
+        });
+
+        VideoOptions videoOptions =
+                new VideoOptions.Builder().setStartMuted(true).build();
+
+        NativeAdOptions adOptions = new NativeAdOptions.Builder().setVideoOptions(videoOptions).build();
+
+        builder.withNativeAdOptions(adOptions);
+
+        AdLoader adLoader = builder.withAdListener(new AdListener() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                String error = String.format(Locale.getDefault(), "domain: %s, code: %d, message: %s", loadAdError.getDomain(), loadAdError.getCode(), loadAdError.getMessage());
+                Log.d(TAG, "Failed to load native ad with error " + error);
+                nativeCallback.onAdFailedToLoad();
+                listIdNative.remove(0);
+                loadNativeAds(activity, listIdNative, nativeCallback);
+            }
+        }).build();
+
+        adLoader.loadAd(new AdRequest.Builder().build());
+    }
     public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();

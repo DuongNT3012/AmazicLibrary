@@ -133,9 +133,15 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             Log.d(TAG, "Check condition.");
             return;
         }
-        // Do not load ad if there is an unused ad or one is already loading.
-        if (isLoadingAd || isAdAvailable()) {
+        // Do not load ad if one is already loading.
+        if (isLoadingAd) {
             Log.d(TAG, "Do not load ad if there is an unused ad or one is already loading.");
+            return;
+        }
+        // Do not load ad if there is an unused ad.
+        if (isAdAvailable()){
+            appOpenCallback.onAdLoaded(this.appOpenAd);
+            Log.d(TAG, "Do not load ad if there is an unused ad.");
             return;
         }
         isLoadingAd = true;

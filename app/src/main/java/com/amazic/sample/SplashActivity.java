@@ -53,7 +53,7 @@ public class SplashActivity extends AppCompatActivity {
                     AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
                     AppOpenManager.getInstance().disableAppResumeWithActivity(WelcomeBackActivity.class);
                     Admob.getInstance().setTimeInterval(5000);
-                    Admob.getInstance().setTimeIntervalFromStart(10000);
+                    Admob.getInstance().setTimeIntervalFromStart(20000);
                     adsSplash = AdsSplash.init(true, true, "50_50");
                     adsSplash.showAdsSplashApi(SplashActivity.this, appOpenCallback, interCallback);
                 }

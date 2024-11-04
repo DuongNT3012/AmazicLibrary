@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         nativeManager.setIntervalReloadNative(3000L);
 
         binding.tvShowInter.setOnClickListener(view -> {
+            Admob.getInstance().getTimeStart();
             Admob.getInstance().loadInterAds(this, AdmobApi.getInstance().getListIDInterAll(), new InterCallback() {
                 @Override
                 public void onAdLoaded(InterstitialAd interstitialAd) {

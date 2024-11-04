@@ -102,6 +102,11 @@ public class Admob {
         this.timeStart = timeStart;
     }
 
+    public long getTimeStart() {
+        Log.d(TAG, "getTimeStart: " + (System.currentTimeMillis() - this.timeStart) / (1000) + "(s)");
+        return this.timeStart;
+    }
+
     public void setTimeInterval(long timeInterval) {
         this.lastTimeDismissInter = 0L;
         this.timeInterval = timeInterval;

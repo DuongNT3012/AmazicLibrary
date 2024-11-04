@@ -3,6 +3,8 @@ package com.amazic.library.ads.splash_ads;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
@@ -63,7 +65,7 @@ public class AdsSplash {
         return state;
     }
 
-    public void showAdsSplashApi(Activity activity, AppOpenCallback appOpenCallback, InterCallback interCallback) {
+    public void showAdsSplashApi(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback) {
         Log.d(TAG, "state show: " + getState());
         if (getState() == STATE.OPEN) {
             AdmobApi.getInstance().loadOpenAppAdSplashFloor(activity, appOpenCallback);
@@ -74,7 +76,7 @@ public class AdsSplash {
         }
     }
 
-    public void onCheckShowSplashWhenFail(Activity activity, AppOpenCallback appOpenCallback, InterCallback interCallback) {
+    public void onCheckShowSplashWhenFail(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback) {
         if (getState() == STATE.OPEN)
             AppOpenManager.getInstance().onCheckShowSplashWhenFail(activity, appOpenCallback);
         else if (getState() == STATE.INTER)

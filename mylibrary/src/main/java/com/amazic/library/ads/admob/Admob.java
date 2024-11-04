@@ -19,6 +19,11 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.Lifecycle;
+import androidx.lifecycle.LifecycleOwner;
+import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.amazic.library.Utils.AdjustUtil;
 import com.amazic.library.Utils.NetworkUtil;
@@ -74,6 +79,7 @@ public class Admob {
     private String tokenEventAdjust = "";
     private Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
     private Runnable runnable;
+    private boolean isSplashResume = true;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -233,7 +239,22 @@ public class Admob {
         }, 250);
     }
 
-    public void showInterAdsSplash(Activity activity, InterCallback interCallback) {
+    public void showInterAdsSplash(AppCompatActivity activity, InterCallback interCallback) {
+        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onResume(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onResume(owner);
+                isSplashResume = true;
+                Log.d(TAG, "onSplashResume: " + true);
+            }
+
+            @Override
+            public void onStop(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onStop(owner);
+                isSplashResume = false;
+                Log.d(TAG, "onSplashResume: " + false);
+            }
+        });
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "The interstitial ad wasn't ready yet.");
             interCallback.onNextAction();
@@ -267,7 +288,9 @@ public class Admob {
                     // Called when ad fails to show.
                     Log.e(TAG, "Ad failed to show fullscreen content.");
                     interCallback.onAdFailedToShowFullScreenContent();
-                    //interCallback.onNextAction();
+                    if (isSplashResume) {
+                        interCallback.onNextAction();
+                    }
                     if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         loadingAdsDialog.dismiss();
                     }
@@ -299,11 +322,22 @@ public class Admob {
                     }
                 }
             });
-            mInterstitialAdSplash.show(activity);
+            if (ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+                mInterstitialAdSplash.show(activity);
+            } else {
+                Log.d(TAG, "Fail to show on background.");
+                if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                    loadingAdsDialog.dismiss();
+                }
+                isFailToShowAdSplash = true;
+                if (handlerTimeoutSplash != null && runnable != null) {
+                    handlerTimeoutSplash.removeCallbacks(runnable);
+                }
+            }
         }, 250);
     }
 
-    public void loadAndShowInterAdSplash(Activity activity, List<String> listIdInter, InterCallback interCallback) {
+    public void loadAndShowInterAdSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
         //Set timeout ads splash 20s if cannot load
         runnable = () -> {
             if (interCallback != null) {
@@ -344,7 +378,7 @@ public class Admob {
                 });
     }
 
-    public void onCheckShowSplashWhenFail(Activity activity, InterCallback interCallback) {
+    public void onCheckShowSplashWhenFail(AppCompatActivity activity, InterCallback interCallback) {
         if (isFailToShowAdSplash) {
             showInterAdsSplash(activity, interCallback);
         }
@@ -796,6 +830,7 @@ public class Admob {
 
         adLoader.loadAd(new AdRequest.Builder().build());
     }
+
     public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();

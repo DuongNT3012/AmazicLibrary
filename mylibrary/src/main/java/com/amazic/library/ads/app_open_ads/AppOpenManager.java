@@ -10,7 +10,9 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.DefaultLifecycleObserver;
+import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
@@ -50,6 +52,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private Class welcomeBackClass = null;
     private Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
     private Runnable runnable;
+    private boolean isSplashResume = true;
 
     public static AppOpenManager getInstance() {
         if (INSTANCE == null) {
@@ -139,7 +142,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             return;
         }
         // Do not load ad if there is an unused ad.
-        if (isAdAvailable()){
+        if (isAdAvailable()) {
             appOpenCallback.onAdLoaded(this.appOpenAd);
             Log.d(TAG, "Do not load ad if there is an unused ad.");
             return;
@@ -430,7 +433,22 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     //===========================End load ads, show ads resume in normal activity============================//
 
     //===========================Start load ads, show ads resume in splash============================//
-    public void showAdSplashIfAvailable(@NonNull final Activity activity, AppOpenCallback appOpenCallback) {
+    public void showAdSplashIfAvailable(@NonNull final AppCompatActivity activity, AppOpenCallback appOpenCallback) {
+        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onResume(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onResume(owner);
+                isSplashResume = true;
+                Log.d(TAG, "onSplashResume: " + true);
+            }
+
+            @Override
+            public void onStop(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onStop(owner);
+                isSplashResume = false;
+                Log.d(TAG, "onSplashResume: " + false);
+            }
+        });
         // If the app open ad is already showing, do not show the ad again.
         if (isShowingAd) {
             Log.d(TAG, "SPLASH: The app open ad is already showing.");
@@ -483,7 +501,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                         loadingAdsResumeDialog.dismiss();
                     }
                     appOpenCallback.onAdFailedToShowFullScreenContent();
-                    //appOpenCallback.onNextAction();
+                    if (isSplashResume) {
+                        appOpenCallback.onNextAction();
+                    }
                     isFailToShowAdSplash = true;
                     if (handlerTimeoutSplash != null && runnable != null) {
                         handlerTimeoutSplash.removeCallbacks(runnable);
@@ -515,12 +535,23 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     appOpenCallback.onAdImpression();
                 }
             });
-            isShowingAd = true;
-            appOpenAdSplash.show(activity);
+            if (ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+                isShowingAd = true;
+                appOpenAdSplash.show(activity);
+            } else {
+                Log.d(TAG, "Fail to show on background.");
+                if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                    loadingAdsResumeDialog.dismiss();
+                }
+                isFailToShowAdSplash = true;
+                if (handlerTimeoutSplash != null && runnable != null) {
+                    handlerTimeoutSplash.removeCallbacks(runnable);
+                }
+            }
         }, 250);
     }
 
-    public void loadAndShowAppOpenResumeSplash(Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+    public void loadAndShowAppOpenResumeSplash(AppCompatActivity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
         //Set timeout ads splash 20s if cannot load
         runnable = () -> {
             if (appOpenCallback != null) {
@@ -577,7 +608,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         });
     }
 
-    public void onCheckShowSplashWhenFail(@NonNull final Activity activity, AppOpenCallback appOpenCallback) {
+    public void onCheckShowSplashWhenFail(@NonNull final AppCompatActivity activity, AppOpenCallback appOpenCallback) {
         if (isFailToShowAdSplash) {
             showAdSplashIfAvailable(activity, appOpenCallback);
         }

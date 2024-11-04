@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.Utils.NetworkUtil;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
@@ -168,10 +169,10 @@ public class AdmobApi {
         }
     }
 
-    public void loadOpenAppAdSplashFloor(Activity activity, AppOpenCallback appOpenCallback) {
+    public void loadOpenAppAdSplashFloor(AppCompatActivity activity, AppOpenCallback appOpenCallback) {
         AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(activity, AdmobApi.getInstance().getListIDOpenSplash(), appOpenCallback);
     }
-    public void loadInterAdSplashFloor(Activity activity, InterCallback interCallback) {
+    public void loadInterAdSplashFloor(AppCompatActivity activity, InterCallback interCallback) {
         Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDInterSplash(), interCallback);
     }
 }

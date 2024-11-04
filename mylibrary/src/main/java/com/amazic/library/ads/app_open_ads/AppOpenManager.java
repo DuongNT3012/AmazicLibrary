@@ -127,6 +127,49 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     //===========================Start load ads, show ads resume in normal activity============================//
+    public void loadAd(Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        // Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds()) {
+            Log.d(TAG, "Check condition.");
+            return;
+        }
+        // Do not load ad if there is an unused ad or one is already loading.
+        if (isLoadingAd || isAdAvailable()) {
+            Log.d(TAG, "Do not load ad if there is an unused ad or one is already loading.");
+            return;
+        }
+        isLoadingAd = true;
+        AdRequest request = new AdRequest.Builder().build();
+        AppOpenAd.load(activity, listIdOpenResume.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
+            @Override
+            public void onAdLoaded(@NonNull AppOpenAd ad) {
+                // Called when an app open ad has loaded.
+                Log.d(TAG, "Ad was loaded.");
+                appOpenAd = ad;
+                isLoadingAd = false;
+                loadTime = (new Date()).getTime();
+                appOpenCallback.onAdLoaded(ad);
+                //Tracking revenue
+                ad.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    ad.getResponseInfo();
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                });
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                // Called when an app open ad has failed to load.
+                Log.d(TAG, "Ad Failed To Load.");
+                Log.d(TAG, loadAdError.getMessage());
+                isLoadingAd = false;
+                listIdOpenResume.remove(0);
+                appOpenCallback.onAdFailedToLoad(loadAdError);
+                loadAd(activity, listIdOpenResume, appOpenCallback);
+            }
+        });
+    }
+
     public void loadAd(Activity activity, List<String> listIdOpenResume) {
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds()) {

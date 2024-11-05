@@ -2,6 +2,8 @@ package com.amazic.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -13,6 +15,7 @@ import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.splash_ads.AdsSplash;
 import com.amazic.sample.databinding.ActivitySplashBinding;
+import com.google.android.gms.ads.interstitial.InterstitialAd;
 
 public class SplashActivity extends AppCompatActivity {
     private ActivitySplashBinding binding;
@@ -42,19 +45,20 @@ public class SplashActivity extends AppCompatActivity {
             }
         };
 
+        Admob.getInstance().setOpenActivityAfterShowInterAds(false);
         Admob.getInstance().initAdmob(this, () -> {
             AdmobApi.getInstance().init(getApplicationContext(), "", getString(R.string.app_id), new ApiCallback() {
                 @Override
                 public void onReady() {
                     super.onReady();
                     //AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
-                    //AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
-                    AppOpenManager.getInstance().init(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume());
+                    AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
+                    //AppOpenManager.getInstance().init(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume());
                     AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
                     AppOpenManager.getInstance().disableAppResumeWithActivity(WelcomeBackActivity.class);
-                    Admob.getInstance().setTimeInterval(5000);
-                    Admob.getInstance().setTimeIntervalFromStart(20000);
-                    adsSplash = AdsSplash.init(true, true, "50_50");
+                    //Admob.getInstance().setTimeInterval(5000);
+                    //Admob.getInstance().setTimeIntervalFromStart(20000);
+                    adsSplash = AdsSplash.init(true, true, "0_100");
                     adsSplash.showAdsSplashApi(SplashActivity.this, appOpenCallback, interCallback);
                 }
             });
@@ -62,7 +66,9 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void startNextAct(){
-        startActivity(new Intent(SplashActivity.this, MainActivity.class));
+        Log.d("SplashActivity", "startNextAct.");
+        Intent intent = new Intent(SplashActivity.this, MainActivity.class);
+        startActivity(intent);
         finish();
     }
 

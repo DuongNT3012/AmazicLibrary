@@ -1,6 +1,8 @@
 package com.amazic.sample;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,9 +33,11 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        Log.d("MainActivity", "onCreate.");
+
         BannerBuilder bannerBuilder = new BannerBuilder().isIdApi();
         BannerManager bannerManager = new BannerManager(this, binding.adViewContainer, this, bannerBuilder);
-        bannerManager.setAlwaysReloadOnResume(true);
+        //bannerManager.setAlwaysReloadOnResume(true);
         //bannerManager.setIntervalReloadBanner(5000L);
 
         /*CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder().isIdApi();
@@ -48,8 +52,8 @@ public class MainActivity extends AppCompatActivity {
                 com.amazic.mylibrary.R.layout.layout_native_adview);
         nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDNativeAll());
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder);
-        nativeManager.setAlwaysReloadOnResume(true);
-        nativeManager.setIntervalReloadNative(3000L);
+        //nativeManager.setAlwaysReloadOnResume(true);
+        //nativeManager.setIntervalReloadNative(3000L);
 
         binding.tvShowInter.setOnClickListener(view -> {
             Admob.getInstance().getTimeStart();
@@ -62,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
                         public void onNextAction() {
                             super.onNextAction();
                             Toast.makeText(MainActivity.this, "On next action inter.", Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
                         }
                     });
                 }

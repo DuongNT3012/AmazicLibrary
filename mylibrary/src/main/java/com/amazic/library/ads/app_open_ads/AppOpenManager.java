@@ -54,6 +54,16 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private Runnable runnable;
     private boolean isSplashResume = true;
 
+    public boolean isEnableResume() {
+        return isEnableResume;
+    }
+
+    public void setEnableResume(boolean enableResume) {
+        isEnableResume = enableResume;
+    }
+
+    private boolean isEnableResume = true;
+
     public static AppOpenManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new AppOpenManager();
@@ -221,6 +231,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     public void showAdIfAvailable(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        //Ads resume is disabled
+        if (!isEnableResume){
+            Log.d(TAG, "Ads resume is disabled");
+            return;
+        }
         // If the app open ad is not available yet, invoke the callback then load the ad.
         if (!isAdAvailable()) {
             Log.d(TAG, "The app open ad is not ready yet.");
@@ -334,6 +349,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     public void showAdIfAvailableWelcomeBack(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        //Ads resume is disabled.
+        if (!isEnableResume){
+            Log.d(TAG, "Ads resume is disabled.");
+            return;
+        }
         // If the app open ad is not available yet, invoke the callback then load the ad.
         if (!isAdAvailable()) {
             Log.d(TAG, "The app open ad is not ready yet.");

@@ -252,7 +252,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 }
         }
         //show welcome back activity
-        if (welcomeBackClass != null && currentActivity.getClass() != welcomeBackClass/* && currentActivity.getClass() != AdActivity.class*/) {
+        if (welcomeBackClass != null && currentActivity.getClass() != welcomeBackClass && currentActivity.getClass() != AdActivity.class) {
             currentActivity.startActivity(new Intent(currentActivity, welcomeBackClass));
             if (!this.isShowWelcomeBelowAdsResume) {
                 return;

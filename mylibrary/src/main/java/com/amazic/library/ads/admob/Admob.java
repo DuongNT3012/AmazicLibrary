@@ -426,6 +426,7 @@ public class Admob {
         }
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+            bannerCallback.onAdFailedToLoad();
             return;
         }
         //Show loading shimmer
@@ -514,6 +515,7 @@ public class Admob {
         }
         //Check network
         if (!NetworkUtil.isNetworkActive(context) || listIdBanner.size() == 0 || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+            bannerCallback.onAdFailedToLoad();
             return;
         }
         //Show loading shimmer

@@ -45,7 +45,7 @@ public class SplashActivity extends AppCompatActivity {
             }
         };
 
-        Admob.getInstance().setOpenActivityAfterShowInterAds(false);
+        Admob.getInstance().setOpenActivityAfterShowInterAds(true);
         Admob.getInstance().initAdmob(this, () -> {
             AdmobApi.getInstance().init(getApplicationContext(), "", getString(R.string.app_id), new ApiCallback() {
                 @Override

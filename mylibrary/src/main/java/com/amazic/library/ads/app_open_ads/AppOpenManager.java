@@ -144,6 +144,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds()) {
             Log.d(TAG, "Check condition.");
+            appOpenCallback.onAdFailedToLoad();
             return;
         }
         // Do not load ad if one is already loading.
@@ -183,7 +184,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 Log.d(TAG, loadAdError.getMessage());
                 isLoadingAd = false;
                 listIdOpenResume.remove(0);
-                appOpenCallback.onAdFailedToLoad(loadAdError);
+                appOpenCallback.onAdFailedToLoad();
                 loadAd(activity, listIdOpenResume, appOpenCallback);
             }
         });
@@ -623,7 +624,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 isLoadingAdSplash = false;
                 listIdOpenResume.remove(0);
                 loadAndShowAppOpenResumeSplash(activity, listIdOpenResume, appOpenCallback);
-                appOpenCallback.onAdFailedToLoad(loadAdError);
+                appOpenCallback.onAdFailedToLoad();
             }
         });
     }

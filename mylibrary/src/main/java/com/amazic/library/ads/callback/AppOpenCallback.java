@@ -7,7 +7,7 @@ public class AppOpenCallback {
     public void onAdLoaded(AppOpenAd ad) {
 
     }
-    public void onAdFailedToLoad(LoadAdError loadAdError) {
+    public void onAdFailedToLoad() {
 
     }
     public void onAdDismissedFullScreenContent() {

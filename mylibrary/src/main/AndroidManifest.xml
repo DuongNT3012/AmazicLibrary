@@ -7,9 +7,6 @@
 
     <application android:usesCleartextTraffic="true">
 
-        <activity
-            android:name="com.google.android.gms.ads.AdActivity"
-            android:theme="@style/AdTheme"
-            tools:replace="android:theme" />
+
     </application>
 </manifest>

@@ -27,6 +27,7 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.amazic.library.Utils.AdjustUtil;
 import com.amazic.library.Utils.NetworkUtil;
+import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.NativeCallback;
@@ -280,12 +281,9 @@ public class Admob {
         });
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "The interstitial ad wasn't ready yet.");
+            AppOpenManager.getInstance().setEnableResume(true);
             interCallback.onNextAction();
             return;
-        }
-        loadingAdsDialog = new LoadingAdsDialog(activity);
-        if (!loadingAdsDialog.isShowing()) {
-            loadingAdsDialog.show();
         }
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
@@ -302,6 +300,7 @@ public class Admob {
                     // Set the ad reference to null so you don't show the ad a second time.
                     Log.d(TAG, "Ad dismissed fullscreen content.");
                     interCallback.onAdDismissedFullScreenContent();
+                    AppOpenManager.getInstance().setEnableResume(true);
                     if (!openActivityAfterShowInterAds) {
                         interCallback.onNextAction();
                     }
@@ -348,15 +347,19 @@ public class Admob {
                     }
                 }
             });
-            if (openActivityAfterShowInterAds) {
-                Log.d(TAG, "showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
-                interCallback.onNextAction();
-            }
-            if (ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+            boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+            if (isResumeState) {
+                loadingAdsDialog = new LoadingAdsDialog(activity);
+                if (!loadingAdsDialog.isShowing()) {
+                    loadingAdsDialog.show();
+                }
                 isInterOrRewardedShowing = true;
-                new Handler().postDelayed(() -> {
-                    mInterstitialAdSplash.show(activity);
-                }, 100);
+                AppOpenManager.getInstance().setEnableResume(false);
+                if (openActivityAfterShowInterAds) {
+                    Log.d(TAG, "showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
+                    interCallback.onNextAction();
+                }
+                mInterstitialAdSplash.show(activity);
             } else {
                 Log.d(TAG, "Fail to show on background.");
                 if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {

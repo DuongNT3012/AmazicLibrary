@@ -14,6 +14,7 @@ import com.amazic.library.ads.callback.ApiCallback;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.splash_ads.AdsSplash;
+import com.amazic.library.organic.TechManager;
 import com.amazic.sample.databinding.ActivitySplashBinding;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 
@@ -52,8 +53,8 @@ public class SplashActivity extends AppCompatActivity {
                 public void onReady() {
                     super.onReady();
                     //AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
-                    AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
-                    //AppOpenManager.getInstance().init(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume());
+                    //AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
+                    AppOpenManager.getInstance().init(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume());
                     AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
                     AppOpenManager.getInstance().disableAppResumeWithActivity(WelcomeBackActivity.class);
                     //Admob.getInstance().setTimeInterval(5000);

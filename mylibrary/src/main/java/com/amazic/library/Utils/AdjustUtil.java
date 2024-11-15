@@ -25,7 +25,7 @@ public class AdjustUtil {
         adRevenue.setAdRevenueNetwork(adName);
         Adjust.trackAdRevenue(adRevenue);
         Log.d("AdjustRevenue", "trackRevenue: " + adValue.getCurrencyCode());
-        if (!Admob.getInstance().getTokenEventAdjust().equals("")) {
+        if (!Admob.getInstance().getTokenEventAdjust().isEmpty()) {
             AdjustEvent event = new AdjustEvent(Admob.getInstance().getTokenEventAdjust());
             event.setRevenue(valueMicros, adValue.getCurrencyCode());
             Adjust.trackEvent(event);

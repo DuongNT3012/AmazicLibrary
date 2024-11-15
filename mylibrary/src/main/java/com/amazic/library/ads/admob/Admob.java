@@ -27,6 +27,8 @@ import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.amazic.library.Utils.AdjustUtil;
 import com.amazic.library.Utils.NetworkUtil;
+import com.amazic.library.ads.admob.admob_interface.IOnAdsImpression;
+import com.amazic.library.ads.admob.admob_interface.IOnInitAdmobDone;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
@@ -159,7 +161,7 @@ public class Admob {
     //================================Start inter ads================================
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback) {
         //Check condition
-        if (!NetworkUtil.isNetworkActive(context) || listIdInter.size() == 0 || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
             interCallback.onNextAction();
             return;
         }
@@ -392,7 +394,7 @@ public class Admob {
         };
         //handlerTimeoutSplash.postDelayed(runnable, 20000);
         //Check condition
-        if (!NetworkUtil.isNetworkActive(activity) || listIdInter.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             interCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
@@ -438,7 +440,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             bannerCallback.onAdFailedToLoad();
             return;
         }
@@ -546,7 +548,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(context) || listIdBanner.size() == 0 || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
             bannerCallback.onAdFailedToLoad();
             return;
         }
@@ -640,7 +642,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             return null;
         }
         //Show loading shimmer
@@ -733,7 +735,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.size() == 0 || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
             return null;
         }
         //Show loading shimmer
@@ -823,17 +825,17 @@ public class Admob {
 
     private void applyTechForCollapseBanner(String collapseTypeClose, long valueCountDownOrCountClick) {
         if (CollapseBannerHelper.getWindowManagerViews() != null) {
-            Log.d("TAGvvv", "run: " + CollapseBannerHelper.getWindowManagerViews().size());
-        }
-        CollapseBannerHelper.listChildViews.clear();
-        for (int i = 0; i < CollapseBannerHelper.getWindowManagerViews().size(); i++) {
-            Object object = CollapseBannerHelper.getWindowManagerViews().get(i);
-            if (object instanceof ViewGroup && ((ViewGroup) object).getClass().getName().contains("android.widget.PopupWindow")) {
-                Log.d("CollapseBannerHelper", "ViewGroup: " + object + "\n=================================================================");
-                if (collapseTypeClose.equals(CollapseBannerHelper.COUNT_DOWN)) {
-                    CollapseBannerHelper.getAllChildViews((ViewGroup) object, collapseTypeClose, valueCountDownOrCountClick, object);
-                } else if (collapseTypeClose.equals(CollapseBannerHelper.COUNT_CLICK)) {
-                    CollapseBannerHelper.getAllChildViews((ViewGroup) object, collapseTypeClose, valueCountDownOrCountClick, object);
+            Log.d("ApplyTechForCollapse", "run: " + CollapseBannerHelper.getWindowManagerViews().size());
+            CollapseBannerHelper.listChildViews.clear();
+            for (int i = 0; i < CollapseBannerHelper.getWindowManagerViews().size(); i++) {
+                Object object = CollapseBannerHelper.getWindowManagerViews().get(i);
+                if (object instanceof ViewGroup && ((ViewGroup) object).getClass().getName().contains("android.widget.PopupWindow")) {
+                    Log.d("CollapseBannerHelper", "ViewGroup: " + object + "\n=================================================================");
+                    if (collapseTypeClose.equals(CollapseBannerHelper.COUNT_DOWN)) {
+                        CollapseBannerHelper.getAllChildViews((ViewGroup) object, collapseTypeClose, valueCountDownOrCountClick, object);
+                    } else if (collapseTypeClose.equals(CollapseBannerHelper.COUNT_CLICK)) {
+                        CollapseBannerHelper.getAllChildViews((ViewGroup) object, collapseTypeClose, valueCountDownOrCountClick, object);
+                    }
                 }
             }
         }
@@ -863,22 +865,19 @@ public class Admob {
     //================================Start native ads================================
     public void loadNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             return;
         }
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
-        builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
-            @Override
-            public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
-                nativeCallback.onNativeAdLoaded(nativeAd);
-                //Tracking revenue
-                nativeAd.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    if (nativeAd.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
-                    }
-                });
-            }
+        builder.forNativeAd(nativeAd -> {
+            nativeCallback.onNativeAdLoaded(nativeAd);
+            //Tracking revenue
+            nativeAd.setOnPaidEventListener(adValue -> {
+                //Adjust
+                if (nativeAd.getResponseInfo() != null) {
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                }
+            });
         });
 
         VideoOptions videoOptions =
@@ -907,7 +906,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             return;
         }
         //Show loading shimmer
@@ -916,52 +915,49 @@ public class Admob {
             adContainerView.addView(shimmerNative);
         }
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
-        builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
-            // OnLoadedListener implementation.
-            @Override
-            public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
-                // If this callback occurs after the activity is destroyed, you must call
-                // destroy and return or you may get a memory leak.
-                        /*boolean isDestroyed = false;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                            isDestroyed = activity.isDestroyed();
-                        }
-                        if (isDestroyed || activity.isFinishing() || activity.isChangingConfigurations()) {
-                            nativeAd.destroy();
-                            return;
-                        }
-                        // You must call destroy on old ads when you are done with them,
-                        // otherwise you will have a memory leak.
-                        if (nativeAd != null) {
-                            nativeAd.destroy();
-                        }*/
-                nativeCallback.onNativeAdLoaded(nativeAd);
-                if (setShowNativeAfterLoaded) {
-                    NativeAdView adView;
-                    String mediationAdapterClassName = "";
-                    if (nativeAd.getResponseInfo() != null) {
-                        mediationAdapterClassName = nativeAd.getResponseInfo().getMediationAdapterClassName();
+        // OnLoadedListener implementation.
+        builder.forNativeAd(nativeAd -> {
+            // If this callback occurs after the activity is destroyed, you must call
+            // destroy and return or you may get a memory leak.
+                    /*boolean isDestroyed = false;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        isDestroyed = activity.isDestroyed();
                     }
-                    if (mediationAdapterClassName != null && mediationAdapterClassName.toLowerCase().contains("facebook")) {
-                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNativeMeta, adContainerView, false);
-                    } else {
-                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
+                    if (isDestroyed || activity.isFinishing() || activity.isChangingConfigurations()) {
+                        nativeAd.destroy();
+                        return;
                     }
-                    Admob.getInstance().populateNativeAdView(nativeAd, adView);
-                    if (adContainerView != null) {
-                        adContainerView.removeAllViews();
-                        adContainerView.addView(adView);
-                    }
+                    // You must call destroy on old ads when you are done with them,
+                    // otherwise you will have a memory leak.
+                    if (nativeAd != null) {
+                        nativeAd.destroy();
+                    }*/
+            nativeCallback.onNativeAdLoaded(nativeAd);
+            if (setShowNativeAfterLoaded) {
+                NativeAdView adView;
+                String mediationAdapterClassName = "";
+                if (nativeAd.getResponseInfo() != null) {
+                    mediationAdapterClassName = nativeAd.getResponseInfo().getMediationAdapterClassName();
                 }
-                iOnAdsImpression.onAdsImpression();
-                //Tracking revenue
-                nativeAd.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    if (nativeAd.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
-                    }
-                });
+                if (mediationAdapterClassName != null && mediationAdapterClassName.toLowerCase().contains("facebook")) {
+                    adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNativeMeta, adContainerView, false);
+                } else {
+                    adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
+                }
+                Admob.getInstance().populateNativeAdView(nativeAd, adView);
+                if (adContainerView != null) {
+                    adContainerView.removeAllViews();
+                    adContainerView.addView(adView);
+                }
             }
+            iOnAdsImpression.onAdsImpression();
+            //Tracking revenue
+            nativeAd.setOnPaidEventListener(adValue -> {
+                //Adjust
+                if (nativeAd.getResponseInfo() != null) {
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                }
+            });
         });
 
         VideoOptions videoOptions =
@@ -990,7 +986,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             return;
         }
         //Show loading shimmer
@@ -999,51 +995,48 @@ public class Admob {
             adContainerView.addView(shimmerNative);
         }
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
-        builder.forNativeAd(new NativeAd.OnNativeAdLoadedListener() {
-            // OnLoadedListener implementation.
-            @Override
-            public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
-                // If this callback occurs after the activity is destroyed, you must call
-                // destroy and return or you may get a memory leak.
-                        /*boolean isDestroyed = false;
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                            isDestroyed = activity.isDestroyed();
-                        }
-                        if (isDestroyed || activity.isFinishing() || activity.isChangingConfigurations()) {
-                            nativeAd.destroy();
-                            return;
-                        }
-                        // You must call destroy on old ads when you are done with them,
-                        // otherwise you will have a memory leak.
-                        if (nativeAd != null) {
-                            nativeAd.destroy();
-                        }*/
-                nativeCallback.onNativeAdLoaded(nativeAd);
-                if (setShowNativeAfterLoaded) {
-                    NativeAdView adView;
-                    String mediationAdapterClassName = "";
-                    if (nativeAd.getResponseInfo() != null) {
-                        mediationAdapterClassName = nativeAd.getResponseInfo().getMediationAdapterClassName();
+        // OnLoadedListener implementation.
+        builder.forNativeAd(nativeAd -> {
+            // If this callback occurs after the activity is destroyed, you must call
+            // destroy and return or you may get a memory leak.
+                    /*boolean isDestroyed = false;
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                        isDestroyed = activity.isDestroyed();
                     }
-                    if (mediationAdapterClassName != null && mediationAdapterClassName.toLowerCase().contains("facebook")) {
-                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNativeMeta, adContainerView, false);
-                    } else {
-                        adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
+                    if (isDestroyed || activity.isFinishing() || activity.isChangingConfigurations()) {
+                        nativeAd.destroy();
+                        return;
                     }
-                    Admob.getInstance().populateNativeAdView(nativeAd, adView);
-                    if (adContainerView != null) {
-                        adContainerView.removeAllViews();
-                        adContainerView.addView(adView);
-                    }
+                    // You must call destroy on old ads when you are done with them,
+                    // otherwise you will have a memory leak.
+                    if (nativeAd != null) {
+                        nativeAd.destroy();
+                    }*/
+            nativeCallback.onNativeAdLoaded(nativeAd);
+            if (setShowNativeAfterLoaded) {
+                NativeAdView adView;
+                String mediationAdapterClassName = "";
+                if (nativeAd.getResponseInfo() != null) {
+                    mediationAdapterClassName = nativeAd.getResponseInfo().getMediationAdapterClassName();
                 }
-                //Tracking revenue
-                nativeAd.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    if (nativeAd.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
-                    }
-                });
+                if (mediationAdapterClassName != null && mediationAdapterClassName.toLowerCase().contains("facebook")) {
+                    adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNativeMeta, adContainerView, false);
+                } else {
+                    adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
+                }
+                Admob.getInstance().populateNativeAdView(nativeAd, adView);
+                if (adContainerView != null) {
+                    adContainerView.removeAllViews();
+                    adContainerView.addView(adView);
+                }
             }
+            //Tracking revenue
+            nativeAd.setOnPaidEventListener(adValue -> {
+                //Adjust
+                if (nativeAd.getResponseInfo() != null) {
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                }
+            });
         });
 
         VideoOptions videoOptions =
@@ -1069,7 +1062,7 @@ public class Admob {
 
     public void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
         // Set the media view.
-        MediaView mediaView = (MediaView) adView.findViewById(R.id.ad_media);
+        MediaView mediaView = adView.findViewById(R.id.ad_media);
         if (mediaView != null) {
             adView.setMediaView(mediaView);
         }
@@ -1109,7 +1102,7 @@ public class Admob {
         }
 
         // The headline and mediaContent are guaranteed to be in every NativeAd.
-        if ((TextView) adView.getHeadlineView() != null) {
+        if (adView.getHeadlineView() != null) {
             ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
         }
         if (adView.getMediaView() != null) {
@@ -1144,7 +1137,7 @@ public class Admob {
                 adView.getIconView().setVisibility(View.GONE);
             }
         } else {
-            if (((ImageView) adView.getIconView()) != null) {
+            if (adView.getIconView() != null) {
                 ((ImageView) adView.getIconView()).setImageDrawable(nativeAd.getIcon().getDrawable());
                 adView.getIconView().setVisibility(View.VISIBLE);
             }
@@ -1174,7 +1167,7 @@ public class Admob {
             if (adView.getStarRatingView() != null)
                 adView.getStarRatingView().setVisibility(View.INVISIBLE);
         } else {
-            if (((RatingBar) adView.getStarRatingView()) != null) {
+            if (adView.getStarRatingView() != null) {
                 ((RatingBar) adView.getStarRatingView()).setRating(nativeAd.getStarRating().floatValue());
                 adView.getStarRatingView().setVisibility(View.VISIBLE);
             }
@@ -1184,7 +1177,7 @@ public class Admob {
             if (adView.getAdvertiserView() != null)
                 adView.getAdvertiserView().setVisibility(View.INVISIBLE);
         } else {
-            if (((TextView) adView.getAdvertiserView()) != null) {
+            if (adView.getAdvertiserView() != null) {
                 ((TextView) adView.getAdvertiserView()).setText(nativeAd.getAdvertiser());
                 adView.getAdvertiserView().setVisibility(View.VISIBLE);
             }
@@ -1227,7 +1220,7 @@ public class Admob {
     //================================Start reward ads================================
     public void loadRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             return;
         }
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -1310,15 +1303,12 @@ public class Admob {
                 isInterOrRewardedShowing = true;
             }
         });
-        rewardedAd.show(activity, new OnUserEarnedRewardListener() {
-            @Override
-            public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-                // Handle the reward.
-                Log.d(TAG, "The user earned the reward.");
-                int rewardAmount = rewardItem.getAmount();
-                String rewardType = rewardItem.getType();
-                rewardedCallback.onUserEarnedReward();
-            }
+        rewardedAd.show(activity, rewardItem -> {
+            // Handle the reward.
+            Log.d(TAG, "The user earned the reward.");
+            int rewardAmount = rewardItem.getAmount();
+            String rewardType = rewardItem.getType();
+            rewardedCallback.onUserEarnedReward();
         });
     }
     //================================End reward ads================================
@@ -1326,7 +1316,7 @@ public class Admob {
     //================================Start reward inter================================
     public void loadRewardInterAds(Activity activity, List<String> listIdRewardedInter, RewardedInterCallback rewardedInterCallback) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             return;
         }
         RewardedInterstitialAd.load(activity, listIdRewardedInter.get(0),
@@ -1407,12 +1397,7 @@ public class Admob {
                 isInterOrRewardedShowing = true;
             }
         });
-        rewardedInterstitialAd.show(activity, new OnUserEarnedRewardListener() {
-            @Override
-            public void onUserEarnedReward(@NonNull RewardItem rewardItem) {
-                rewardedInterCallback.onUserEarnedReward();
-            }
-        });
+        rewardedInterstitialAd.show(activity, rewardItem -> rewardedInterCallback.onUserEarnedReward());
     }
     //================================End reward inter================================
 }

@@ -14,9 +14,14 @@ import com.amazic.library.ads.callback.ApiCallback;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.splash_ads.AdsSplash;
+import com.amazic.library.iap.BillingCallback;
+import com.amazic.library.iap.IAPManager;
+import com.amazic.library.iap.ProductDetailCustom;
 import com.amazic.library.organic.TechManager;
 import com.amazic.sample.databinding.ActivitySplashBinding;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
+
+import java.util.ArrayList;
 
 public class SplashActivity extends AppCompatActivity {
     private ActivitySplashBinding binding;
@@ -66,6 +71,22 @@ public class SplashActivity extends AppCompatActivity {
                     adsSplash.showAdsSplashApi(SplashActivity.this, appOpenCallback, interCallback);
                 }
             });
+        });
+    }
+    private void initBilling() {
+        ArrayList<ProductDetailCustom> listProductDetailCustoms = new ArrayList<>();
+        listProductDetailCustoms.add(new ProductDetailCustom(IAPManager.typeSub, IAPManager.PRODUCT_ID_TEST));
+        IAPManager.getInstance().setPurchaseTest(true);
+        IAPManager.getInstance().initBilling(this, listProductDetailCustoms, new BillingCallback() {
+            @Override
+            public void onBillingSetupFinished(int resultCode) {
+                super.onBillingSetupFinished(resultCode);
+            }
+
+            @Override
+            public void onBillingServiceDisconnected() {
+                super.onBillingServiceDisconnected();
+            }
         });
     }
 

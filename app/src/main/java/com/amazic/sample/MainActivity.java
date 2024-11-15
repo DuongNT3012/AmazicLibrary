@@ -2,6 +2,7 @@ package com.amazic.sample;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,11 +14,13 @@ import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.banner_ads.BannerBuilder;
 import com.amazic.library.ads.banner_ads.BannerManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
+import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
+import com.amazic.library.organic.TechManager;
 import com.amazic.sample.databinding.ActivityMainBinding;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.rewarded.RewardedAd;
@@ -36,6 +39,18 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "onCreate.");
 
         BannerBuilder bannerBuilder = new BannerBuilder().isIdApi();
+        bannerBuilder.setCallBack(new BannerCallback(){
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d("MainActivity", "run: " + TechManager.getInstance().isTech(MainActivity.this));
+                    }
+                }, 3000);
+            }
+        });
         BannerManager bannerManager = new BannerManager(this, binding.adViewContainer, this, bannerBuilder);
         //bannerManager.setAlwaysReloadOnResume(true);
         //bannerManager.setIntervalReloadBanner(5000L);

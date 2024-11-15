@@ -35,6 +35,7 @@ import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.collapse_banner_ads.CollapseBannerHelper;
 import com.amazic.library.dialog.LoadingAdsDialog;
+import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
 import com.amazic.mylibrary.R;
 import com.google.ads.mediation.admob.AdMobAdapter;
@@ -82,6 +83,7 @@ public class Admob {
     private Runnable runnable;
     private boolean isSplashResume = true;
     private boolean openActivityAfterShowInterAds = true;
+    private boolean isDetectTestAdByView = false;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -98,6 +100,14 @@ public class Admob {
                 iOnInitAdmobDone.onInitAdmobDone();
             });
         }).start();
+    }
+
+    public boolean isDetectTestAdByView() {
+        return isDetectTestAdByView;
+    }
+
+    public void setDetectTestAdByView(boolean detectTestAdByView) {
+        isDetectTestAdByView = detectTestAdByView;
     }
 
     public boolean isOpenActivityAfterShowInterAds() {
@@ -475,6 +485,10 @@ public class Admob {
                 bannerCallback.onAdImpression();
                 //use for auto reload banner after x seconds
                 iOnAdsImpression.onAdsImpression();
+                //TechManager
+                if (isDetectTestAdByView) {
+                    getAllChildViews(activity, adView);
+                }
             }
 
             @Override
@@ -509,6 +523,21 @@ public class Admob {
             }
         });
         // [END load_ad]
+    }
+
+    public void getAllChildViews(Context context, ViewGroup viewGroup) {
+        int childCount = viewGroup.getChildCount();
+        for (int i = 0; i < childCount; i++) {
+            View childView = viewGroup.getChildAt(i);
+            Log.d("TestAdManager", "getAllChildViews: " + childView.getClass().getName());
+            if (childView instanceof TextView && ((TextView) childView).getText().toString().toLowerCase().contains("Test Ad".toLowerCase())) {
+                Log.d("TestAdManager", "Find TextView: " + ((TextView) childView).getText().toString().toLowerCase());
+                TechManager.getInstance().detectedTech(context, true);
+            }
+            if (childView instanceof ViewGroup) {
+                getAllChildViews(context, (ViewGroup) childView);
+            }
+        }
     }
 
     //can load banner ads in fragment
@@ -564,6 +593,10 @@ public class Admob {
                 bannerCallback.onAdImpression();
                 //use for auto reload banner after x seconds
                 iOnAdsImpression.onAdsImpression();
+                //TechManager
+                if (isDetectTestAdByView) {
+                    getAllChildViews(context, adView);
+                }
             }
 
             @Override

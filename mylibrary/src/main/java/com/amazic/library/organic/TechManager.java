@@ -35,7 +35,7 @@ public class TechManager {
         return INSTANCE;
     }
 
-    private void detectedTech(Context context, boolean isDetected) {
+    public void detectedTech(Context context, boolean isDetected) {
         SharedPreferences.Editor editor = context.getSharedPreferences("MY_PRE", Context.MODE_PRIVATE).edit();
         editor.putBoolean(TAG, isDetected);
         editor.apply();

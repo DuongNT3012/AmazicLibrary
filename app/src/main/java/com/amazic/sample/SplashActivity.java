@@ -54,21 +54,26 @@ public class SplashActivity extends AppCompatActivity {
         Admob.getInstance().setOpenActivityAfterShowInterAds(true);
         //Admob.getInstance().setDetectTestAdByView(true);
         Admob.getInstance().initAdmob(this, () -> {
-            AdmobApi.getInstance().setTimeOutCallApi(12000);
-            AdmobApi.getInstance().setJsonIdAdsDefault("");
-            AdmobApi.getInstance().init(getApplicationContext(), "", getString(R.string.app_id), new ApiCallback() {
+            runOnUiThread(new Runnable() {
                 @Override
-                public void onReady() {
-                    super.onReady();
-                    //AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
-                    //AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
-                    AppOpenManager.getInstance().init(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume());
-                    AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
-                    AppOpenManager.getInstance().disableAppResumeWithActivity(WelcomeBackActivity.class);
-                    //Admob.getInstance().setTimeInterval(5000);
-                    //Admob.getInstance().setTimeIntervalFromStart(20000);
-                    adsSplash = AdsSplash.init(true, true, "0_100");
-                    adsSplash.showAdsSplashApi(SplashActivity.this, appOpenCallback, interCallback);
+                public void run() {
+                    AdmobApi.getInstance().setTimeOutCallApi(12000);
+                    AdmobApi.getInstance().setJsonIdAdsDefault("");
+                    AdmobApi.getInstance().init(getApplicationContext(), "", getString(R.string.app_id), new ApiCallback() {
+                        @Override
+                        public void onReady() {
+                            super.onReady();
+                            //AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
+                            //AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume(), WelcomeBackActivity.class);
+                            AppOpenManager.getInstance().init(SplashActivity.this, AdmobApi.getInstance().getListIDAppOpenResume());
+                            AppOpenManager.getInstance().disableAppResumeWithActivity(SplashActivity.class);
+                            AppOpenManager.getInstance().disableAppResumeWithActivity(WelcomeBackActivity.class);
+                            //Admob.getInstance().setTimeInterval(5000);
+                            //Admob.getInstance().setTimeIntervalFromStart(20000);
+                            adsSplash = AdsSplash.init(true, true, "0_100");
+                            adsSplash.showAdsSplashApi(SplashActivity.this, appOpenCallback, interCallback);
+                        }
+                    });
                 }
             });
         });

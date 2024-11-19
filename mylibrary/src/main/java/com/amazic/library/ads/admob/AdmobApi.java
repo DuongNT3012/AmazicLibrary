@@ -126,6 +126,7 @@ public class AdmobApi {
     public void init(Context context, String linkServerRelease, String AppID, ApiCallback callBack) {
         this.context = context;
         listAds.clear();
+        isSetId = false;
         this.packageName = context.getPackageName();
         if (linkServerRelease != null && AppID != null) {
             if (!linkServerRelease.trim().equals("")
@@ -152,7 +153,10 @@ public class AdmobApi {
                 if (!isSetId) { //if not set id from api -> set list id default
                     convertJsonIdAdsDefaultToList(jsonIdAdsDefault);
                     isSetId = true;
+                    Log.d(TAG, "isSetId = true1");
                     callBack.onReady();
+                }else {
+                    Log.d(TAG, "xxxxxx1");
                 }
             }, timeOutCallApi);
         } else {
@@ -203,11 +207,13 @@ public class AdmobApi {
             apiService.callAds(appID_package).enqueue(new Callback<List<AdsModel>>() {
                 @Override
                 public void onResponse(@NonNull Call<List<AdsModel>> call, @NonNull Response<List<AdsModel>> response) {
+                    Log.d(TAG, "onResponse: isSetId: " + isSetId);
                     if (!isSetId) {
-                        if (response.body() == null || response.body().size() == 0) {
+                        if (response.body() == null || response.body().isEmpty()) {
                             callBack.onReady();
                             return;
                         }
+                        Log.d(TAG, "onResponse: " + listAds.size());
                         for (AdsModel ads : response.body()) {
                             List<String> listIDAds = null;
                             if (listAds.containsKey(ads.getName())) {
@@ -219,29 +225,38 @@ public class AdmobApi {
                             listIDAds.add(ads.getAds_id());
                             listAds.put(ads.getName().toLowerCase().trim(), listIDAds);
                         }
-                        Log.d(TAG, "onResponse: " + listAds.size());
                         isSetId = true;
+                        Log.d(TAG, "isSetId = true2");
                         callBack.onReady();
+                    }else {
+                        Log.d(TAG, "xxxxxx2");
                     }
                 }
 
                 @Override
                 public void onFailure(@NonNull Call<List<AdsModel>> call, @NonNull Throwable t) {
                     Log.e(TAG, "onFailure: " + t);
+                    Log.d(TAG, "onFailure: isSetId: " + isSetId);
                     if (!isSetId) {
                         convertJsonIdAdsDefaultToList(jsonIdAdsDefault);
                         isSetId = true;
+                        Log.d(TAG, "isSetId = true3");
                         callBack.onReady();
+                    }else {
+                        Log.d(TAG, "xxxxxx3");
                     }
                 }
             });
         } catch (Exception e) {
             e.printStackTrace();
-            Log.d(TAG, "fetchData: Exception");
+            Log.d(TAG, "fetchData: Exception: isSetId: " + isSetId);
             if (!isSetId) {
                 convertJsonIdAdsDefaultToList(jsonIdAdsDefault);
                 isSetId = true;
+                Log.d(TAG, "isSetId = true4");
                 callBack.onReady();
+            }else {
+                Log.d(TAG, "xxxxxx4");
             }
         }
     }

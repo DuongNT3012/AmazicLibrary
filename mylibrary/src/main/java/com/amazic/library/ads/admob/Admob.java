@@ -360,6 +360,7 @@ public class Admob {
                 }
             });
             boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+            Log.d(TAG, "ResumeState: " + isResumeState);
             if (isResumeState) {
                 loadingAdsDialog = new LoadingAdsDialog(activity);
                 if (!loadingAdsDialog.isShowing()) {

@@ -26,7 +26,9 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
 import com.amazic.library.Utils.AdjustUtil;
+import com.amazic.library.Utils.EventTrackingHelper;
 import com.amazic.library.Utils.NetworkUtil;
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.admob_interface.IOnAdsImpression;
 import com.amazic.library.ads.admob.admob_interface.IOnInitAdmobDone;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
@@ -50,7 +52,6 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.OnUserEarnedRewardListener;
 import com.google.android.gms.ads.VideoController;
 import com.google.android.gms.ads.VideoOptions;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
@@ -59,7 +60,6 @@ import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.gms.ads.nativead.NativeAdView;
-import com.google.android.gms.ads.rewarded.RewardItem;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
@@ -363,7 +363,7 @@ public class Admob {
             Log.d(TAG, "ResumeState: " + isResumeState);
             if (isResumeState) {
                 loadingAdsDialog = new LoadingAdsDialog(activity);
-                if (!loadingAdsDialog.isShowing()) {
+                if (!loadingAdsDialog.isShowing() && !activity.isDestroyed()) {
                     loadingAdsDialog.show();
                 }
                 isInterOrRewardedShowing = true;
@@ -392,13 +392,33 @@ public class Admob {
             if (interCallback != null) {
                 interCallback.onNextAction();
             }
+            if (handlerTimeoutSplash != null) {
+                handlerTimeoutSplash = null;
+            }
         };
-        //handlerTimeoutSplash.postDelayed(runnable, 20000);
+        if (handlerTimeoutSplash != null) {
+            handlerTimeoutSplash.postDelayed(runnable, 20000);
+        }
+
+        //Log event
+        Bundle bundle = new Bundle();
+        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
+        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
+        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
+        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
+        bundle.putString(EventTrackingHelper.showallad, String.valueOf(getShowAllAds()));
+        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
+        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
+
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             interCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
+                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                handlerTimeoutSplash = null;
             }
             return;
         }
@@ -414,6 +434,12 @@ public class Admob {
                         interCallback.onAdLoaded(interstitialAd);
                         mInterstitialAdSplash = interstitialAd;
                         showInterAdsSplash(activity, interCallback);
+
+                        if (handlerTimeoutSplash != null && runnable != null) {
+                            handlerTimeoutSplash.removeCallbacks(runnable);
+                            handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                            handlerTimeoutSplash = null;
+                        }
                     }
 
                     @Override
@@ -1256,7 +1282,7 @@ public class Admob {
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
-        if (!loadingAdsDialog.isShowing()) {
+        if (!loadingAdsDialog.isShowing() && !activity.isDestroyed()) {
             loadingAdsDialog.show();
         }
         rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
@@ -1350,7 +1376,7 @@ public class Admob {
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
-        if (!loadingAdsDialog.isShowing()) {
+        if (!loadingAdsDialog.isShowing() && !activity.isDestroyed()) {
             loadingAdsDialog.show();
         }
         rewardedInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {

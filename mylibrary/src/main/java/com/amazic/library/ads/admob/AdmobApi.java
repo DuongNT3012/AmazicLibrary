@@ -43,6 +43,14 @@ public class AdmobApi {
     private boolean isSetId = false;
     private int timeOutCallApi = 12000;
 
+    public int getListAdsSize() {
+        if (listAds != null) {
+            return listAds.size();
+        } else {
+            return 0;
+        }
+    }
+
     public String getJsonIdAdsDefault() {
         return jsonIdAdsDefault;
     }
@@ -155,7 +163,7 @@ public class AdmobApi {
                     isSetId = true;
                     Log.d(TAG, "isSetId = true1");
                     callBack.onReady();
-                }else {
+                } else {
                     Log.d(TAG, "xxxxxx1");
                 }
             }, timeOutCallApi);
@@ -228,7 +236,7 @@ public class AdmobApi {
                         isSetId = true;
                         Log.d(TAG, "isSetId = true2");
                         callBack.onReady();
-                    }else {
+                    } else {
                         Log.d(TAG, "xxxxxx2");
                     }
                 }
@@ -242,7 +250,7 @@ public class AdmobApi {
                         isSetId = true;
                         Log.d(TAG, "isSetId = true3");
                         callBack.onReady();
-                    }else {
+                    } else {
                         Log.d(TAG, "xxxxxx3");
                     }
                 }
@@ -255,7 +263,7 @@ public class AdmobApi {
                 isSetId = true;
                 Log.d(TAG, "isSetId = true4");
                 callBack.onReady();
-            }else {
+            } else {
                 Log.d(TAG, "xxxxxx4");
             }
         }

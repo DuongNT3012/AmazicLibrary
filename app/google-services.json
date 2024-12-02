@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "683253092214",
+    "project_id": "asa199-get-daily-diamond",
+    "storage_bucket": "asa199-get-daily-diamond.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:683253092214:android:98a6578533072ffaf13457",
+        "android_client_info": {
+          "package_name": "com.diamondguide.redeemcode.ffftips"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB5BXUdJJ0AyodZCBQmbRpNsa5pIDGoYc4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -101,4 +101,7 @@ dependencies {
     implementation 'com.google.guava:guava:31.1-jre'
     //shimmer fb
     implementation 'com.facebook.shimmer:shimmer:0.5.0'
+    //
+    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.7.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0'
 }

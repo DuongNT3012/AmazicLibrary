@@ -1,13 +1,14 @@
 plugins {
     id 'com.android.application'
+    id 'com.google.gms.google-services'
 }
 
 android {
-    namespace 'com.amazic.sample'
+    namespace 'com.diamondguide.redeemcode.ffftips'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.amazic.sample"
+        applicationId "com.diamondguide.redeemcode.ffftips"
         minSdk 21
         targetSdk 34
         versionCode 1

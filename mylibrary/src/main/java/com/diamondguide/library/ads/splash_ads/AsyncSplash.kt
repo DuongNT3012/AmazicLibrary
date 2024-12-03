@@ -6,8 +6,10 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
+import com.diamondguide.library.Utils.EventTrackingHelper
 import com.diamondguide.library.Utils.NetworkUtil
 import com.diamondguide.library.Utils.RemoteConfigHelper
+import com.diamondguide.library.Utils.SharePreferenceHelper
 import com.diamondguide.library.ads.admob.Admob
 import com.diamondguide.library.ads.admob.AdmobApi
 import com.diamondguide.library.ads.app_open_ads.AppOpenManager
@@ -37,8 +39,7 @@ class AsyncSplash {
     private var adjustKey = ""
     private var linkServer = ""
     private var appId = ""
-    private var isShowAdsSplash = false
-    private var isTimeout = false
+    private var isShowAdsSplashOrNextAct = false
     private var initWelcomeBack = "Normal"
     private var welcomeBackClass: Class<*>? = null
     private var isShowBannerSplash = true
@@ -53,6 +54,9 @@ class AsyncSplash {
     private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf()
     private var timeOutSplash = 12000L
 
+    //use for log event
+    private var timeStartSplash = System.currentTimeMillis()
+
     companion object {
         private var INSTANCE: AsyncSplash? = null
         fun getInstance(): AsyncSplash {
@@ -64,6 +68,7 @@ class AsyncSplash {
     }
 
     fun init(activity: AppCompatActivity, appOpenCallback: AppOpenCallback, interCallback: InterCallback, adjustKey: String, linkServer: String, appId: String, jsonIdAdsDefault: String) {
+        resetVarToDefault()
         this.activity = activity
         this.adjustKey = adjustKey
         this.jsonIdAdsDefault = jsonIdAdsDefault
@@ -71,6 +76,28 @@ class AsyncSplash {
         this.appId = appId
         this.appOpenCallback = appOpenCallback
         this.interCallback = interCallback
+    }
+
+    private fun resetVarToDefault() {
+        this.isTech = false
+        this.jsonIdAdsDefault = ""
+        this.adjustKey = ""
+        this.linkServer = ""
+        this.appId = ""
+        this.isShowAdsSplashOrNextAct = false
+        this.initWelcomeBack = "Normal"
+        this.welcomeBackClass = null
+        this.isShowBannerSplash = true
+        this.listIdBannerSplash = arrayListOf("ca-app-pub-3940256099942544/6300978111")
+        this.listTurnOffRemoteKeys = mutableListOf()
+        this.isDebug = false
+        this.isUseBilling = false
+        this.listProductDetailCustoms = arrayListOf()
+        this.timeOutSplash = 12000L
+    }
+
+    fun getTimeStartSplash(): Long {
+        return this.timeStartSplash
     }
 
     fun setTimeOutSplash(timeOutSplash: Long) {
@@ -118,13 +145,17 @@ class AsyncSplash {
         this.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
     }
 
-    fun handleAsync(lifecycleOwner: LifecycleOwner, lifecycleCoroutineScope: LifecycleCoroutineScope) {
+    fun handleAsync(lifecycleOwner: LifecycleOwner, lifecycleCoroutineScope: LifecycleCoroutineScope, onNoInternetAction: () -> Unit) {
+        timeStartSplash = System.currentTimeMillis()
         lifecycleCoroutineScope.launch {
             delay(timeOutSplash)
-            if (!isShowAdsSplash) {
+            if (!isShowAdsSplashOrNextAct) {
+                //increase splash open
+                SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1)
+                //end increase splash open
                 interCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
-                isTimeout = true
+                isShowAdsSplashOrNextAct = true
             }
             return@launch
         }
@@ -156,7 +187,10 @@ class AsyncSplash {
                 }
             }
         } else {
-
+            if (!isShowAdsSplashOrNextAct) {
+                onNoInternetAction.invoke()
+                isShowAdsSplashOrNextAct = true
+            }
         }
     }
 
@@ -254,7 +288,6 @@ class AsyncSplash {
 
     private suspend fun initBilling() = suspendCoroutine<Unit> { continuation ->
         if (isUseBilling) {
-            Log.d(TAG, "initBilling.")
             //check if app use billing -> initBilling
             IAPManager.getInstance().initBilling(activity, listProductDetailCustoms, object : BillingCallback() {
                 private var isResumed = false
@@ -263,6 +296,7 @@ class AsyncSplash {
                     if (!isResumed) {
                         isResumed = true
                         continuation.resume(Unit)
+                        Log.d(TAG, "initBilling.")
                     }
                 }
 
@@ -271,12 +305,13 @@ class AsyncSplash {
                     if (!isResumed) {
                         isResumed = true
                         continuation.resume(Unit)
+                        Log.d(TAG, "initBilling.")
                     }
                 }
             })
         } else {
-            Log.d(TAG, "Not use billing.")
             continuation.resume(Unit)
+            Log.d(TAG, "Not use billing.")
         }
     }
 
@@ -298,7 +333,7 @@ class AsyncSplash {
     }
 
     private fun showAdsSplash(activity: AppCompatActivity?, appOpenCallback: AppOpenCallback?, interCallback: InterCallback?) {
-        if (!isTimeout) {
+        if (!isShowAdsSplashOrNextAct) {
             var rateAoaInterSplash: String = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)
             if (rateAoaInterSplash.isEmpty()) {
                 rateAoaInterSplash = "0_100"
@@ -308,7 +343,7 @@ class AsyncSplash {
             adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
             adsSplash?.showAdsSplashApi(activity, appOpenCallback, interCallback)
             Log.d(TAG, "showAdsSplash.")
-            isShowAdsSplash = true
+            isShowAdsSplashOrNextAct = true
         }
     }
 }

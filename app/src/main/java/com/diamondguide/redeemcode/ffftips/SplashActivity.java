@@ -18,6 +18,9 @@ import com.diamondguide.redeemcode.ffftips.databinding.ActivitySplashBinding;
 
 import java.util.ArrayList;
 
+import kotlin.Unit;
+import kotlin.jvm.functions.Function0;
+
 public class SplashActivity extends AppCompatActivity {
     private ActivitySplashBinding binding;
     private InterCallback interCallback;
@@ -49,18 +52,27 @@ public class SplashActivity extends AppCompatActivity {
         //Admob.getInstance().setDetectTestAdByView(true);
         Admob.getInstance().setTimeStart(System.currentTimeMillis());
         Admob.getInstance().setTimeIntervalFromStart(20000);
+        Admob.getInstance().setTimeInterval(1000);
 
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", "");
-        AsyncSplash.Companion.getInstance().setUseBilling(new ArrayList<>()); //if app use IAP
+        //AsyncSplash.Companion.getInstance().setTimeOutSplash(20000);
+        ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
+        listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
+        AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
         //AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
         AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
         //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
         AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager
         ArrayList<String> listTurnOffRemote = new ArrayList<>();
         listTurnOffRemote.add("banner_splash");
-        listTurnOffRemote.add("inter_splash");
         AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
-        AsyncSplash.Companion.getInstance().handleAsync(this, LifecycleOwnerKt.getLifecycleScope(this));
+        AsyncSplash.Companion.getInstance().handleAsync(this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+                interCallback.onNextAction();
+                return null;
+            }
+        });
     }
 
     @Override

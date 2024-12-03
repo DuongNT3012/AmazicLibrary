@@ -30,6 +30,7 @@ import com.diamondguide.library.Utils.AdjustUtil;
 import com.diamondguide.library.Utils.EventTrackingHelper;
 import com.diamondguide.library.Utils.NetworkUtil;
 import com.diamondguide.library.Utils.RemoteConfigHelper;
+import com.diamondguide.library.Utils.SharePreferenceHelper;
 import com.diamondguide.library.ads.admob.admob_interface.IOnAdsImpression;
 import com.diamondguide.library.ads.admob.admob_interface.IOnInitAdmobDone;
 import com.diamondguide.library.ads.app_open_ads.AppOpenManager;
@@ -39,7 +40,9 @@ import com.diamondguide.library.ads.callback.NativeCallback;
 import com.diamondguide.library.ads.callback.RewardedCallback;
 import com.diamondguide.library.ads.callback.RewardedInterCallback;
 import com.diamondguide.library.ads.collapse_banner_ads.CollapseBannerHelper;
+import com.diamondguide.library.ads.splash_ads.AsyncSplash;
 import com.diamondguide.library.dialog.LoadingAdsDialog;
+import com.diamondguide.library.iap.IAPManager;
 import com.diamondguide.library.organic.TechManager;
 import com.diamondguide.library.ump.AdsConsentManager;
 import com.google.ads.mediation.admob.AdMobAdapter;
@@ -86,6 +89,7 @@ public class Admob {
     private boolean isSplashResume = true;
     private boolean openActivityAfterShowInterAds = true;
     private boolean isDetectTestAdByView = false;
+    private int countClickInterSplashAds = 0;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -161,7 +165,7 @@ public class Admob {
     //================================Start inter ads================================
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback) {
         //Check condition
-        if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             interCallback.onNextAction();
             return;
         }
@@ -276,6 +280,7 @@ public class Admob {
     }
 
     public void showInterAdsSplash(AppCompatActivity activity, InterCallback interCallback) {
+        countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
             public void onResume(@NonNull LifecycleOwner owner) {
@@ -304,6 +309,11 @@ public class Admob {
                     // Called when a click is recorded for an ad.
                     Log.d(TAG, "Ad was clicked.");
                     interCallback.onAdClicked();
+                    countClickInterSplashAds++;
+                    int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                    if (splashOpenTimes == 1){
+                        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_click + "_" + countClickInterSplashAds);
+                    }
                 }
 
                 @Override
@@ -335,6 +345,9 @@ public class Admob {
                     if (handlerTimeoutSplash != null && runnable != null) {
                         handlerTimeoutSplash.removeCallbacks(runnable);
                     }
+                    //log event
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    //end log event
                 }
 
                 @Override
@@ -342,6 +355,13 @@ public class Admob {
                     // Called when an impression is recorded for an ad.
                     Log.d(TAG, "Ad recorded an impression.");
                     interCallback.onAdImpression();
+                    //log event
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                    if (splashOpenTimes <= 3) {
+                        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_impression + "_" + splashOpenTimes);
+                    }
+                    //end log event
                 }
 
                 @Override
@@ -369,6 +389,9 @@ public class Admob {
                 isInterOrRewardedShowing = true;
                 AppOpenManager.getInstance().setEnableResume(false);
                 if (openActivityAfterShowInterAds) {
+                    //increase splash open
+                    SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                    //end increase splash open
                     Log.d(TAG, "showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
                     interCallback.onNextAction();
                 }
@@ -414,7 +437,7 @@ public class Admob {
         EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
 
         //Check condition
-        if (!NetworkUtil.isNetworkActive(activity) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             interCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
@@ -472,7 +495,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             bannerCallback.onAdFailedToLoad();
             return;
         }
@@ -580,7 +603,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(context) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             bannerCallback.onAdFailedToLoad();
             return;
         }
@@ -674,7 +697,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             return null;
         }
         //Show loading shimmer
@@ -767,7 +790,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             return null;
         }
         //Show loading shimmer
@@ -897,7 +920,7 @@ public class Admob {
     //================================Start native ads================================
     public void loadNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             return;
         }
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
@@ -938,7 +961,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             return;
         }
         //Show loading shimmer
@@ -1018,7 +1041,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             return;
         }
         //Show loading shimmer
@@ -1252,7 +1275,7 @@ public class Admob {
     //================================Start reward ads================================
     public void loadRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             return;
         }
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -1348,7 +1371,7 @@ public class Admob {
     //================================Start reward inter================================
     public void loadRewardInterAds(Activity activity, List<String> listIdRewardedInter, RewardedInterCallback rewardedInterCallback) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
             return;
         }
         RewardedInterstitialAd.load(activity, listIdRewardedInter.get(0),

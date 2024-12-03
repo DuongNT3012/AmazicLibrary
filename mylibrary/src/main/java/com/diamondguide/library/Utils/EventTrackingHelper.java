@@ -36,6 +36,18 @@ public class EventTrackingHelper {
     public static String rate_aoa_inter_splash = "rate_aoa_inter_splash";
     public static String inter_splash = "inter_splash";
     public static String open_splash = "open_splash";
+    public static String banner_splash = "banner_splash";
+    public static String native_language = "native_language";
+    public static String native_language_impression = "native_language_impression";
+    public static String native_language_click = "native_language_click";
+    public static String native_intro = "native_intro";
+    public static String native_intro_full = "native_intro_full";
+    public static String inter_intro = "inter_intro";
+    public static String native_permission = "native_permission";
+    public static String native_interest = "native_interest";
+    public static String native_wb = "native_wb";
+    public static String open_resume = "open_resume";
+    public static String splash_open = "splash_open";
     public static String inter_splash_tracking = "inter_splash_tracking";
     public static String open_splash_tracking = "open_splash_tracking";
     public static String splash_detail = "splash_detail";
@@ -54,11 +66,6 @@ public class EventTrackingHelper {
     public static String open_splash_impression = "open_splash_impression";
     public static String inter_splash_click = "inter_splash_click";
     public static String open_splash_click = "open_splash_click";
-    public static String banner_splash = "banner_splash";
-    public static String native_language = "native_language";
-    public static String native_language_impression = "native_language_impression";
-    public static String native_language_click = "native_language_click";
-    public static String native_intro = "native_intro";
-    public static String native_permission = "native_permission";
-    public static String native_interest = "native_interest";
+    public static String inter_splash_showad_time = "inter_splash_showad_time";
+    public static String showad_time = "showad_time";
 }

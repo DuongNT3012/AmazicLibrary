@@ -20,10 +20,13 @@ import com.diamondguide.library.Utils.AdjustUtil;
 import com.diamondguide.library.Utils.EventTrackingHelper;
 import com.diamondguide.library.Utils.NetworkUtil;
 import com.diamondguide.library.Utils.RemoteConfigHelper;
+import com.diamondguide.library.Utils.SharePreferenceHelper;
 import com.diamondguide.library.ads.admob.Admob;
 import com.diamondguide.library.ads.admob.AdmobApi;
 import com.diamondguide.library.ads.callback.AppOpenCallback;
+import com.diamondguide.library.ads.splash_ads.AsyncSplash;
 import com.diamondguide.library.dialog.LoadingAdsResumeDialog;
+import com.diamondguide.library.iap.IAPManager;
 import com.diamondguide.library.organic.TechManager;
 import com.diamondguide.library.ump.AdsConsentManager;
 import com.google.android.gms.ads.AdActivity;
@@ -146,7 +149,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     //===========================Start load ads, show ads resume in normal activity============================//
     public void loadAd(Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
         // Check condition
-        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
             Log.d(TAG, "Check condition.");
             appOpenCallback.onAdFailedToLoad();
             return;
@@ -196,7 +199,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     public void loadAd(Activity activity, List<String> listIdOpenResume) {
         // Check condition
-        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.size() == 0 || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
             Log.d(TAG, "Check condition.");
             return;
         }
@@ -237,7 +240,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     public void showAdIfAvailable(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
         //Ads resume is disabled
-        if (!isEnableResume){
+        if (!isEnableResume) {
             Log.d(TAG, "Ads resume is disabled");
             return;
         }
@@ -355,7 +358,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     public void showAdIfAvailableWelcomeBack(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
         //Ads resume is disabled.
-        if (!isEnableResume){
+        if (!isEnableResume) {
             Log.d(TAG, "Ads resume is disabled.");
             return;
         }
@@ -501,6 +504,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
+                    //increase splash open
+                    SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                    //end increase splash open
+
                     // Called when fullscreen content is dismissed.
                     // Set the reference to null so isAdAvailable() returns false.
                     Log.d(TAG, "SPLASH: Ad dismissed fullscreen content.");
@@ -524,12 +531,18 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     }
                     appOpenCallback.onAdFailedToShowFullScreenContent();
                     if (isSplashResume) {
+                        //increase splash open
+                        SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                        //end increase splash open
                         appOpenCallback.onNextAction();
                     }
                     isFailToShowAdSplash = true;
                     if (handlerTimeoutSplash != null && runnable != null) {
                         handlerTimeoutSplash.removeCallbacks(runnable);
                     }
+                    //log event
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    //end log event
                 }
 
                 @Override
@@ -558,6 +571,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     super.onAdImpression();
                     Log.d(TAG, "SPLASH: onAdImpression");
                     appOpenCallback.onAdImpression();
+                    //log event
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                    if (splashOpenTimes <= 3) {
+                        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_impression + "_" + splashOpenTimes);
+                    }
+                    //end log event
                 }
             });
             if (ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
@@ -604,7 +624,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
 
         // Check condition
-        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
             Log.d(TAG, "SPLASH: Check condition.");
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {

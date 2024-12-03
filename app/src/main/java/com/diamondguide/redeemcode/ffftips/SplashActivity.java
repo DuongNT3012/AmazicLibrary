@@ -7,13 +7,13 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwnerKt;
 
-import com.diamondguide.library.ads.admob.Admob;
-import com.diamondguide.library.ads.callback.AppOpenCallback;
-import com.diamondguide.library.ads.callback.InterCallback;
-import com.diamondguide.library.ads.splash_ads.AsyncSplash;
-import com.diamondguide.library.iap.BillingCallback;
-import com.diamondguide.library.iap.IAPManager;
-import com.diamondguide.library.iap.ProductDetailCustom;
+import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.ads.callback.AppOpenCallback;
+import com.amazic.library.ads.callback.InterCallback;
+import com.amazic.library.ads.splash_ads.AsyncSplash;
+import com.amazic.library.iap.BillingCallback;
+import com.amazic.library.iap.IAPManager;
+import com.amazic.library.iap.ProductDetailCustom;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivitySplashBinding;
 
 import java.util.ArrayList;

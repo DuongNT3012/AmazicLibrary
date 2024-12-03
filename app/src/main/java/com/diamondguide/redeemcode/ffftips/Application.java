@@ -2,8 +2,8 @@ package com.diamondguide.redeemcode.ffftips;
 
 import androidx.annotation.NonNull;
 
-import com.diamondguide.library.ads.admob.Admob;
-import com.diamondguide.library.application.AdsApplication;
+import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.application.AdsApplication;
 
 public class Application extends AdsApplication {
     @Override

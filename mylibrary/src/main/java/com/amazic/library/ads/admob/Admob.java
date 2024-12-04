@@ -698,6 +698,7 @@ public class Admob {
         }
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            bannerCallback.onAdFailedToLoad();
             return null;
         }
         //Show loading shimmer
@@ -791,6 +792,7 @@ public class Admob {
         }
         //Check network
         if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            bannerCallback.onAdFailedToLoad();
             return null;
         }
         //Show loading shimmer
@@ -921,6 +923,7 @@ public class Admob {
     public void loadNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback) {
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            nativeCallback.onAdFailedToLoad();
             return;
         }
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNative.get(0));
@@ -962,6 +965,7 @@ public class Admob {
         }
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            nativeCallback.onAdFailedToLoad();
             return;
         }
         //Show loading shimmer
@@ -1042,6 +1046,7 @@ public class Admob {
         }
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            nativeCallback.onAdFailedToLoad();
             return;
         }
         //Show loading shimmer
@@ -1276,6 +1281,7 @@ public class Admob {
     public void loadRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback) {
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            rewardedCallback.onAdFailedToLoad();
             return;
         }
         AdRequest adRequest = new AdRequest.Builder().build();
@@ -1307,6 +1313,7 @@ public class Admob {
     public void showReward(Activity activity, RewardedAd rewardedAd, RewardedCallback rewardedCallback) {
         if (rewardedAd == null) {
             Log.d(TAG, "The rewarded ad wasn't ready yet.");
+            rewardedCallback.onAdFailedToShowFullScreenContent();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -1372,6 +1379,7 @@ public class Admob {
     public void loadRewardInterAds(Activity activity, List<String> listIdRewardedInter, RewardedInterCallback rewardedInterCallback) {
         //Check network
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            rewardedInterCallback.onAdFailedToLoad();
             return;
         }
         RewardedInterstitialAd.load(activity, listIdRewardedInter.get(0),
@@ -1401,6 +1409,7 @@ public class Admob {
     public void showRewardInterAds(Activity activity, RewardedInterstitialAd rewardedInterstitialAd, RewardedInterCallback rewardedInterCallback) {
         if (rewardedInterstitialAd == null) {
             Log.d(TAG, "The rewarded inter ad wasn't ready yet.");
+            rewardedInterCallback.onAdFailedToShowFullScreenContent();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);

@@ -156,6 +156,9 @@ class AsyncSplash {
                 //increase splash open
                 SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1)
                 //end increase splash open
+                if (isTech) {
+                    turnOffSomeRemoteKeys(activity)
+                }
                 interCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
                 isShowAdsSplashOrNextAct = true

@@ -138,7 +138,8 @@ class AsyncSplash {
     fun setShowBannerSplash(isShowBannerSplash: Boolean, frAdsBannerSplash: FrameLayout, listIdBannerSplash: MutableList<String>, adsKey: String) {
         this.isShowBannerSplash = isShowBannerSplash
         this.frAdsBannerSplash = frAdsBannerSplash
-        this.listIdBannerSplash = listIdBannerSplash
+        this.listIdBannerSplash.clear()
+        this.listIdBannerSplash.addAll(listIdBannerSplash)
         this.adsKey = adsKey
     }
 

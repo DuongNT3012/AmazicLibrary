@@ -28,6 +28,7 @@ public class BannerManager implements LifecycleEventObserver {
     private int adWidth;
     private FrameLayout frContainer;
     private boolean isLoadBannerFragment = false;
+    private String adsKey;
 
     public void setIntervalReloadBanner(long intervalReloadBanner) {
         if (intervalReloadBanner > 0) {
@@ -50,21 +51,23 @@ public class BannerManager implements LifecycleEventObserver {
         }
     }
 
-    public BannerManager(@NonNull Activity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, BannerBuilder builder) {
+    public BannerManager(@NonNull Activity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, BannerBuilder builder, String adsKey) {
         this.isLoadBannerFragment = false;
         this.builder = builder;
         this.currentActivity = currentActivity;
         this.frContainer = frContainer;
+        this.adsKey = adsKey;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
     }
 
-    public BannerManager(Context context, int adWidth, FrameLayout frContainer, LifecycleOwner lifecycleOwner, BannerBuilder builder) {
+    public BannerManager(Context context, int adWidth, FrameLayout frContainer, LifecycleOwner lifecycleOwner, BannerBuilder builder, String adsKey) {
         this.isLoadBannerFragment = true;
         this.builder = builder;
         this.context = context;
         this.adWidth = adWidth;
         this.frContainer = frContainer;
+        this.adsKey = adsKey;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
     }
@@ -118,7 +121,7 @@ public class BannerManager implements LifecycleEventObserver {
                     countDownTimer.cancel();
                     countDownTimer.start();
                 }
-            });
+            }, adsKey);
         } else {
             frContainer.setVisibility(View.GONE);
         }
@@ -132,7 +135,7 @@ public class BannerManager implements LifecycleEventObserver {
                     countDownTimer.cancel();
                     countDownTimer.start();
                 }
-            });
+            }, adsKey);
         } else {
             frContainer.setVisibility(View.GONE);
         }

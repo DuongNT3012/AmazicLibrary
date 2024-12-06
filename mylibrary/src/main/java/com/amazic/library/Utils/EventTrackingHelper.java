@@ -32,8 +32,6 @@ public class EventTrackingHelper {
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         firebaseAnalytics.logEvent(eventName, bundle);
     }
-
-    public static String rate_aoa_inter_splash = "rate_aoa_inter_splash";
     public static String inter_splash = "inter_splash";
     public static String open_splash = "open_splash";
     public static String banner_splash = "banner_splash";
@@ -48,6 +46,7 @@ public class EventTrackingHelper {
     public static String native_wb = "native_wb";
     public static String open_resume = "open_resume";
     public static String splash_open = "splash_open";
+    public static String rate_aoa_inter_splash = "rate_aoa_inter_splash";
     public static String inter_splash_tracking = "inter_splash_tracking";
     public static String open_splash_tracking = "open_splash_tracking";
     public static String splash_detail = "splash_detail";

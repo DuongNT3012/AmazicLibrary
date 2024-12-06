@@ -45,6 +45,7 @@ class AsyncSplash {
     private var isShowBannerSplash = true
     private var frAdsBannerSplash: FrameLayout? = null
     private var listIdBannerSplash: MutableList<String> = arrayListOf("ca-app-pub-3940256099942544/6300978111")
+    private var adsKey: String = ""
     private var listTurnOffRemoteKeys: MutableList<String> = mutableListOf()
     private var activity: AppCompatActivity? = null
     private var interCallback: InterCallback? = null
@@ -134,10 +135,11 @@ class AsyncSplash {
         this.welcomeBackClass = welcomeBackClass
     }
 
-    fun setShowBannerSplash(isShowBannerSplash: Boolean, frAdsBannerSplash: FrameLayout, listIdBannerSplash: MutableList<String>) {
+    fun setShowBannerSplash(isShowBannerSplash: Boolean, frAdsBannerSplash: FrameLayout, listIdBannerSplash: MutableList<String>, adsKey: String) {
         this.isShowBannerSplash = isShowBannerSplash
         this.frAdsBannerSplash = frAdsBannerSplash
         this.listIdBannerSplash = listIdBannerSplash
+        this.adsKey = adsKey
     }
 
     fun setListTurnOffRemoteKeys(listTurnOffRemoteKeys: MutableList<String>) {
@@ -146,6 +148,7 @@ class AsyncSplash {
     }
 
     fun handleAsync(lifecycleOwner: LifecycleOwner, lifecycleCoroutineScope: LifecycleCoroutineScope, onNoInternetAction: () -> Unit) {
+        Admob.getInstance().timeStart = System.currentTimeMillis()
         timeStartSplash = System.currentTimeMillis()
         lifecycleCoroutineScope.launch {
             delay(timeOutSplash)
@@ -175,7 +178,7 @@ class AsyncSplash {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
-                    loadBannerSplash(activity, lifecycleOwner, frAdsBannerSplash, listIdBannerSplash)
+                    loadBannerSplash(activity, lifecycleOwner, frAdsBannerSplash, listIdBannerSplash, adsKey)
                 }
                 try {
                     //wait to load inter or open splash
@@ -315,8 +318,8 @@ class AsyncSplash {
         }
     }
 
-    private fun loadBannerSplash(activity: AppCompatActivity?, lifecycleOwner: LifecycleOwner, frAdsBanner: FrameLayout?, listIdBannerSplash: MutableList<String>) {
-        if (isShowBannerSplash && RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.banner_splash)) {
+    private fun loadBannerSplash(activity: AppCompatActivity?, lifecycleOwner: LifecycleOwner, frAdsBanner: FrameLayout?, listIdBannerSplash: MutableList<String>, adsKey: String) {
+        if (isShowBannerSplash) {
             frAdsBanner?.visibility = View.VISIBLE
             val bannerBuilder = BannerBuilder()
             bannerBuilder.setListId(listIdBannerSplash)
@@ -326,7 +329,7 @@ class AsyncSplash {
                     frAdsBanner?.visibility = View.GONE
                 }
             }
-            activity?.let { BannerManager(it, frAdsBanner, lifecycleOwner, bannerBuilder) }
+            activity?.let { BannerManager(it, frAdsBanner, lifecycleOwner, bannerBuilder, adsKey) }
         } else {
             frAdsBanner?.visibility = View.GONE
         }

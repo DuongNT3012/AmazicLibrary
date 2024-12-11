@@ -1343,6 +1343,7 @@ public class Admob {
         if (rewardedAd == null) {
             Log.d(TAG, "The rewarded ad wasn't ready yet.");
             rewardedCallback.onAdFailedToShowFullScreenContent();
+            rewardedCallback.onNextAction();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -1364,6 +1365,7 @@ public class Admob {
                 // Set the ad reference to null so you don't show the ad a second time.
                 Log.d(TAG, "Ad dismissed fullscreen content.");
                 rewardedCallback.onAdDismissedFullScreenContent();
+                rewardedCallback.onNextAction();
                 isInterOrRewardedShowing = false;
             }
 
@@ -1372,6 +1374,7 @@ public class Admob {
                 // Called when ad fails to show.
                 Log.e(TAG, "Ad failed to show fullscreen content.");
                 rewardedCallback.onAdFailedToShowFullScreenContent();
+                rewardedCallback.onNextAction();
                 if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     loadingAdsDialog.dismiss();
                 }
@@ -1441,6 +1444,7 @@ public class Admob {
         if (rewardedInterstitialAd == null) {
             Log.d(TAG, "The rewarded inter ad wasn't ready yet.");
             rewardedInterCallback.onAdFailedToShowFullScreenContent();
+            rewardedInterCallback.onNextAction();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -1462,6 +1466,7 @@ public class Admob {
                 // Set the ad reference to null so you don't show the ad a second time.
                 Log.d(TAG, "Ad dismissed fullscreen content.");
                 rewardedInterCallback.onAdDismissedFullScreenContent();
+                rewardedInterCallback.onNextAction();
                 isInterOrRewardedShowing = false;
             }
 
@@ -1470,6 +1475,7 @@ public class Admob {
                 // Called when ad fails to show.
                 Log.e(TAG, "Ad failed to show fullscreen content.");
                 rewardedInterCallback.onAdFailedToShowFullScreenContent();
+                rewardedInterCallback.onNextAction();
                 if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     loadingAdsDialog.dismiss();
                 }

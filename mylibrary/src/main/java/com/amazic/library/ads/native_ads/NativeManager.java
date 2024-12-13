@@ -21,6 +21,7 @@ public class NativeManager implements LifecycleEventObserver {
     private long intervalReloadNative = 0;
     private boolean isStop = false;
     private CountDownTimer countDownTimer;
+    private String adsKey;
 
     public void setIntervalReloadNative(long intervalReloadNative) {
         if (intervalReloadNative > 0) {
@@ -39,9 +40,10 @@ public class NativeManager implements LifecycleEventObserver {
         }
     }
 
-    public NativeManager(@NonNull Activity currentActivity, LifecycleOwner lifecycleOwner, NativeBuilder builder) {
+    public NativeManager(@NonNull Activity currentActivity, LifecycleOwner lifecycleOwner, NativeBuilder builder, String adsKey) {
         this.builder = builder;
         this.currentActivity = currentActivity;
+        this.adsKey = adsKey;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
     }
@@ -93,7 +95,7 @@ public class NativeManager implements LifecycleEventObserver {
                         countDownTimer.cancel();
                         countDownTimer.start();
                     }
-                });
+                }, adsKey);
     }
 
     public void setReloadAds() {

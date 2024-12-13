@@ -51,11 +51,11 @@ public class SplashActivity extends AppCompatActivity {
         Admob.getInstance().setOpenActivityAfterShowInterAds(true);
         //Admob.getInstance().setDetectTestAdByView(true);
         Admob.getInstance().setTimeStart(System.currentTimeMillis());
-        Admob.getInstance().setTimeIntervalFromStart(20000);
-        Admob.getInstance().setTimeInterval(1000);
+        //Admob.getInstance().setTimeIntervalFromStart(20000);
+        //Admob.getInstance().setTimeInterval(1000);
 
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", "");
-        //AsyncSplash.Companion.getInstance().setTimeOutSplash(20000);
+        AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
         ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
         listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
         AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
@@ -79,23 +79,6 @@ public class SplashActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         AsyncSplash.Companion.getInstance().checkShowSplashWhenFail();
-    }
-
-    private void initBilling() {
-        ArrayList<ProductDetailCustom> listProductDetailCustoms = new ArrayList<>();
-        listProductDetailCustoms.add(new ProductDetailCustom(IAPManager.typeSub, IAPManager.PRODUCT_ID_TEST));
-        IAPManager.getInstance().setPurchaseTest(true);
-        IAPManager.getInstance().initBilling(this, listProductDetailCustoms, new BillingCallback() {
-            @Override
-            public void onBillingSetupFinished(int resultCode) {
-                super.onBillingSetupFinished(resultCode);
-            }
-
-            @Override
-            public void onBillingServiceDisconnected() {
-                super.onBillingServiceDisconnected();
-            }
-        });
     }
 
     private void startNextAct() {

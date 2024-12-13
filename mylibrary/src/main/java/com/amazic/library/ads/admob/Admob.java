@@ -25,7 +25,6 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ProcessLifecycleOwner;
 
-import com.amazic.mylibrary.R;
 import com.amazic.library.Utils.AdjustUtil;
 import com.amazic.library.Utils.EventTrackingHelper;
 import com.amazic.library.Utils.NetworkUtil;
@@ -45,6 +44,7 @@ import com.amazic.library.dialog.LoadingAdsDialog;
 import com.amazic.library.iap.IAPManager;
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
+import com.amazic.mylibrary.R;
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
@@ -108,6 +108,11 @@ public class Admob {
         }).start();
     }
 
+    public boolean checkCondition(Context context, String adsKey) {
+        Log.d(TAG, "checkCondition: Network_" + NetworkUtil.isNetworkActive(context) + "_UMP_" + AdsConsentManager.getConsentResult(context) + "_showAllAds_" + isShowAllAds + "_IAP_" + IAPManager.getInstance().isPurchase() + "_RemoteConfig_" + RemoteConfigHelper.getInstance().get_config(context, adsKey));
+        return NetworkUtil.isNetworkActive(context) && AdsConsentManager.getConsentResult(context) && isShowAllAds && !IAPManager.getInstance().isPurchase() && RemoteConfigHelper.getInstance().get_config(context, adsKey);
+    }
+
     public boolean isDetectTestAdByView() {
         return isDetectTestAdByView;
     }
@@ -163,9 +168,9 @@ public class Admob {
     }
 
     //================================Start inter ads================================
-    public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback) {
+    public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String adsKey) {
         //Check condition
-        if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(context, adsKey)) {
             interCallback.onNextAction();
             return;
         }
@@ -192,12 +197,12 @@ public class Admob {
                         Log.d(TAG, loadAdError.toString());
                         interCallback.onAdFailedToLoad();
                         listIdInter.remove(0);
-                        loadInterAds(context, listIdInter, interCallback);
+                        loadInterAds(context, listIdInter, interCallback, adsKey);
                     }
                 });
     }
 
-    public void showInterAds(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback) {
+    public void showInterAds(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, String adsKey) {
         if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
             Log.d(TAG, "Not show interstitial because the time interval.");
             interCallback.onNextAction();
@@ -223,6 +228,7 @@ public class Admob {
                 public void onAdClicked() {
                     // Called when a click is recorded for an ad.
                     Log.d(TAG, "Ad was clicked.");
+                    EventTrackingHelper.logEvent(activity, adsKey + "_click");
                     interCallback.onAdClicked();
                 }
 
@@ -257,6 +263,7 @@ public class Admob {
                 public void onAdImpression() {
                     // Called when an impression is recorded for an ad.
                     Log.d(TAG, "Ad recorded an impression.");
+                    EventTrackingHelper.logEvent(activity, adsKey + "_view");
                     interCallback.onAdImpression();
                 }
 
@@ -311,7 +318,7 @@ public class Admob {
                     interCallback.onAdClicked();
                     countClickInterSplashAds++;
                     int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
-                    if (splashOpenTimes == 1){
+                    if (splashOpenTimes == 1) {
                         EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_click + "_" + countClickInterSplashAds);
                     }
                 }
@@ -490,12 +497,12 @@ public class Admob {
     //================================end inter ads================================
 
     //================================Start banner ads================================
-    public void loadBannerAds(Activity activity, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+    public void loadBannerAds(Activity activity, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String adsKey) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             bannerCallback.onAdFailedToLoad();
             return;
         }
@@ -519,6 +526,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 bannerCallback.onAdClicked();
             }
 
@@ -533,12 +541,13 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdBanner.remove(0);
-                loadBannerAds(activity, listIdBanner, adContainerView, bannerCallback, iOnAdsImpression);
+                loadBannerAds(activity, listIdBanner, adContainerView, bannerCallback, iOnAdsImpression, adsKey);
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
                 bannerCallback.onAdImpression();
                 //use for auto reload banner after x seconds
                 iOnAdsImpression.onAdsImpression();
@@ -598,12 +607,12 @@ public class Admob {
     }
 
     //can load banner ads in fragment
-    public void loadBannerAds(Context context, int adWidth, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression) {
+    public void loadBannerAds(Context context, int adWidth, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String adsKey) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(context) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(context, adsKey)) {
             bannerCallback.onAdFailedToLoad();
             return;
         }
@@ -627,6 +636,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                EventTrackingHelper.logEvent(context, adsKey + "_click");
                 bannerCallback.onAdClicked();
             }
 
@@ -641,12 +651,13 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdBanner.remove(0);
-                loadBannerAds(context, adWidth, listIdBanner, adContainerView, bannerCallback, iOnAdsImpression);
+                loadBannerAds(context, adWidth, listIdBanner, adContainerView, bannerCallback, iOnAdsImpression, adsKey);
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                EventTrackingHelper.logEvent(context, adsKey + "_view");
                 bannerCallback.onAdImpression();
                 //use for auto reload banner after x seconds
                 iOnAdsImpression.onAdsImpression();
@@ -692,12 +703,12 @@ public class Admob {
     //================================End banner ads================================
 
     //================================Start collapse banner ads================================
-    public AdView loadCollapseBanner(Activity activity, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String collapseTypeClose, long valueCountDownOrCountClick) {
+    public AdView loadCollapseBanner(Activity activity, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String collapseTypeClose, long valueCountDownOrCountClick, String adsKey) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             bannerCallback.onAdFailedToLoad();
             return null;
         }
@@ -728,6 +739,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 bannerCallback.onAdClicked();
             }
 
@@ -742,12 +754,13 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdCollapseBanner.remove(0);
-                loadCollapseBanner(activity, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, collapseTypeClose, valueCountDownOrCountClick);
+                loadCollapseBanner(activity, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, collapseTypeClose, valueCountDownOrCountClick, adsKey);
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
                 bannerCallback.onAdImpression();
                 iOnAdsImpression.onAdsImpression();
             }
@@ -786,12 +799,12 @@ public class Admob {
         return adView;
     }
 
-    public AdView loadCollapseBanner(Context context, int adWidth, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String collapseTypeClose, long valueCountDownOrCountClick) {
+    public AdView loadCollapseBanner(Context context, int adWidth, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String collapseTypeClose, long valueCountDownOrCountClick, String adsKey) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(context) || listIdCollapseBanner.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(context, adsKey)) {
             bannerCallback.onAdFailedToLoad();
             return null;
         }
@@ -822,6 +835,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                EventTrackingHelper.logEvent(context, adsKey + "_click");
                 bannerCallback.onAdClicked();
             }
 
@@ -836,12 +850,13 @@ public class Admob {
                 super.onAdFailedToLoad(loadAdError);
                 bannerCallback.onAdFailedToLoad();
                 listIdCollapseBanner.remove(0);
-                loadCollapseBanner(context, adWidth, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, collapseTypeClose, valueCountDownOrCountClick);
+                loadCollapseBanner(context, adWidth, listIdCollapseBanner, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, collapseTypeClose, valueCountDownOrCountClick, adsKey);
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                EventTrackingHelper.logEvent(context, adsKey + "_view");
                 bannerCallback.onAdImpression();
                 iOnAdsImpression.onAdsImpression();
             }
@@ -920,9 +935,9 @@ public class Admob {
     }
 
     //================================Start native ads================================
-    public void loadNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback) {
+    public void loadNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback, String adsKey) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             nativeCallback.onAdFailedToLoad();
             return;
         }
@@ -952,19 +967,25 @@ public class Admob {
                 Log.d(TAG, "Failed to load native ad with error " + error);
                 nativeCallback.onAdFailedToLoad();
                 listIdNative.remove(0);
-                loadNativeAds(activity, listIdNative, nativeCallback);
+                loadNativeAds(activity, listIdNative, nativeCallback, adsKey);
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
             }
         }).build();
 
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression) {
+    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression, String adsKey) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             nativeCallback.onAdFailedToLoad();
             return;
         }
@@ -1003,7 +1024,7 @@ public class Admob {
                 } else {
                     adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
                 }
-                Admob.getInstance().populateNativeAdView(nativeAd, adView);
+                Admob.getInstance().populateNativeAdView(activity, adsKey, nativeAd, adView);
                 if (adContainerView != null) {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
@@ -1033,19 +1054,25 @@ public class Admob {
                 Log.d(TAG, "Failed to load native ad with error " + error);
                 nativeCallback.onAdFailedToLoad();
                 listIdNative.remove(0);
-                loadNativeAds(activity, listIdNative, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback, iOnAdsImpression);
+                loadNativeAds(activity, listIdNative, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback, iOnAdsImpression, adsKey);
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
             }
         }).build();
 
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback) {
+    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, String adsKey) {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             nativeCallback.onAdFailedToLoad();
             return;
         }
@@ -1084,7 +1111,7 @@ public class Admob {
                 } else {
                     adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
                 }
-                Admob.getInstance().populateNativeAdView(nativeAd, adView);
+                Admob.getInstance().populateNativeAdView(activity, adsKey, nativeAd, adView);
                 if (adContainerView != null) {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
@@ -1113,14 +1140,21 @@ public class Admob {
                 Log.d(TAG, "Failed to load native ad with error " + error);
                 nativeCallback.onAdFailedToLoad();
                 listIdNative.remove(0);
-                loadNativeAds(activity, listIdNative, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback);
+                loadNativeAds(activity, listIdNative, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback, adsKey);
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
             }
         }).build();
 
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    public void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
+    public void populateNativeAdView(Context context, String adsKey, NativeAd nativeAd, NativeAdView adView) {
+        EventTrackingHelper.logEvent(context, adsKey + "_view");
         // Set the media view.
         MediaView mediaView = adView.findViewById(R.id.ad_media);
         if (mediaView != null) {
@@ -1278,9 +1312,9 @@ public class Admob {
     //================================End native ads================================
 
     //================================Start reward ads================================
-    public void loadRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback) {
+    public void loadRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback, String adsKey) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             rewardedCallback.onAdFailedToLoad();
             return;
         }
@@ -1293,7 +1327,7 @@ public class Admob {
                         Log.d(TAG, loadAdError.toString());
                         rewardedCallback.onAdFailedToLoad();
                         listIdRewarded.remove(0);
-                        loadRewardAds(activity, listIdRewarded, rewardedCallback);
+                        loadRewardAds(activity, listIdRewarded, rewardedCallback, adsKey);
                     }
 
                     @Override
@@ -1310,10 +1344,11 @@ public class Admob {
                 });
     }
 
-    public void showReward(Activity activity, RewardedAd rewardedAd, RewardedCallback rewardedCallback) {
+    public void showReward(Activity activity, RewardedAd rewardedAd, RewardedCallback rewardedCallback, String adsKey) {
         if (rewardedAd == null) {
             Log.d(TAG, "The rewarded ad wasn't ready yet.");
             rewardedCallback.onAdFailedToShowFullScreenContent();
+            rewardedCallback.onNextAction();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -1325,6 +1360,7 @@ public class Admob {
             public void onAdClicked() {
                 // Called when a click is recorded for an ad.
                 Log.d(TAG, "Ad was clicked.");
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 rewardedCallback.onAdClicked();
             }
 
@@ -1334,6 +1370,7 @@ public class Admob {
                 // Set the ad reference to null so you don't show the ad a second time.
                 Log.d(TAG, "Ad dismissed fullscreen content.");
                 rewardedCallback.onAdDismissedFullScreenContent();
+                rewardedCallback.onNextAction();
                 isInterOrRewardedShowing = false;
             }
 
@@ -1342,6 +1379,7 @@ public class Admob {
                 // Called when ad fails to show.
                 Log.e(TAG, "Ad failed to show fullscreen content.");
                 rewardedCallback.onAdFailedToShowFullScreenContent();
+                rewardedCallback.onNextAction();
                 if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     loadingAdsDialog.dismiss();
                 }
@@ -1351,6 +1389,7 @@ public class Admob {
             public void onAdImpression() {
                 // Called when an impression is recorded for an ad.
                 Log.d(TAG, "Ad recorded an impression.");
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
                 rewardedCallback.onAdImpression();
             }
 
@@ -1376,9 +1415,9 @@ public class Admob {
     //================================End reward ads================================
 
     //================================Start reward inter================================
-    public void loadRewardInterAds(Activity activity, List<String> listIdRewardedInter, RewardedInterCallback rewardedInterCallback) {
+    public void loadRewardInterAds(Activity activity, List<String> listIdRewardedInter, RewardedInterCallback rewardedInterCallback, String adsKey) {
         //Check network
-        if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+        if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             rewardedInterCallback.onAdFailedToLoad();
             return;
         }
@@ -1401,15 +1440,16 @@ public class Admob {
                         Log.d(TAG, loadAdError.toString());
                         rewardedInterCallback.onAdFailedToLoad();
                         listIdRewardedInter.remove(0);
-                        loadRewardInterAds(activity, listIdRewardedInter, rewardedInterCallback);
+                        loadRewardInterAds(activity, listIdRewardedInter, rewardedInterCallback, adsKey);
                     }
                 });
     }
 
-    public void showRewardInterAds(Activity activity, RewardedInterstitialAd rewardedInterstitialAd, RewardedInterCallback rewardedInterCallback) {
+    public void showRewardInterAds(Activity activity, RewardedInterstitialAd rewardedInterstitialAd, RewardedInterCallback rewardedInterCallback, String adsKey) {
         if (rewardedInterstitialAd == null) {
             Log.d(TAG, "The rewarded inter ad wasn't ready yet.");
             rewardedInterCallback.onAdFailedToShowFullScreenContent();
+            rewardedInterCallback.onNextAction();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -1421,6 +1461,7 @@ public class Admob {
             public void onAdClicked() {
                 // Called when a click is recorded for an ad.
                 Log.d(TAG, "Ad was clicked.");
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 rewardedInterCallback.onAdClicked();
             }
 
@@ -1430,6 +1471,7 @@ public class Admob {
                 // Set the ad reference to null so you don't show the ad a second time.
                 Log.d(TAG, "Ad dismissed fullscreen content.");
                 rewardedInterCallback.onAdDismissedFullScreenContent();
+                rewardedInterCallback.onNextAction();
                 isInterOrRewardedShowing = false;
             }
 
@@ -1438,6 +1480,7 @@ public class Admob {
                 // Called when ad fails to show.
                 Log.e(TAG, "Ad failed to show fullscreen content.");
                 rewardedInterCallback.onAdFailedToShowFullScreenContent();
+                rewardedInterCallback.onNextAction();
                 if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     loadingAdsDialog.dismiss();
                 }
@@ -1447,6 +1490,7 @@ public class Admob {
             public void onAdImpression() {
                 // Called when an impression is recorded for an ad.
                 Log.d(TAG, "Ad recorded an impression.");
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
                 rewardedInterCallback.onAdImpression();
             }
 

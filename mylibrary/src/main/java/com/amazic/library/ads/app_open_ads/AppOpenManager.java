@@ -239,6 +239,14 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     public void showAdIfAvailable(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        // Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
+            Log.d(TAG, "Check condition.");
+            if (appOpenCallback != null) {
+                appOpenCallback.onAdFailedToShowFullScreenContent();
+            }
+            return;
+        }
         //Ads resume is disabled
         if (!isEnableResume) {
             Log.d(TAG, "Ads resume is disabled");
@@ -357,6 +365,14 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     public void showAdIfAvailableWelcomeBack(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        // Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
+            Log.d(TAG, "Check condition.");
+            if (appOpenCallback != null) {
+                appOpenCallback.onAdFailedToShowFullScreenContent();
+            }
+            return;
+        }
         //Ads resume is disabled.
         if (!isEnableResume) {
             Log.d(TAG, "Ads resume is disabled.");

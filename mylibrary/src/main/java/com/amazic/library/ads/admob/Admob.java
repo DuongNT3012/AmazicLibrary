@@ -8,6 +8,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -917,6 +918,20 @@ public class Admob {
 
     //Get the ad size with screen width.
     private AdSize getAdSize(Activity activity) {
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        float widthPixels = outMetrics.widthPixels;
+        float density = outMetrics.density;
+
+        int adWidth = (int) (widthPixels / density);
+        Log.d(TAG, "getAdSize: adWith = " + adWidth);
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth);
+    }
+
+    // Get the ad size with screen width.
+    public AdSize getAdSizeDocAdmob(Activity activity) {
         DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
         int adWidthPixels = displayMetrics.widthPixels;
 

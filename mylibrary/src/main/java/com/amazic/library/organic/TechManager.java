@@ -25,8 +25,8 @@ public class TechManager {
     private ExecutorService executorService = Executors.newSingleThreadExecutor();
     private Handler handler = new Handler(Looper.getMainLooper());
     public static TechManager INSTANCE;
-    public String TAG = "TechManager";
-    public String CALLED_API = "calledApi";
+    public final String TAG = "TechManager";
+    public final String CALLED_API = "calledApi";
 
     public static TechManager getInstance() {
         if (INSTANCE == null) {

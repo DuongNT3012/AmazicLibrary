@@ -38,6 +38,12 @@ public class SplashActivity extends AppCompatActivity {
                 super.onNextAction();
                 startNextAct();
             }
+
+            @Override
+            public void onAdFailedToLoad() {
+                super.onAdFailedToLoad();
+                AsyncSplash.Companion.getInstance().reloadAdsSplash(SplashActivity.this, appOpenCallback, interCallback);
+            }
         };
 
         appOpenCallback = new AppOpenCallback() {
@@ -45,6 +51,12 @@ public class SplashActivity extends AppCompatActivity {
             public void onNextAction() {
                 super.onNextAction();
                 startNextAct();
+            }
+
+            @Override
+            public void onAdFailedToLoad() {
+                super.onAdFailedToLoad();
+                AsyncSplash.Companion.getInstance().reloadAdsSplash(SplashActivity.this, appOpenCallback, interCallback);
             }
         };
 
@@ -55,7 +67,7 @@ public class SplashActivity extends AppCompatActivity {
         //Admob.getInstance().setTimeInterval(1000);
 
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", "");
-        AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
+        AsyncSplash.Companion.getInstance().setTimeOutSplash(120);
         ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
         listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
         AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP

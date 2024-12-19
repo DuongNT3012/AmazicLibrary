@@ -83,13 +83,9 @@ public class MainActivity extends AppCompatActivity {
 
         InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
-            InterManager.showInterAds(this, "inter_all", new InterCallback(){
-                @Override
-                public void onNextAction() {
-                    super.onNextAction();
-                    Toast.makeText(MainActivity.this, "On next action.", Toast.LENGTH_SHORT).show();
-                }
-            }, true);
+            Intent intent = new Intent(MainActivity.this, SplashActivity.class);
+            startActivity(intent);
+            finish();
         });
         RewardManager.loadRewardAds(this, "rewarded");
         binding.tvShowReward.setOnClickListener(view -> {

@@ -304,6 +304,11 @@ public class Admob {
                 Log.d(TAG, "onSplashResume: " + false);
             }
         });
+        // If have action startActivity by timeout or no internet in splash, do not show ads.
+        if (AsyncSplash.Companion.getInstance().getTimeout() && AsyncSplash.Companion.getInstance().getNoInternetAction()) {
+            Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not show ads. " + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
+            return;
+        }
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "The interstitial ad wasn't ready yet.");
             AppOpenManager.getInstance().setEnableResume(true);

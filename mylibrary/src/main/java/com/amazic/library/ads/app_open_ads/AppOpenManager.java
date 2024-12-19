@@ -494,6 +494,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 Log.d(TAG, "onSplashResume: " + false);
             }
         });
+        // If have action startActivity by timeout or no internet in splash, do not show ads.
+        if (AsyncSplash.Companion.getInstance().getTimeout() && AsyncSplash.Companion.getInstance().getNoInternetAction()) {
+            Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not show ads. " + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
+            return;
+        }
         // If the app open ad is already showing, do not show the ad again.
         if (isShowingAd) {
             Log.d(TAG, "SPLASH: The app open ad is already showing.");

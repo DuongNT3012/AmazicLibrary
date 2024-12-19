@@ -39,7 +39,9 @@ class AsyncSplash {
     private var adjustKey = ""
     private var linkServer = ""
     private var appId = ""
-    private var isShowAdsSplashOrNextAct = false
+    private var isShowAdsSplash = false
+    private var isTimeout = false
+    private var isNoInternetAction = false
     private var initWelcomeBack = "Normal"
     private var welcomeBackClass: Class<*>? = null
     private var isShowBannerSplash = true
@@ -85,7 +87,9 @@ class AsyncSplash {
         this.adjustKey = ""
         this.linkServer = ""
         this.appId = ""
-        this.isShowAdsSplashOrNextAct = false
+        this.isShowAdsSplash = false
+        this.isTimeout = false
+        this.isNoInternetAction = false
         this.initWelcomeBack = "Normal"
         this.welcomeBackClass = null
         this.isShowBannerSplash = true
@@ -95,6 +99,18 @@ class AsyncSplash {
         this.isUseBilling = false
         this.listProductDetailCustoms = arrayListOf()
         this.timeOutSplash = 12000L
+    }
+
+    fun getShowAdsSplash(): Boolean {
+        return this.isShowAdsSplash
+    }
+
+    fun getTimeout(): Boolean {
+        return this.isTimeout
+    }
+
+    fun getNoInternetAction(): Boolean {
+        return this.isNoInternetAction
     }
 
     fun getTimeStartSplash(): Long {
@@ -153,7 +169,8 @@ class AsyncSplash {
         timeStartSplash = System.currentTimeMillis()
         lifecycleCoroutineScope.launch {
             delay(timeOutSplash)
-            if (!isShowAdsSplashOrNextAct) {
+            Log.d(TAG, "Timeout check $isShowAdsSplash $isNoInternetAction ")
+            if (!isShowAdsSplash && !isNoInternetAction) {
                 //increase splash open
                 SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1)
                 //end increase splash open
@@ -162,7 +179,7 @@ class AsyncSplash {
                 }
                 interCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
-                isShowAdsSplashOrNextAct = true
+                isTimeout = true
             }
             return@launch
         }
@@ -190,13 +207,20 @@ class AsyncSplash {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
+                    var rateAoaInterSplash: String = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)
+                    if (rateAoaInterSplash.isEmpty()) {
+                        rateAoaInterSplash = "0_100"
+                    }
+                    val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.open_splash)
+                    val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.inter_splash)
+                    adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
                     showAdsSplash(activity, appOpenCallback, interCallback)
                 }
             }
         } else {
-            if (!isShowAdsSplashOrNextAct) {
+            if (!isShowAdsSplash && !isTimeout) {
                 onNoInternetAction.invoke()
-                isShowAdsSplashOrNextAct = true
+                isNoInternetAction = true
             }
         }
     }
@@ -312,7 +336,7 @@ class AsyncSplash {
                     if (!isResumed) {
                         isResumed = true
                         continuation.resume(Unit)
-                        Log.d(TAG, "initBilling.")
+                        Log.d(TAG, "initBillingFail.")
                     }
                 }
             })
@@ -340,17 +364,19 @@ class AsyncSplash {
     }
 
     private fun showAdsSplash(activity: AppCompatActivity?, appOpenCallback: AppOpenCallback?, interCallback: InterCallback?) {
-        if (!isShowAdsSplashOrNextAct) {
-            var rateAoaInterSplash: String = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)
-            if (rateAoaInterSplash.isEmpty()) {
-                rateAoaInterSplash = "0_100"
-            }
-            val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.open_splash)
-            val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.inter_splash)
-            adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
+        Log.d(TAG, "showAdsSplash check $isTimeout $isNoInternetAction")
+        if (!isTimeout && !isNoInternetAction) {
             adsSplash?.showAdsSplashApi(activity, appOpenCallback, interCallback)
             Log.d(TAG, "showAdsSplash.")
-            isShowAdsSplashOrNextAct = true
+            isShowAdsSplash = true
+        }
+    }
+
+    fun reloadAdsSplash(activity: AppCompatActivity?, appOpenCallback: AppOpenCallback?, interCallback: InterCallback?) {
+        Log.d(TAG, "reloadAdsSplash check ${System.currentTimeMillis() - Admob.getInstance().timeStart <= 8000} $isTimeout $isNoInternetAction")
+        if (System.currentTimeMillis() - Admob.getInstance().timeStart <= 8000 && !isTimeout && !isNoInternetAction) {
+            adsSplash?.showAdsSplashApi(activity, appOpenCallback, interCallback)
+            Log.d(TAG, "reloadAdsSplash.")
         }
     }
 }

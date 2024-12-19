@@ -234,7 +234,7 @@ public class AdmobApi {
                             listAds.put(ads.getName().toLowerCase().trim(), listIDAds);
                         }
                         isSetId = true;
-                        Log.d(TAG, "isSetId = true2");
+                        Log.d(TAG, "isSetId = true2, listAds size = " + listAds.size());
                         callBack.onReady();
                     } else {
                         Log.d(TAG, "xxxxxx2");

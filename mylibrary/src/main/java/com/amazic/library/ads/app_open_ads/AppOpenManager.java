@@ -647,7 +647,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "SPLASH: Check condition.");
+            Log.d(TAG, "Check condition loadAndShowAppOpenResumeSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);

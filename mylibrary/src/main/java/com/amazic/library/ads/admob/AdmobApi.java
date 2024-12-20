@@ -276,4 +276,12 @@ public class AdmobApi {
     public void loadInterAdSplashFloor(AppCompatActivity activity, InterCallback interCallback) {
         Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDInterSplash(), interCallback);
     }
+
+    public void loadOpenAppAdSplashLoop(AppCompatActivity activity, AppOpenCallback appOpenCallback) {
+        AppOpenManager.getInstance().loadAndShowAppOpenResumeSplashLoop(activity, AdmobApi.getInstance().getListIDOpenSplash(), appOpenCallback);
+    }
+
+    public void loadInterAdSplashLoop(AppCompatActivity activity, InterCallback interCallback) {
+        Admob.getInstance().loadAndShowInterAdSplashLoop(activity, AdmobApi.getInstance().getListIDInterSplash(), interCallback);
+    }
 }

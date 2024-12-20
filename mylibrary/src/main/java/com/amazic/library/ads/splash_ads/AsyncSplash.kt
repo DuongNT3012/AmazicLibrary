@@ -56,6 +56,7 @@ class AsyncSplash {
     private var isUseBilling = false
     private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf()
     private var timeOutSplash = 12000L
+    private var isLoopAdsSplash = false
 
     //use for log event
     private var timeStartSplash = System.currentTimeMillis()
@@ -99,6 +100,11 @@ class AsyncSplash {
         this.isUseBilling = false
         this.listProductDetailCustoms = arrayListOf()
         this.timeOutSplash = 12000L
+        this.isLoopAdsSplash = false
+    }
+
+    fun setLoopAdsSplash(isLoopAdsSplash: Boolean) {
+        this.isLoopAdsSplash = isLoopAdsSplash
     }
 
     fun getShowAdsSplash(): Boolean {
@@ -214,6 +220,7 @@ class AsyncSplash {
                     val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.open_splash)
                     val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.inter_splash)
                     adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
+                    adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
                     showAdsSplash(activity, appOpenCallback, interCallback)
                 }
             }
@@ -369,14 +376,6 @@ class AsyncSplash {
             adsSplash?.showAdsSplashApi(activity, appOpenCallback, interCallback)
             Log.d(TAG, "showAdsSplash.")
             isShowAdsSplash = true
-        }
-    }
-
-    fun reloadAdsSplash(activity: AppCompatActivity?, appOpenCallback: AppOpenCallback?, interCallback: InterCallback?) {
-        Log.d(TAG, "reloadAdsSplash check ${System.currentTimeMillis() - Admob.getInstance().timeStart <= 8000} $isTimeout $isNoInternetAction")
-        if (System.currentTimeMillis() - Admob.getInstance().timeStart <= 8000 && !isTimeout && !isNoInternetAction) {
-            adsSplash?.showAdsSplashApi(activity, appOpenCallback, interCallback)
-            Log.d(TAG, "reloadAdsSplash.")
         }
     }
 }

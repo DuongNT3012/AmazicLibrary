@@ -495,6 +495,103 @@ public class Admob {
                 });
     }
 
+    public void loadAndShowInterAdSplashLoop(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
+        Log.d(TAG, "loadAndShowInterAdSplashLoop. " + listIdInter.toString());
+        //Set timeout ads splash 20s if cannot load
+        runnable = () -> {
+            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (interCallback != null) {
+                interCallback.onNextAction();
+            }
+            if (handlerTimeoutSplash != null) {
+                handlerTimeoutSplash = null;
+            }
+        };
+        if (handlerTimeoutSplash != null) {
+            handlerTimeoutSplash.postDelayed(runnable, 20000);
+        }
+        // Check list id size
+        if (listIdInter.isEmpty()){
+            Log.d(TAG, "loadAndShowInterAdSplashLoop: listIdInter is empty.");
+            interCallback.onNextAction();
+            if (handlerTimeoutSplash != null && runnable != null) {
+                handlerTimeoutSplash.removeCallbacks(runnable);
+                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                handlerTimeoutSplash = null;
+            }
+            return;
+        }
+        String idInterSplash = listIdInter.get(0);
+
+        // If have action startActivity by timeout or no internet in splash, do not load ads.
+        if (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000 || AsyncSplash.Companion.getInstance().getTimeout() || AsyncSplash.Companion.getInstance().getNoInternetAction()) {
+            Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
+            interCallback.onNextAction();
+            if (handlerTimeoutSplash != null && runnable != null) {
+                handlerTimeoutSplash.removeCallbacks(runnable);
+                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                handlerTimeoutSplash = null;
+            }
+            return;
+        }
+
+        //Log event
+        Bundle bundle = new Bundle();
+        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
+        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
+        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
+        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
+        bundle.putString(EventTrackingHelper.showallad, String.valueOf(getShowAllAds()));
+        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
+        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
+
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || idInterSplash.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            Log.d(TAG, "Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + idInterSplash.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase());
+            interCallback.onNextAction();
+            if (handlerTimeoutSplash != null && runnable != null) {
+                handlerTimeoutSplash.removeCallbacks(runnable);
+                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                handlerTimeoutSplash = null;
+            }
+            return;
+        }
+
+        //log event can request
+        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
+        //end log event can request
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        InterstitialAd.load(activity, idInterSplash, adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        Log.i(TAG, "SPLASH: Ad was loaded inter splash loop");
+                        interCallback.onAdLoaded(interstitialAd);
+                        mInterstitialAdSplash = interstitialAd;
+                        showInterAdsSplash(activity, interCallback);
+
+                        if (handlerTimeoutSplash != null && runnable != null) {
+                            handlerTimeoutSplash.removeCallbacks(runnable);
+                            handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                            handlerTimeoutSplash = null;
+                        }
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.d(TAG, "SPLASH: Ad Failed To Load." + loadAdError);
+                        interCallback.onAdFailedToLoad();
+                        loadAndShowInterAdSplashLoop(activity, listIdInter, interCallback);
+                    }
+                });
+    }
+
     public void onCheckShowSplashWhenFail(AppCompatActivity activity, InterCallback interCallback) {
         if (isFailToShowAdSplash) {
             showInterAdsSplash(activity, interCallback);

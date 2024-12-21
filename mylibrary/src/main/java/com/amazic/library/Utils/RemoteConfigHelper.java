@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.amazic.mylibrary.R;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue;
@@ -36,6 +37,7 @@ public class RemoteConfigHelper {
                 .setMinimumFetchIntervalInSeconds(10)
                 .build();
         FirebaseRemoteConfig.getInstance().setConfigSettingsAsync(configSettings);
+        FirebaseRemoteConfig.getInstance().setDefaultsAsync(R.xml.remote_config_defaults);
 
         FirebaseRemoteConfig.getInstance().fetchAndActivate().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {

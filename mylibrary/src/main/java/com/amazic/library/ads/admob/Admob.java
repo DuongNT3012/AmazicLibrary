@@ -171,7 +171,7 @@ public class Admob {
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String adsKey) {
         //Check condition
         if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(context, adsKey)) {
-            Log.d(TAG, "INTER: Check condition. " + adsKey + ". " + listIdInter.size() + "_" + NetworkUtil.isNetworkActive(context) + "_" + AdsConsentManager.getConsentResult(context) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(context, adsKey));
+            Log.d(TAG, "INTER: Check condition. " + adsKey + ". " + NetworkUtil.isNetworkActive(context) + "_" + listIdInter.isEmpty() + "_" + NetworkUtil.isNetworkActive(context) + "_" + AdsConsentManager.getConsentResult(context) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(context, adsKey));
             interCallback.onNextAction();
             return;
         }

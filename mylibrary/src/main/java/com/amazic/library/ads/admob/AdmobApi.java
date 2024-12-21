@@ -202,7 +202,6 @@ public class AdmobApi {
             }
             Log.d(TAG, "convertJsonIdAdsDefaultToList: " + listAds.size());
         } catch (Exception e) {
-            e.printStackTrace();
             Log.d(TAG, "convertJsonIdAdsDefaultToList: Exception: Invalid json");
         }
     }
@@ -232,6 +231,7 @@ public class AdmobApi {
                             }
                             listIDAds.add(ads.getAds_id());
                             listAds.put(ads.getName().toLowerCase().trim(), listIDAds);
+                            Log.d(TAG, ads.getName().toLowerCase().trim() + "_" + ads.getAds_id());
                         }
                         isSetId = true;
                         Log.d(TAG, "isSetId = true2, listAds size = " + listAds.size());
@@ -256,7 +256,6 @@ public class AdmobApi {
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
             Log.d(TAG, "fetchData: Exception: isSetId: " + isSetId);
             if (!isSetId) {
                 convertJsonIdAdsDefaultToList(jsonIdAdsDefault);

@@ -151,7 +151,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void loadAd(Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String adsKey) {
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
-            Log.d(TAG, "Check condition.");
+            Log.d(TAG, "Check condition. " + adsKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, adsKey));
             appOpenCallback.onAdFailedToLoad();
             return;
         }
@@ -171,8 +171,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, listIdOpenResume.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                // Called when an app open ad has loaded.
-                Log.d(TAG, "Ad was loaded.");
+                Log.i(TAG, "onAdLoaded. " + adsKey);
                 appOpenAd = ad;
                 isLoadingAd = false;
                 loadTime = (new Date()).getTime();
@@ -187,9 +186,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                // Called when an app open ad has failed to load.
-                Log.d(TAG, "Ad Failed To Load.");
-                Log.d(TAG, loadAdError.getMessage());
+                Log.e(TAG, "onAdFailedToLoad. " + loadAdError + ". " + adsKey);
                 isLoadingAd = false;
                 listIdOpenResume.remove(0);
                 appOpenCallback.onAdFailedToLoad();
@@ -201,7 +198,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void loadAd(Activity activity, List<String> listIdOpenResume, String adsKey) {
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
-            Log.d(TAG, "Check condition.");
+            Log.d(TAG, "Check condition loadAd. " + adsKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, adsKey));
             return;
         }
         // Do not load ad if there is an unused ad or one is already loading.
@@ -214,8 +211,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, listIdOpenResume.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                // Called when an app open ad has loaded.
-                Log.d(TAG, "Ad was loaded.");
+                Log.i(TAG, "onAdLoaded. " + adsKey);
                 appOpenAd = ad;
                 isLoadingAd = false;
                 loadTime = (new Date()).getTime();
@@ -229,9 +225,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                // Called when an app open ad has failed to load.
-                Log.d(TAG, "Ad Failed To Load.");
-                Log.d(TAG, loadAdError.getMessage());
+                Log.e(TAG, "onAdFailedToLoad. " + loadAdError + ". " + adsKey);
                 isLoadingAd = false;
                 listIdOpenResume.remove(0);
                 loadAd(activity, listIdOpenResume, adsKey);
@@ -242,7 +236,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void showAdIfAvailable(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String adsKey) {
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
-            Log.d(TAG, "Check condition.");
+            Log.d(TAG, "Check condition showAdIfAvailable. " + adsKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, adsKey));
             if (appOpenCallback != null) {
                 appOpenCallback.onAdFailedToShowFullScreenContent();
             }
@@ -250,7 +244,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
         //Ads resume is disabled
         if (!isEnableResume) {
-            Log.d(TAG, "Ads resume is disabled");
+            Log.d(TAG, "Ads resume is disabled.");
             return;
         }
         // If the app open ad is not available yet, invoke the callback then load the ad.
@@ -300,12 +294,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
-                    // Called when fullscreen content is dismissed.
-                    // Set the reference to null so isAdAvailable() returns false.
-                    Log.d(TAG, "Ad dismissed fullscreen content.");
+                    Log.d(TAG, "Ad dismissed fullscreen content. " + adsKey);
                     appOpenAd = null;
                     isShowingAd = false;
-
                     loadAd(activity, listIdOpenResume, adsKey);
                     if (appOpenCallback != null) {
                         appOpenCallback.onAdDismissedFullScreenContent();
@@ -314,13 +305,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                    // Called when fullscreen content failed to show.
-                    // Set the reference to null so isAdAvailable() returns false.
-                    Log.d(TAG, "Ad Failed To Show FullScreen Content");
-                    Log.d(TAG, adError.getMessage());
+                    Log.d(TAG, "Ad Failed To Show FullScreen Content. " + adError + ". " + adsKey);
                     appOpenAd = null;
                     isShowingAd = false;
-
                     if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
                         loadingAdsResumeDialog.dismiss();
                     }
@@ -333,7 +320,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 @Override
                 public void onAdShowedFullScreenContent() {
                     // Called when fullscreen content is shown.
-                    Log.d(TAG, "Ad showed fullscreen content.");
+                    Log.d(TAG, "Ad showed fullscreen content. " + adsKey);
                     if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
                         loadingAdsResumeDialog.dismiss();
                     }
@@ -345,7 +332,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 @Override
                 public void onAdClicked() {
                     super.onAdClicked();
-                    Log.d(TAG, "onAdClicked.");
+                    Log.d(TAG, "onAdClicked. " + adsKey);
                     if (appOpenCallback != null) {
                         appOpenCallback.onAdClicked();
                     }
@@ -354,7 +341,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 @Override
                 public void onAdImpression() {
                     super.onAdImpression();
-                    Log.d(TAG, "onAdImpression");
+                    Log.d(TAG, "onAdImpression. " + adsKey);
                     if (appOpenCallback != null) {
                         appOpenCallback.onAdImpression();
                     }
@@ -368,7 +355,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void showAdIfAvailableWelcomeBack(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String adsKey) {
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
-            Log.d(TAG, "Check condition.");
+            Log.d(TAG, "WELCOME BACK: Check condition showAdIfAvailableWelcomeBack. " + adsKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, adsKey));
             if (appOpenCallback != null) {
                 appOpenCallback.onAdFailedToShowFullScreenContent();
             }
@@ -376,24 +363,24 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
         //Ads resume is disabled.
         if (!isEnableResume) {
-            Log.d(TAG, "Ads resume is disabled.");
+            Log.d(TAG, "WELCOME BACK: Ads resume is disabled.");
             return;
         }
         // If the app open ad is not available yet, invoke the callback then load the ad.
         if (!isAdAvailable()) {
-            Log.d(TAG, "The app open ad is not ready yet.");
+            Log.d(TAG, "WELCOME BACK: The app open ad is not ready yet.");
             //onShowAdCompleteListener.onShowAdComplete();
             loadAd(activity, listIdOpenResume, appOpenCallback, adsKey);
             return;
         }
         // If the app open ad is already showing, do not show the ad again.
         if (isShowingAd) {
-            Log.d(TAG, "The app open ad is already showing.");
+            Log.d(TAG, "WELCOME BACK: The app open ad is already showing.");
             return;
         }
         // Not show open ads if inter is showing
         if (Admob.getInstance().isInterOrRewardedShowing()) {
-            Log.d(TAG, "Not show open ads because inter is showing.");
+            Log.d(TAG, "WELCOME BACK: Not show open ads because inter is showing.");
             return;
         }
         //show welcome back activity
@@ -412,12 +399,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
             @Override
             public void onAdDismissedFullScreenContent() {
-                // Called when fullscreen content is dismissed.
-                // Set the reference to null so isAdAvailable() returns false.
-                Log.d(TAG, "Ad dismissed fullscreen content.");
+                Log.d(TAG, "WELCOME BACK: onAdDismissedFullScreenContent. " + adsKey);
                 appOpenAd = null;
                 isShowingAd = false;
-
                 loadAd(activity, listIdOpenResume, adsKey);
                 if (appOpenCallback != null) {
                     appOpenCallback.onAdDismissedFullScreenContent();
@@ -426,13 +410,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
             @Override
             public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                // Called when fullscreen content failed to show.
-                // Set the reference to null so isAdAvailable() returns false.
-                Log.d(TAG, "Ad Failed To Show FullScreen Content");
-                Log.d(TAG, adError.getMessage());
+                Log.e(TAG, "WELCOME BACK: onAdFailedToShowFullScreenContent. " + adError + ". " + adsKey);
                 appOpenAd = null;
                 isShowingAd = false;
-
                 if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
                     loadingAdsResumeDialog.dismiss();
                 }
@@ -444,8 +424,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
             @Override
             public void onAdShowedFullScreenContent() {
-                // Called when fullscreen content is shown.
-                Log.d(TAG, "Ad showed fullscreen content.");
+                Log.d(TAG, "WELCOME BACK: onAdShowedFullScreenContent. " + adsKey);
                 if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
                     loadingAdsResumeDialog.dismiss();
                 }
@@ -457,7 +436,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
-                Log.d(TAG, "onAdClicked.");
+                Log.d(TAG, "WELCOME BACK: onAdClicked. " + adsKey);
                 if (appOpenCallback != null) {
                     appOpenCallback.onAdClicked();
                 }
@@ -466,7 +445,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
-                Log.d(TAG, "onAdImpression");
+                Log.d(TAG, "WELCOME BACK: onAdImpression. " + adsKey);
                 if (appOpenCallback != null) {
                     appOpenCallback.onAdImpression();
                 }
@@ -525,8 +504,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
                     //end increase splash open
 
-                    // Called when fullscreen content is dismissed.
-                    // Set the reference to null so isAdAvailable() returns false.
                     Log.d(TAG, "SPLASH: Ad dismissed fullscreen content.");
                     appOpenAdSplash = null;
                     isShowingAd = false;
@@ -537,9 +514,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                    // Called when fullscreen content failed to show.
-                    // Set the reference to null so isAdAvailable() returns false.
-                    Log.d(TAG, "SPLASH: Ad Failed To Show FullScreen Content");
+                    Log.e(TAG, "SPLASH: Ad Failed To Show FullScreen Content. " + adError);
                     //appOpenAdSplash = null;
                     isShowingAd = false;
 
@@ -586,7 +561,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 @Override
                 public void onAdImpression() {
                     super.onAdImpression();
-                    Log.d(TAG, "SPLASH: onAdImpression");
+                    Log.d(TAG, "SPLASH: onAdImpression.");
                     appOpenCallback.onAdImpression();
                     //log event
                     EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
@@ -601,7 +576,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 isShowingAd = true;
                 appOpenAdSplash.show(activity);
             } else {
-                Log.d(TAG, "Fail to show on background.");
+                Log.e(TAG, "SPLASH: Fail to show on background.");
                 if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
                     loadingAdsResumeDialog.dismiss();
                 }
@@ -642,7 +617,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "Check condition loadAndShowAppOpenResumeSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
+            Log.d(TAG, "SPLASH: Check condition loadAndShowAppOpenResumeSplash. " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
@@ -671,7 +646,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
                 // Called when an app open ad has loaded.
-                Log.d(TAG, "SPLASH: Ad was loaded.");
+                Log.i(TAG, "SPLASH: Ad was loaded.");
                 appOpenAdSplash = ad;
                 isLoadingAdSplash = false;
                 appOpenCallback.onAdLoaded(ad);
@@ -693,7 +668,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 // Called when an app open ad has failed to load.
-                Log.d(TAG, "SPLASH: Ad Failed To Load.");
+                Log.e(TAG, "SPLASH: Ad Failed To Load. " + loadAdError);
                 isLoadingAdSplash = false;
                 listIdOpenResume.remove(0);
                 loadAndShowAppOpenResumeSplash(activity, listIdOpenResume, appOpenCallback);
@@ -703,7 +678,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     public void loadAndShowAppOpenResumeSplashLoop(AppCompatActivity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
-        Log.d(TAG, "loadAndShowAppOpenResumeSplashLoop: " + listIdOpenResume.toString());
+        Log.d(TAG, "SPLASH: loadAndShowAppOpenResumeSplashLoop: " + listIdOpenResume.toString());
         //Set timeout ads splash 20s if cannot load
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
@@ -718,8 +693,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             handlerTimeoutSplash.postDelayed(runnable, 20000);
         }
         // Check list id size
-        if (listIdOpenResume.isEmpty()){
-            Log.d(TAG, "loadAndShowAppOpenResumeSplashLoop: listIdOpenResume is empty.");
+        if (listIdOpenResume.isEmpty()) {
+            Log.d(TAG, "SPLASH: loadAndShowAppOpenResumeSplashLoop: listIdOpenResume is empty.");
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
@@ -756,7 +731,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || idOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "Check condition loadAndShowAppOpenResumeSplash " + NetworkUtil.isNetworkActive(activity) + "_" + idOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
+            Log.d(TAG, "Check condition loadAndShowAppOpenResumeSplash. " + NetworkUtil.isNetworkActive(activity) + "_" + idOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
@@ -785,7 +760,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
                 // Called when an app open ad has loaded.
-                Log.d(TAG, "SPLASH: Ad was loaded open splash loop.");
+                Log.i(TAG, "SPLASH: Ad was loaded open splash loop. " + idOpenResume);
                 appOpenAdSplash = ad;
                 isLoadingAdSplash = false;
                 appOpenCallback.onAdLoaded(ad);
@@ -807,7 +782,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 // Called when an app open ad has failed to load.
-                Log.d(TAG, "SPLASH: Ad Failed To Load." + loadAdError);
+                Log.e(TAG, "SPLASH: Ad Failed To Load." + loadAdError);
                 isLoadingAdSplash = false;
                 loadAndShowAppOpenResumeSplashLoop(activity, listIdOpenResume, appOpenCallback);
                 appOpenCallback.onAdFailedToLoad();

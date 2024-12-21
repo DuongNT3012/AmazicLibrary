@@ -219,7 +219,7 @@ class AsyncSplash {
                     }
                     val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.open_splash)
                     val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.inter_splash)
-                    adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, "100_0")
+                    adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
                     adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
                     showAdsSplash(activity, appOpenCallback, interCallback)
                 }

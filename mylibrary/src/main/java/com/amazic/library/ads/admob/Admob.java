@@ -1070,7 +1070,7 @@ public class Admob {
     //================================End collapse banner ads================================
 
     //Get the ad size with screen width.
-    private AdSize getAdSize(Activity activity) {
+    public AdSize getAdSize(Activity activity) {
         Display display = activity.getWindowManager().getDefaultDisplay();
         DisplayMetrics outMetrics = new DisplayMetrics();
         display.getMetrics(outMetrics);
@@ -1081,6 +1081,18 @@ public class Admob {
         int adWidth = (int) (widthPixels / density);
         Log.d(TAG, "getAdSize: adWith = " + adWidth);
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth);
+    }
+    public int getScreenWidth(Activity activity) {
+        Display display = activity.getWindowManager().getDefaultDisplay();
+        DisplayMetrics outMetrics = new DisplayMetrics();
+        display.getMetrics(outMetrics);
+
+        float widthPixels = outMetrics.widthPixels;
+        float density = outMetrics.density;
+
+        int adWidth = (int) (widthPixels / density);
+        Log.d(TAG, "getAdSize: adWith = " + adWidth);
+        return adWidth;
     }
 
     // Get the ad size with screen width.
@@ -1097,8 +1109,22 @@ public class Admob {
         int adWidth = (int) (adWidthPixels / density);
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth);
     }
+    public int getScreenWidthDocAdmob(Activity activity) {
+        DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
+        int adWidthPixels = displayMetrics.widthPixels;
 
-    private AdSize getAdSizeFragment(Context context, int adWidth) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowMetrics windowMetrics = activity.getWindowManager().getCurrentWindowMetrics();
+            adWidthPixels = windowMetrics.getBounds().width();
+        }
+
+        float density = displayMetrics.density;
+        int adWidth = (int) (adWidthPixels / density);
+        Log.d(TAG, "getAdSize: adWith = " + adWidth);
+        return adWidth;
+    }
+
+    public AdSize getAdSizeFragment(Context context, int adWidth) {
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth);
     }
 

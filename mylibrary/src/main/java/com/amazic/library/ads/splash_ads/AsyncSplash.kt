@@ -23,6 +23,7 @@ import com.amazic.library.iap.BillingCallback
 import com.amazic.library.iap.IAPManager
 import com.amazic.library.iap.ProductDetailCustom
 import com.amazic.library.organic.TechManager
+import com.amazic.library.test_ad_manager.DetectTestAd
 import com.amazic.library.ump.AdsConsentManager
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -33,7 +34,10 @@ import kotlin.coroutines.suspendCoroutine
 
 class AsyncSplash {
     private val TAG = "AsyncSplash"
+    private val TECH_MANAGER = "TechManager"
+    private val DETECT_TEST_AD = "DetectTestAd"
     private var isTech = false
+    private var isTestAd = false
     private var adsSplash: AdsSplash? = null
     private var jsonIdAdsDefault = ""
     private var adjustKey = ""
@@ -57,6 +61,7 @@ class AsyncSplash {
     private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf()
     private var timeOutSplash = 12000L
     private var isLoopAdsSplash = false
+    private var useTechManagerOrDetectTestAd = DETECT_TEST_AD
 
     //use for log event
     private var timeStartSplash = System.currentTimeMillis()
@@ -101,6 +106,15 @@ class AsyncSplash {
         this.listProductDetailCustoms = arrayListOf()
         this.timeOutSplash = 12000L
         this.isLoopAdsSplash = false
+        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
+    }
+
+    fun setUseTechManager() {
+        this.useTechManagerOrDetectTestAd = TECH_MANAGER
+    }
+
+    fun setUseDetectTestAd() {
+        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
     }
 
     fun setLoopAdsSplash(isLoopAdsSplash: Boolean) {
@@ -205,23 +219,27 @@ class AsyncSplash {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
-                    loadBannerSplash(activity, lifecycleOwner, frAdsBannerSplash, listIdBannerSplash, adsKey)
-                }
-                try {
-                    //wait to load inter or open splash
-                    asyncAdmobApi.await()
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                } finally {
-                    var rateAoaInterSplash: String = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)
-                    if (rateAoaInterSplash.isEmpty()) {
-                        rateAoaInterSplash = "0_100"
+                    val asyncBannerSplash = async { loadBannerSplash(activity, lifecycleOwner, frAdsBannerSplash, listIdBannerSplash, adsKey) }
+                    try {
+                        //wait to load inter or open splash
+                        if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
+                            asyncAdmobApi.await()
+                        } else {
+                            awaitAll(asyncBannerSplash, asyncAdmobApi)
+                        }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    } finally {
+                        var rateAoaInterSplash: String = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)
+                        if (rateAoaInterSplash.isEmpty()) {
+                            rateAoaInterSplash = "0_100"
+                        }
+                        val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.open_splash)
+                        val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.inter_splash)
+                        adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
+                        adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
+                        showAdsSplash(activity, appOpenCallback, interCallback)
                     }
-                    val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.open_splash)
-                    val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.inter_splash)
-                    adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
-                    adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
-                    showAdsSplash(activity, appOpenCallback, interCallback)
                 }
             }
         } else {
@@ -238,7 +256,6 @@ class AsyncSplash {
             RemoteConfigHelper.getInstance().set_config(activity, it, false)
         }
     }
-
 
     private suspend fun initRemoteConfig(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
         RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
@@ -267,13 +284,18 @@ class AsyncSplash {
     }
 
     private suspend fun initTechManager(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
-        TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
-            if (it) {
-                isTech = true
-                AppOpenManager.getInstance().isEnableResume = false
+        if (this.useTechManagerOrDetectTestAd == TECH_MANAGER) {
+            TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
+                if (it) {
+                    isTech = true
+                    AppOpenManager.getInstance().isEnableResume = false
+                }
+                continuation.resume(Unit)
+                Log.d(TAG, "initTechManager.")
             }
+        } else {
             continuation.resume(Unit)
-            Log.d(TAG, "initTechManager.")
+            Log.d(TAG, "initTechManager else.")
         }
     }
 
@@ -353,20 +375,42 @@ class AsyncSplash {
         }
     }
 
-    private fun loadBannerSplash(activity: AppCompatActivity?, lifecycleOwner: LifecycleOwner, frAdsBanner: FrameLayout?, listIdBannerSplash: MutableList<String>, adsKey: String) {
+    private suspend fun loadBannerSplash(
+        activity: AppCompatActivity?,
+        lifecycleOwner: LifecycleOwner,
+        frAdsBanner: FrameLayout?,
+        listIdBannerSplash: MutableList<String>,
+        adsKey: String
+    ) = suspendCoroutine<Unit> { continuation ->
         if (isShowBannerSplash) {
+            //Set debug
+            DetectTestAd.getInstance().setShowAds(isDebug)
+            //Just detect test ad by banner splash
+            Admob.getInstance().isDetectTestAdByView = true
             frAdsBanner?.visibility = View.VISIBLE
             val bannerBuilder = BannerBuilder()
             bannerBuilder.setListId(listIdBannerSplash)
             bannerBuilder.callBack = object : BannerCallback() {
+                override fun onAdImpression() {
+                    super.onAdImpression()
+                    if (DetectTestAd.getInstance().isTestAd) {
+                        turnOffSomeRemoteKeys(activity)
+                    }
+                    //Just detect test ad by banner splash
+                    Admob.getInstance().isDetectTestAdByView = false
+                    continuation.resume(Unit)
+                }
+
                 override fun onAdFailedToLoad() {
                     super.onAdFailedToLoad()
                     frAdsBanner?.visibility = View.GONE
+                    continuation.resume(Unit)
                 }
             }
             activity?.let { BannerManager(it, frAdsBanner, lifecycleOwner, bannerBuilder, adsKey) }
         } else {
             frAdsBanner?.visibility = View.GONE
+            continuation.resume(Unit)
         }
     }
 

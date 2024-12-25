@@ -55,6 +55,9 @@ public class SplashActivity extends AppCompatActivity {
         //Admob.getInstance().setTimeInterval(1000);
 
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", "");
+        //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager
+        AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
+        AsyncSplash.Companion.getInstance().setDebug(false); //use for TechManager, DetectTestAd
         AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
         AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
         ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
@@ -63,10 +66,12 @@ public class SplashActivity extends AppCompatActivity {
         //AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
         AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
         //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
-        AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager
         ArrayList<String> listTurnOffRemote = new ArrayList<>();
-        listTurnOffRemote.add("banner_splash");
+        //listTurnOffRemote.add("banner_splash");
         AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
+        ArrayList<String> listIdBannerSplash = new ArrayList<>();
+        listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
+        AsyncSplash.Companion.getInstance().setShowBannerSplash(true, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
         AsyncSplash.Companion.getInstance().handleAsync(this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
             @Override
             public Unit invoke() {

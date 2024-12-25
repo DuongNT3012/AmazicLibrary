@@ -663,15 +663,15 @@ public class Admob {
                 super.onAdImpression();
                 Log.d(TAG, "BANNER: onAdImpression. " + adsKey + "_isDetectTestAdByView: " + isDetectTestAdByView);
                 EventTrackingHelper.logEvent(activity, adsKey + "_view");
-                bannerCallback.onAdImpression();
-                //use for auto reload banner after x seconds
-                iOnAdsImpression.onAdsImpression();
                 //DetectTestAd
                 if (adsKey.toLowerCase().trim().equals("banner_splash") && !AsyncSplash.Companion.getInstance().getDebug()) {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
                 }
+                bannerCallback.onAdImpression();
+                //use for auto reload banner after x seconds
+                iOnAdsImpression.onAdsImpression();
             }
 
             @Override

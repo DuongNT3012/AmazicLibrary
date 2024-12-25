@@ -41,6 +41,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         Log.d("MainActivity", "onCreate.");
+        Log.d("MainActivity", "TechManager: " + TechManager.getInstance().isTech(this));
 
         Log.d("MainActivityRemote", "banner_splash: " + RemoteConfigHelper.getInstance().get_config(this, RemoteConfigHelper.banner_splash));
         Log.d("MainActivityRemote", "inter_splash: " + RemoteConfigHelper.getInstance().get_config(this, RemoteConfigHelper.inter_splash));

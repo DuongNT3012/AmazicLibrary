@@ -23,7 +23,6 @@ import com.amazic.library.iap.BillingCallback
 import com.amazic.library.iap.IAPManager
 import com.amazic.library.iap.ProductDetailCustom
 import com.amazic.library.organic.TechManager
-import com.amazic.library.test_ad_manager.DetectTestAd
 import com.amazic.library.ump.AdsConsentManager
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -151,6 +150,10 @@ class AsyncSplash {
         this.isDebug = isDebug
     }
 
+    fun getDebug(): Boolean {
+        return this.isDebug
+    }
+
     fun checkShowSplashWhenFail() {
         if (adsSplash != null) {
             adsSplash?.onCheckShowSplashWhenFail(activity, appOpenCallback, interCallback)
@@ -194,8 +197,14 @@ class AsyncSplash {
                 //increase splash open
                 SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1)
                 //end increase splash open
-                if (isTech) {
-                    turnOffSomeRemoteKeys(activity)
+                if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
+                    if (isTech && !isDebug) {
+                        turnOffSomeRemoteKeys(activity)
+                    }
+                } else {
+                    if (TechManager.getInstance().isTech(activity) && !isDebug) {
+                        turnOffSomeRemoteKeys(activity)
+                    }
                 }
                 interCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
@@ -284,7 +293,7 @@ class AsyncSplash {
     }
 
     private suspend fun initTechManager(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
-        if (this.useTechManagerOrDetectTestAd == TECH_MANAGER) {
+        if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
             TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
                 if (it) {
                     isTech = true
@@ -383,21 +392,21 @@ class AsyncSplash {
         adsKey: String
     ) = suspendCoroutine<Unit> { continuation ->
         if (isShowBannerSplash) {
-            //Set debug
-            DetectTestAd.getInstance().setShowAds(isDebug)
             //Just detect test ad by banner splash
-            Admob.getInstance().isDetectTestAdByView = true
+            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
+                if (isDebug) {
+                    TechManager.getInstance().detectedTech(activity, false)
+                }
+            }
             frAdsBanner?.visibility = View.VISIBLE
             val bannerBuilder = BannerBuilder()
             bannerBuilder.setListId(listIdBannerSplash)
             bannerBuilder.callBack = object : BannerCallback() {
                 override fun onAdImpression() {
                     super.onAdImpression()
-                    if (DetectTestAd.getInstance().isTestAd) {
+                    if (TechManager.getInstance().isTech(activity) && !isDebug) {
                         turnOffSomeRemoteKeys(activity)
                     }
-                    //Just detect test ad by banner splash
-                    Admob.getInstance().isDetectTestAdByView = false
                     continuation.resume(Unit)
                 }
 

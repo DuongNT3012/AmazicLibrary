@@ -201,7 +201,7 @@ class AsyncSplash {
                     if (isTech && !isDebug) {
                         turnOffSomeRemoteKeys(activity)
                     }
-                } else {
+                } else if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
                     if (TechManager.getInstance().isTech(activity) && !isDebug) {
                         turnOffSomeRemoteKeys(activity)
                     }
@@ -222,7 +222,7 @@ class AsyncSplash {
                 try {
                     //wait to load banner splash (banner splash fix id, don't use api to reduce time load splash)
                     awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
-                    if (isTech) {
+                    if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
                         turnOffSomeRemoteKeys(activity)
                     }
                 } catch (e: Exception) {
@@ -392,11 +392,9 @@ class AsyncSplash {
         adsKey: String
     ) = suspendCoroutine<Unit> { continuation ->
         if (isShowBannerSplash) {
-            //Just detect test ad by banner splash
-            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
-                if (isDebug) {
-                    TechManager.getInstance().detectedTech(activity, false)
-                }
+            //Reset TechManager to false
+            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && isDebug) {
+                TechManager.getInstance().detectedTech(activity, false)
             }
             frAdsBanner?.visibility = View.VISIBLE
             val bannerBuilder = BannerBuilder()
@@ -404,7 +402,7 @@ class AsyncSplash {
             bannerBuilder.callBack = object : BannerCallback() {
                 override fun onAdImpression() {
                     super.onAdImpression()
-                    if (TechManager.getInstance().isTech(activity) && !isDebug) {
+                    if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && TechManager.getInstance().isTech(activity) && !isDebug) {
                         turnOffSomeRemoteKeys(activity)
                     }
                     continuation.resume(Unit)

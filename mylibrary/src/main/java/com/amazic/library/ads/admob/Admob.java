@@ -661,7 +661,7 @@ public class Admob {
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
-                Log.d(TAG, "BANNER: onAdImpression. " + adsKey + "_isDetectTestAdByView: " + isDetectTestAdByView);
+                Log.d(TAG, "BANNER: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_view");
                 //DetectTestAd
                 if (adsKey.toLowerCase().trim().equals("banner_splash") && !AsyncSplash.Companion.getInstance().getDebug()) {
@@ -783,17 +783,17 @@ public class Admob {
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
-                Log.d(TAG, "BANNER: onAdImpression. " + adsKey + "_isDetectTestAdByView: " + isDetectTestAdByView);
+                Log.d(TAG, "BANNER: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(context, adsKey + "_view");
-                bannerCallback.onAdImpression();
-                //use for auto reload banner after x seconds
-                iOnAdsImpression.onAdsImpression();
                 //DetectTestAd
                 if (adsKey.toLowerCase().trim().equals("banner_splash") && !AsyncSplash.Companion.getInstance().getDebug()) {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(context, isTestAd);
                 }
+                bannerCallback.onAdImpression();
+                //use for auto reload banner after x seconds
+                iOnAdsImpression.onAdsImpression();
             }
 
             @Override
@@ -1082,6 +1082,7 @@ public class Admob {
         Log.d(TAG, "getAdSize: adWith = " + adWidth);
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth);
     }
+
     public int getScreenWidth(Activity activity) {
         Display display = activity.getWindowManager().getDefaultDisplay();
         DisplayMetrics outMetrics = new DisplayMetrics();
@@ -1109,6 +1110,7 @@ public class Admob {
         int adWidth = (int) (adWidthPixels / density);
         return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(activity, adWidth);
     }
+
     public int getScreenWidthDocAdmob(Activity activity) {
         DisplayMetrics displayMetrics = activity.getResources().getDisplayMetrics();
         int adWidthPixels = displayMetrics.widthPixels;

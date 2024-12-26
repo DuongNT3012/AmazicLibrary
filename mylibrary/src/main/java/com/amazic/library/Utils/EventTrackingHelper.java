@@ -59,6 +59,7 @@ public class EventTrackingHelper {
     public static String openremote = "openremote";
     public static String aoavalue = "aoavalue";
     public static String inter_splash_id_timeout = "inter_splash_id_timeout";
+    public static String inter_splash_id_timeout_8s = "inter_splash_id_timeout_8s";
     public static String inter_splash_true = "inter_splash_true";
     public static String open_splash_true = "open_splash_true";
     public static String inter_splash_impression = "inter_splash_impression";

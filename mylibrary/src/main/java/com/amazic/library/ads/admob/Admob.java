@@ -330,8 +330,9 @@ public class Admob {
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
-                    // Called when ad is dismissed.
-                    // Set the ad reference to null so you don't show the ad a second time.
+                    //increase splash open
+                    SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                    //end increase splash open
                     Log.d(TAG, "SPLASH: Ad dismissed fullscreen content.");
                     interCallback.onAdDismissedFullScreenContent();
                     AppOpenManager.getInstance().setEnableResume(true);
@@ -343,7 +344,9 @@ public class Admob {
 
                 @Override
                 public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                    // Called when ad fails to show.
+                    //increase splash open
+                    SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                    //end increase splash open
                     Log.e(TAG, "SPLASH: Ad failed to show fullscreen content.");
                     interCallback.onAdFailedToShowFullScreenContent();
                     if (isSplashResume && !openActivityAfterShowInterAds) {
@@ -401,9 +404,6 @@ public class Admob {
                 isInterOrRewardedShowing = true;
                 AppOpenManager.getInstance().setEnableResume(false);
                 if (openActivityAfterShowInterAds) {
-                    //increase splash open
-                    SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
-                    //end increase splash open
                     Log.d(TAG, "SPLASH: showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
                     interCallback.onNextAction();
                 }

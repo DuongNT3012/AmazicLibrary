@@ -60,6 +60,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
     private Runnable runnable;
     private boolean isSplashResume = true;
+    private int countClickInterSplashAds = 0;
 
     public boolean isEnableResume() {
         return isEnableResume;
@@ -462,6 +463,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     //===========================Start load ads, show ads resume in splash============================//
     public void showAdSplashIfAvailable(@NonNull final AppCompatActivity activity, AppOpenCallback appOpenCallback) {
+        countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
             public void onResume(@NonNull LifecycleOwner owner) {
@@ -559,7 +561,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 public void onAdClicked() {
                     super.onAdClicked();
                     Log.d(TAG, "SPLASH: onAdClicked.");
-                    EventTrackingHelper.logEvent(activity, adsKey + "_click");
+                    countClickInterSplashAds++;
+                    int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                    if (splashOpenTimes == 1) {
+                        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_click + "_" + countClickInterSplashAds);
+                    }
                     appOpenCallback.onAdClicked();
                 }
 
@@ -567,7 +573,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 public void onAdImpression() {
                     super.onAdImpression();
                     Log.d(TAG, "SPLASH: onAdImpression.");
-                    EventTrackingHelper.logEvent(activity, adsKey + "_view");
                     appOpenCallback.onAdImpression();
                     //log event
                     EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);

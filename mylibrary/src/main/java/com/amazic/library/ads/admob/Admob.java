@@ -665,7 +665,10 @@ public class Admob {
                 Log.d(TAG, "BANNER: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_view");
                 //DetectTestAd
-                if (adsKey.toLowerCase().trim().equals("banner_splash") && !AsyncSplash.Companion.getInstance().getDebug()) {
+                if (adsKey.toLowerCase().trim().equals("banner_splash")
+                        && !AsyncSplash.Companion.getInstance().getDebug()
+                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                ) {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
@@ -787,7 +790,10 @@ public class Admob {
                 Log.d(TAG, "BANNER: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(context, adsKey + "_view");
                 //DetectTestAd
-                if (adsKey.toLowerCase().trim().equals("banner_splash") && !AsyncSplash.Companion.getInstance().getDebug()) {
+                if (adsKey.toLowerCase().trim().equals("banner_splash")
+                        && !AsyncSplash.Companion.getInstance().getDebug()
+                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                ) {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(context, isTestAd);

@@ -33,8 +33,6 @@ import kotlin.coroutines.suspendCoroutine
 
 class AsyncSplash {
     private val TAG = "AsyncSplash"
-    private val TECH_MANAGER = "TechManager"
-    private val DETECT_TEST_AD = "DetectTestAd"
     private var isTech = false
     private var isTestAd = false
     private var adsSplash: AdsSplash? = null
@@ -66,6 +64,8 @@ class AsyncSplash {
     private var timeStartSplash = System.currentTimeMillis()
 
     companion object {
+        const val TECH_MANAGER = "TechManager"
+        const val DETECT_TEST_AD = "DetectTestAd"
         private var INSTANCE: AsyncSplash? = null
         fun getInstance(): AsyncSplash {
             if (INSTANCE == null) {
@@ -106,6 +106,10 @@ class AsyncSplash {
         this.timeOutSplash = 12000L
         this.isLoopAdsSplash = false
         this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
+    }
+
+    fun getUserTechManagerOrDetectTestAd(): String {
+        return this.useTechManagerOrDetectTestAd
     }
 
     fun setUseTechManager() {

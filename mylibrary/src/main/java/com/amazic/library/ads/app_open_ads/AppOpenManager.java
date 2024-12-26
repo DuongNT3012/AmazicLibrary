@@ -333,6 +333,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 public void onAdClicked() {
                     super.onAdClicked();
                     Log.d(TAG, "onAdClicked. " + adsKey);
+                    EventTrackingHelper.logEvent(activity, adsKey + "_click");
                     if (appOpenCallback != null) {
                         appOpenCallback.onAdClicked();
                     }
@@ -342,6 +343,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 public void onAdImpression() {
                     super.onAdImpression();
                     Log.d(TAG, "onAdImpression. " + adsKey);
+                    EventTrackingHelper.logEvent(activity, adsKey + "_view");
                     if (appOpenCallback != null) {
                         appOpenCallback.onAdImpression();
                     }
@@ -437,6 +439,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             public void onAdClicked() {
                 super.onAdClicked();
                 Log.d(TAG, "WELCOME BACK: onAdClicked. " + adsKey);
+                EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 if (appOpenCallback != null) {
                     appOpenCallback.onAdClicked();
                 }
@@ -446,6 +449,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             public void onAdImpression() {
                 super.onAdImpression();
                 Log.d(TAG, "WELCOME BACK: onAdImpression. " + adsKey);
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
                 if (appOpenCallback != null) {
                     appOpenCallback.onAdImpression();
                 }
@@ -555,6 +559,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 public void onAdClicked() {
                     super.onAdClicked();
                     Log.d(TAG, "SPLASH: onAdClicked.");
+                    EventTrackingHelper.logEvent(activity, adsKey + "_click");
                     appOpenCallback.onAdClicked();
                 }
 
@@ -562,6 +567,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 public void onAdImpression() {
                     super.onAdImpression();
                     Log.d(TAG, "SPLASH: onAdImpression.");
+                    EventTrackingHelper.logEvent(activity, adsKey + "_view");
                     appOpenCallback.onAdImpression();
                     //log event
                     EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);

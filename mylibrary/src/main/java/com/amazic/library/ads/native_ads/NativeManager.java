@@ -91,7 +91,7 @@ public class NativeManager implements LifecycleEventObserver {
                 true,
                 builder.getCallback(),
                 () -> {
-                    if (countDownTimer != null) {
+                    if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
                         countDownTimer.cancel();
                         countDownTimer.start();
                     }

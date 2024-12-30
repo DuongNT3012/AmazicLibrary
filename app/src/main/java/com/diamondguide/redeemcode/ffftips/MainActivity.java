@@ -49,11 +49,6 @@ public class MainActivity extends AppCompatActivity {
         bannerBuilder.setCallBack(new BannerCallback() {
             @Override
             public void onAdImpression() {
-
-
-
-
-
                 super.onAdImpression();
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -79,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
                 com.amazic.mylibrary.R.layout.layout_native_adview);
         nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDNativeAll());
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_all");
+        nativeManager.setIntervalReloadNative(2000);
         //nativeManager.setAlwaysReloadOnResume(true);
         //nativeManager.setIntervalReloadNative(3000L);
 

@@ -75,7 +75,15 @@ class AsyncSplash {
         }
     }
 
-    fun init(activity: AppCompatActivity, appOpenCallback: AppOpenCallback, interCallback: InterCallback, adjustKey: String, linkServer: String, appId: String, jsonIdAdsDefault: String) {
+    fun init(
+        activity: AppCompatActivity,
+        appOpenCallback: AppOpenCallback,
+        interCallback: InterCallback,
+        adjustKey: String,
+        linkServer: String,
+        appId: String,
+        jsonIdAdsDefault: String
+    ) {
         resetVarToDefault()
         this.activity = activity
         this.adjustKey = adjustKey
@@ -199,7 +207,11 @@ class AsyncSplash {
             Log.d(TAG, "Timeout check $isShowAdsSplash $isNoInternetAction ")
             if (!isShowAdsSplash && !isNoInternetAction) {
                 //increase splash open
-                SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1)
+                SharePreferenceHelper.setInt(
+                    activity,
+                    EventTrackingHelper.splash_open,
+                    SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1
+                )
                 //end increase splash open
                 if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
                     if (isTech && !isDebug) {
@@ -243,7 +255,8 @@ class AsyncSplash {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     } finally {
-                        var rateAoaInterSplash: String = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)
+                        var rateAoaInterSplash: String =
+                            RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)
                         if (rateAoaInterSplash.isEmpty()) {
                             rateAoaInterSplash = "0_100"
                         }
@@ -284,15 +297,19 @@ class AsyncSplash {
         }
     }
 
-    private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
+    private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCoroutine { continuation ->
         val adsConsentManager = AdsConsentManager(activity)
+        var isResumed = false
         adsConsentManager.requestUMP {
-            if (it) {
-                Admob.getInstance().initAdmob(activity) {}
-                activity?.let { it1 -> AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass) }
+            if (!isResumed) {
+                isResumed = true
+                if (it) {
+                    Admob.getInstance().initAdmob(activity) {}
+                    activity?.let { it1 -> AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass) }
+                }
+                continuation.resume(Unit)
+                Log.d(TAG, "initAdsConsentManager.")
             }
-            continuation.resume(Unit)
-            Log.d(TAG, "initAdsConsentManager.")
         }
     }
 
@@ -329,7 +346,8 @@ class AsyncSplash {
                     "Below" -> {
                         if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
                             welcomeBackClass?.let {
-                                AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
+                                AppOpenManager.getInstance()
+                                    .initWelcomeBackBelowAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
                                 AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
                             }
                             activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
@@ -339,7 +357,8 @@ class AsyncSplash {
                     "Above" -> {
                         if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
                             welcomeBackClass?.let {
-                                AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
+                                AppOpenManager.getInstance()
+                                    .initWelcomeBackAboveAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
                                 AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
                             }
                             activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash

@@ -72,6 +72,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     private boolean isEnableResume = true;
     private String adsKey = "open_resume";
+    public static boolean isLastActionClickAd = false;
+    public boolean isShowAdResumeAfterAdClick = true;
 
     public static AppOpenManager getInstance() {
         if (INSTANCE == null) {
@@ -243,6 +245,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
             return;
         }
+        Log.d(TAG, "Ads Click:" + isLastActionClickAd + " && " + !isShowAdResumeAfterAdClick);
+        if (isLastActionClickAd && !isShowAdResumeAfterAdClick) {
+            isLastActionClickAd = false;
+            return;
+        }
         //Ads resume is disabled
         if (!isEnableResume) {
             Log.d(TAG, "Ads resume is disabled.");
@@ -333,6 +340,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 @Override
                 public void onAdClicked() {
                     super.onAdClicked();
+                    AppOpenManager.isLastActionClickAd = true;
                     Log.d(TAG, "onAdClicked. " + adsKey);
                     EventTrackingHelper.logEvent(activity, adsKey + "_click");
                     if (appOpenCallback != null) {
@@ -439,6 +447,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "WELCOME BACK: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 if (appOpenCallback != null) {
@@ -560,6 +569,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 @Override
                 public void onAdClicked() {
                     super.onAdClicked();
+                    AppOpenManager.isLastActionClickAd = true;
                     Log.d(TAG, "SPLASH: onAdClicked.");
                     countClickInterSplashAds++;
                     int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);

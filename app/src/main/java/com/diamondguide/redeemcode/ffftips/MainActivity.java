@@ -9,14 +9,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.Utils.RemoteConfigHelper;
-import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.banner_ads.BannerBuilder;
 import com.amazic.library.ads.banner_ads.BannerManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.BannerCallback;
-import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.inter_ads.InterManager;
@@ -26,9 +24,6 @@ import com.amazic.library.ads.reward_ads.RewardManager;
 import com.amazic.library.ads.reward_inter_ads.RewardInterManager;
 import com.amazic.library.organic.TechManager;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivityMainBinding;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
@@ -49,11 +44,16 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivityRemote", "rate: " + RemoteConfigHelper.getInstance().get_config_string(this, RemoteConfigHelper.rate_aoa_inter_splash));
         Log.d("MainActivityRemote", "interval start: " + RemoteConfigHelper.getInstance().get_config_long(this, RemoteConfigHelper.interval_interstitial_from_start));
         Log.d("MainActivityRemote", "interval reloadNative: " + RemoteConfigHelper.getInstance().get_config_long(this, RemoteConfigHelper.interval_reload_native));
-
+        AppOpenManager.getInstance().isShowAdResumeAfterAdClick = false;
         BannerBuilder bannerBuilder = new BannerBuilder().isIdApi();
-        bannerBuilder.setCallBack(new BannerCallback(){
+        bannerBuilder.setCallBack(new BannerCallback() {
             @Override
             public void onAdImpression() {
+
+
+
+
+
                 super.onAdImpression();
                 new Handler().postDelayed(new Runnable() {
                     @Override
@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
         });
         RewardManager.loadRewardAds(this, "rewarded");
         binding.tvShowReward.setOnClickListener(view -> {
-            RewardManager.showRewardAds(this,"rewarded",new RewardedCallback(){
+            RewardManager.showRewardAds(this, "rewarded", new RewardedCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();
@@ -100,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
         });
         RewardInterManager.loadRewardInterAds(this, "rewarded_inter");
         binding.tvShowRewardInter.setOnClickListener(view -> {
-            RewardInterManager.showRewardInterAds(this, "rewarded_inter", new RewardedInterCallback(){
+            RewardInterManager.showRewardInterAds(this, "rewarded_inter", new RewardedInterCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();

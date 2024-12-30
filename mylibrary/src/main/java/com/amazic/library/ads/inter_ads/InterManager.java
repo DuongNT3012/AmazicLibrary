@@ -6,6 +6,7 @@ import android.util.Log;
 
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
+import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.InterCallback;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 
@@ -47,6 +48,7 @@ public class InterManager {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 interCallback.onAdClicked();
             }
 

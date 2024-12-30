@@ -231,6 +231,7 @@ public class Admob {
             mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                 @Override
                 public void onAdClicked() {
+                    AppOpenManager.isLastActionClickAd = true;
                     // Called when a click is recorded for an ad.
                     Log.d(TAG, "INTER: Ad was clicked. " + adsKey);
                     EventTrackingHelper.logEvent(activity, adsKey + "_click");
@@ -318,6 +319,7 @@ public class Admob {
             mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
                 @Override
                 public void onAdClicked() {
+                    AppOpenManager.isLastActionClickAd = true;
                     // Called when a click is recorded for an ad.
                     Log.d(TAG, "SPLASH: Ad was clicked.");
                     interCallback.onAdClicked();
@@ -636,6 +638,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "BANNER: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 bannerCallback.onAdClicked();
@@ -761,6 +764,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "BANNER: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(context, adsKey + "_click");
                 bannerCallback.onAdClicked();
@@ -880,6 +884,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "COLLAPSE BANNER: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 bannerCallback.onAdClicked();
@@ -987,6 +992,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "COLLAPSE BANNER: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(context, adsKey + "_click");
                 bannerCallback.onAdClicked();
@@ -1180,6 +1186,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "NATIVE: onAdClicked. " + ". " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
             }
@@ -1226,7 +1233,6 @@ public class Admob {
                     adContainerView.addView(adView);
                 }
             }
-            iOnAdsImpression.onAdsImpression();
             //Tracking revenue
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
@@ -1255,8 +1261,15 @@ public class Admob {
             }
 
             @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                iOnAdsImpression.onAdsImpression();
+            }
+
+            @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "NATIVE: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
             }
@@ -1333,6 +1346,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "NATIVE: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
             }
@@ -1550,6 +1564,7 @@ public class Admob {
         rewardedAd.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override
             public void onAdClicked() {
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "REWARD: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 rewardedCallback.onAdClicked();
@@ -1648,6 +1663,7 @@ public class Admob {
         rewardedInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
             @Override
             public void onAdClicked() {
+                AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "REWARD INTER: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
                 rewardedInterCallback.onAdClicked();

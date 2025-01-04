@@ -72,7 +72,7 @@ public class SplashActivity extends AppCompatActivity {
         ArrayList<String> listIdBannerSplash = new ArrayList<>();
         listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
         AsyncSplash.Companion.getInstance().setShowBannerSplash(true, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
-        AsyncSplash.Companion.getInstance().handleAsync(this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
+        AsyncSplash.Companion.getInstance().handleAsync(this, this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
             @Override
             public Unit invoke() {
                 interCallback.onNextAction();

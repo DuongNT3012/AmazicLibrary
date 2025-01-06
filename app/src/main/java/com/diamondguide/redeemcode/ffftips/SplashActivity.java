@@ -58,16 +58,16 @@ public class SplashActivity extends AppCompatActivity {
         //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager
         AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
         AsyncSplash.Companion.getInstance().setDebug(false); //use for TechManager, DetectTestAd
-        AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
+        //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
         AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
         ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
         listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
         AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
-        //AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
-        AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
+        AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
+        //AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
         //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
         ArrayList<String> listTurnOffRemote = new ArrayList<>();
-        listTurnOffRemote.add("inter_splash");
+        //listTurnOffRemote.add("inter_splash");
         AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
         ArrayList<String> listIdBannerSplash = new ArrayList<>();
         listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");

@@ -1398,10 +1398,10 @@ public class Admob {
         }
 
         // The headline and mediaContent are guaranteed to be in every NativeAd.
-        if (adView.getHeadlineView() != null) {
+        if (adView.getHeadlineView() != null && nativeAd.getHeadline() != null) {
             ((TextView) adView.getHeadlineView()).setText(nativeAd.getHeadline());
         }
-        if (adView.getMediaView() != null) {
+        if (adView.getMediaView() != null && nativeAd.getMediaContent() != null) {
             adView.getMediaView().setMediaContent(nativeAd.getMediaContent());
         }
 

@@ -201,6 +201,10 @@ class AsyncSplash {
         this.welcomeBackClass = welcomeBackClass
     }
 
+    fun getInitResumeAdsType(): String {
+        return this.initWelcomeBack
+    }
+
     fun setShowBannerSplash(isShowBannerSplash: Boolean, frAdsBannerSplash: FrameLayout, listIdBannerSplash: MutableList<String>, adsKey: String) {
         this.isShowBannerSplash = isShowBannerSplash
         this.frAdsBannerSplash = frAdsBannerSplash
@@ -465,6 +469,7 @@ class AsyncSplash {
         listIdBannerSplash: MutableList<String>,
         adsKey: String
     ) {
+        Log.d(TAG, "loadBannerSplash.")
         if (isShowBannerSplash) {
             //Reset TechManager to false
             if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && isDebug) {

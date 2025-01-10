@@ -258,6 +258,7 @@ class AsyncSplash {
             return@launch
         }
         if (NetworkUtil.isNetworkActive(activity)) {
+            EventTrackingHelper.logEvent(activity, "splash_have_internet")
             lifecycleCoroutineScope.launch {
                 val asyncAdmobApi = async { initAdmobApi(activity) }
                 val asyncRemoteConfig = async { initRemoteConfig(activity) }

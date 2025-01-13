@@ -484,6 +484,11 @@ public class Admob {
                             handlerTimeoutSplash.removeCallbacksAndMessages(null);
                             handlerTimeoutSplash = null;
                         }
+                        //Tracking revenue
+                        interstitialAd.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
                     }
 
                     @Override
@@ -585,6 +590,11 @@ public class Admob {
                             handlerTimeoutSplash.removeCallbacksAndMessages(null);
                             handlerTimeoutSplash = null;
                         }
+                        //Tracking revenue
+                        interstitialAd.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
                     }
 
                     @Override

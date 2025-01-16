@@ -859,11 +859,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
         Log.d(TAG, "onStart: " + currentActivity);
-        if (AsyncSplash.Companion.getInstance().getInitResumeAdsType().equals("Normal")) {
+        /*if (AsyncSplash.Companion.getInstance().getInitResumeAdsType().equals("Normal")) {
             adsKey = "open_resume";
         } else {
             adsKey = "resume_wb";
-        }
+        }*/
         showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, adsKey);
     }
 }

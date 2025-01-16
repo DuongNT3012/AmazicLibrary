@@ -63,8 +63,8 @@ public class SplashActivity extends AppCompatActivity {
         ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
         listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
         AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
-        AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
-        //AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
+        //AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
+        AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
         //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
         ArrayList<String> listTurnOffRemote = new ArrayList<>();
         //listTurnOffRemote.add("inter_splash");

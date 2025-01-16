@@ -26,17 +26,23 @@ public class WelcomeBackActivity extends AppCompatActivity {
                 super.onAdLoaded(ad);
                 Toast.makeText(WelcomeBackActivity.this, "onAdLoaded", Toast.LENGTH_SHORT).show();
             }
-        }, "open_resume");
+        }, "resume_wb");
 
         binding.tvWelcomeBack.setOnClickListener(view -> {
-            AppOpenManager.getInstance().showAdIfAvailableWelcomeBack(this, AdmobApi.getInstance().getListIDAppOpenResume(), new AppOpenCallback(){
+            Toast.makeText(this, "ClickTvWelcomeBack", Toast.LENGTH_SHORT).show();
+            AppOpenManager.getInstance().showAdIfAvailableWelcomeBack(this, AdmobApi.getInstance().getListIDByName("resume_wb"), new AppOpenCallback(){
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     super.onAdDismissedFullScreenContent();
                     finish();
                 }
-            }, "open_resume");
-            finish();
+
+                @Override
+                public void onAdFailedToShowFullScreenContent() {
+                    super.onAdFailedToShowFullScreenContent();
+                    finish();
+                }
+            }, "resume_wb");
         });
     }
 }

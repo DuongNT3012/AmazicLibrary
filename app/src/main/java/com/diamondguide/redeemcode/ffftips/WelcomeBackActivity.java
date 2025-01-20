@@ -20,17 +20,18 @@ public class WelcomeBackActivity extends AppCompatActivity {
         binding = ActivityWelcomeBackBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        AppOpenManager.getInstance().loadAd(this, AdmobApi.getInstance().getListIDAppOpenResume(), new AppOpenCallback(){
+        /*AppOpenManager.getInstance().loadAd(this, AdmobApi.getInstance().getListIDAppOpenResume(), new AppOpenCallback(){
             @Override
             public void onAdLoaded(AppOpenAd ad) {
                 super.onAdLoaded(ad);
                 Toast.makeText(WelcomeBackActivity.this, "onAdLoaded", Toast.LENGTH_SHORT).show();
             }
-        }, "resume_wb");
+        }, "resume_wb");*/
 
         binding.tvWelcomeBack.setOnClickListener(view -> {
             Toast.makeText(this, "ClickTvWelcomeBack", Toast.LENGTH_SHORT).show();
-            AppOpenManager.getInstance().showAdIfAvailableWelcomeBack(this, AdmobApi.getInstance().getListIDByName("resume_wb"), new AppOpenCallback(){
+            finish();
+            /*AppOpenManager.getInstance().showAdIfAvailableWelcomeBack(this, AdmobApi.getInstance().getListIDByName("resume_wb"), new AppOpenCallback(){
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     super.onAdDismissedFullScreenContent();
@@ -42,7 +43,7 @@ public class WelcomeBackActivity extends AppCompatActivity {
                     super.onAdFailedToShowFullScreenContent();
                     finish();
                 }
-            }, "resume_wb");
+            }, "resume_wb");*/
         });
     }
 }

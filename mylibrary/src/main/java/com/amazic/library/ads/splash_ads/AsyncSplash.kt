@@ -38,6 +38,7 @@ class AsyncSplash {
     private var isTech = false
     private var adsSplash: AdsSplash? = null
     private var jsonIdAdsDefault = ""
+    private var timeOutCallApi = 4000
     private var adjustKey = ""
     private var linkServer = ""
     private var appId = ""
@@ -129,6 +130,10 @@ class AsyncSplash {
         this.initAdsConsentManager = false
         this.initBilling = false
         this.initTechManager = false
+    }
+
+    fun setTimeOutCallApi(timeOutCallApi: Int) {
+        this.timeOutCallApi = timeOutCallApi
     }
 
     fun getUserTechManagerOrDetectTestAd(): String {
@@ -379,7 +384,7 @@ class AsyncSplash {
 
     private suspend fun initAdmobApi(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
         AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-        AdmobApi.getInstance().timeOutCallApi = 4000
+        AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
         AdmobApi.getInstance().init(activity, linkServer, appId, object : ApiCallback() {
             private var isResumed = false
             override fun onReady() {

@@ -177,8 +177,8 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
+        EventTrackingHelper.logEvent(context, adsKey + "_true");
         AdRequest adRequest = new AdRequest.Builder().build();
-
         InterstitialAd.load(context, listIdInterTemp.get(0), adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
@@ -628,6 +628,9 @@ public class Admob {
             bannerCallback.onAdFailedToLoad();
             return;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
         //Show loading shimmer
         View shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
         if (adContainerView != null) {
@@ -754,6 +757,10 @@ public class Admob {
             bannerCallback.onAdFailedToLoad();
             return;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(context, adsKey + "_true");
+        //end log event can request ads
+
         //Show loading shimmer
         View shimmerBanner = LayoutInflater.from(context).inflate(R.layout.layout_shimmer_banner, null);
         if (adContainerView != null) {
@@ -867,6 +874,10 @@ public class Admob {
             bannerCallback.onAdFailedToLoad();
             return null;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         //Show loading shimmer
         View shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
         if (adContainerView != null) {
@@ -975,6 +986,10 @@ public class Admob {
             bannerCallback.onAdFailedToLoad();
             return null;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(context, adsKey + "_true");
+        //end log event can request ads
+
         //Show loading shimmer
         View shimmerBanner = LayoutInflater.from(context).inflate(R.layout.layout_shimmer_banner, null);
         if (adContainerView != null) {
@@ -1162,6 +1177,10 @@ public class Admob {
             nativeCallback.onAdFailedToLoad();
             return;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNativeTemp.get(0));
         builder.forNativeAd(nativeAd -> {
             Log.i(TAG, "NATIVE: onAdLoaded. " + adsKey);
@@ -1216,6 +1235,10 @@ public class Admob {
             nativeCallback.onAdFailedToLoad();
             return;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         //Show loading shimmer
         View shimmerNative = LayoutInflater.from(activity).inflate(layoutShimmerNative, null);
         if (adContainerView != null) {
@@ -1299,6 +1322,10 @@ public class Admob {
             nativeCallback.onAdFailedToLoad();
             return;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         //Show loading shimmer
         View shimmerNative = LayoutInflater.from(activity).inflate(layoutShimmerNative, null);
         if (adContainerView != null) {
@@ -1533,6 +1560,10 @@ public class Admob {
             rewardedCallback.onAdFailedToLoad();
             return;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         AdRequest adRequest = new AdRequest.Builder().build();
         RewardedAd.load(activity, listIdRewardedTemp.get(0),
                 adRequest, new RewardedAdLoadCallback() {
@@ -1633,6 +1664,10 @@ public class Admob {
             rewardedInterCallback.onAdFailedToLoad();
             return;
         }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         RewardedInterstitialAd.load(activity, listIdRewardedInterTemp.get(0),
                 new AdRequest.Builder().build(), new RewardedInterstitialAdLoadCallback() {
                     @Override

@@ -170,6 +170,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             return;
         }
         isLoadingAd = true;
+
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         AdRequest request = new AdRequest.Builder().build();
         AppOpenAd.load(activity, listIdOpenResume.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
@@ -248,6 +253,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             return;
         }
         isLoadingAd = true;
+
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        //end log event can request ads
+
         AdRequest request = new AdRequest.Builder().build();
         AppOpenAd.load(activity, listIdOpenResume.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override

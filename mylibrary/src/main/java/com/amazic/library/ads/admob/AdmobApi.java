@@ -172,7 +172,8 @@ public class AdmobApi {
         }
     }
 
-    private void convertJsonIdAdsDefaultToList(String jsonIdAds) {
+    public void convertJsonIdAdsDefaultToList(String jsonIdAds) {
+        listAds.clear();
         try {
             ArrayList<AdsModel> listAdsModel = new ArrayList<>();
             JSONArray jsonArray = new JSONArray(jsonIdAds);

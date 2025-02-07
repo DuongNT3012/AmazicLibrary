@@ -58,6 +58,7 @@ public class SplashActivity extends AppCompatActivity {
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
         //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
         AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
+        AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true);
         AsyncSplash.Companion.getInstance().setDebug(false); //use for TechManager, DetectTestAd
         //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
         AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);

@@ -1213,6 +1213,13 @@ public class Admob {
             }
 
             @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                Log.d(TAG, "NATIVE: onAdImpression. " + adsKey);
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
+            }
+
+            @Override
             public void onAdClicked() {
                 super.onAdClicked();
                 AppOpenManager.isLastActionClickAd = true;
@@ -1260,7 +1267,7 @@ public class Admob {
                 } else {
                     adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
                 }
-                Admob.getInstance().populateNativeAdView(activity, adsKey, nativeAd, adView);
+                Admob.getInstance().populateNativeAdView(nativeAd, adView);
                 if (adContainerView != null) {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
@@ -1297,6 +1304,8 @@ public class Admob {
             public void onAdImpression() {
                 super.onAdImpression();
                 iOnAdsImpression.onAdsImpression();
+                Log.d(TAG, "NATIVE: onAdImpression. " + adsKey);
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
             }
 
             @Override
@@ -1347,7 +1356,7 @@ public class Admob {
                 } else {
                     adView = (NativeAdView) activity.getLayoutInflater().inflate(layoutNative, adContainerView, false);
                 }
-                Admob.getInstance().populateNativeAdView(activity, adsKey, nativeAd, adView);
+                Admob.getInstance().populateNativeAdView(nativeAd, adView);
                 if (adContainerView != null) {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
@@ -1381,6 +1390,13 @@ public class Admob {
             }
 
             @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                Log.d(TAG, "NATIVE: onAdImpression. " + adsKey);
+                EventTrackingHelper.logEvent(activity, adsKey + "_view");
+            }
+
+            @Override
             public void onAdClicked() {
                 super.onAdClicked();
                 AppOpenManager.isLastActionClickAd = true;
@@ -1392,8 +1408,7 @@ public class Admob {
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    public void populateNativeAdView(Context context, String adsKey, NativeAd nativeAd, NativeAdView adView) {
-        EventTrackingHelper.logEvent(context, adsKey + "_view");
+    public void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {
         // Set the media view.
         MediaView mediaView = adView.findViewById(R.id.ad_media);
         if (mediaView != null) {
@@ -1547,7 +1562,6 @@ public class Admob {
         } else {
             Log.d(TAG, "Video status: Ad does not contain a video asset.");
         }
-        Log.d(TAG, "NATIVE: showed. " + adsKey);
     }
     //================================End native ads================================
 

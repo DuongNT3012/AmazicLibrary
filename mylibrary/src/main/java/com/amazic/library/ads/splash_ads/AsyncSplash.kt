@@ -69,6 +69,9 @@ class AsyncSplash {
     private var initBilling = false
     private var initTechManager = false
 
+    //
+    private var isUseIdAdsFromRemoteConfig = false
+
     //1.end
     //2.use for log event
     private var timeStartSplash = System.currentTimeMillis()
@@ -130,6 +133,11 @@ class AsyncSplash {
         this.initAdsConsentManager = false
         this.initBilling = false
         this.initTechManager = false
+        this.isUseIdAdsFromRemoteConfig = false
+    }
+
+    fun setUseIdAdsFromRemoteConfig(isUseIdAdsFromRemoteConfig: Boolean) {
+        this.isUseIdAdsFromRemoteConfig = isUseIdAdsFromRemoteConfig
     }
 
     fun setTimeOutCallApi(timeOutCallApi: Int) {
@@ -327,6 +335,14 @@ class AsyncSplash {
     private suspend fun initRemoteConfig(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
         var isResumed = false
         RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
+            if (isUseIdAdsFromRemoteConfig) {
+                val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.id_ads)
+                if (jsonIdAdsFromRemoteConfig.contains("app_id")) { //get id ads from remote config successfully
+                    AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
+                    AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
+                }
+                Log.d(TAG, "Id ads size = ${AdmobApi.getInstance().listAdsSize}")
+            }
             Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)
             Admob.getInstance().setTimeInterval(
                 RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_between_interstitial) * 1000

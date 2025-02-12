@@ -71,6 +71,7 @@ class AsyncSplash {
 
     //
     private var isUseIdAdsFromRemoteConfig = false
+    private var isPreloadResumeAds = true
 
     //1.end
     //2.use for log event
@@ -134,6 +135,15 @@ class AsyncSplash {
         this.initBilling = false
         this.initTechManager = false
         this.isUseIdAdsFromRemoteConfig = false
+        this.isPreloadResumeAds = false
+    }
+
+    fun setPreloadResumeAds(isPreloadResumeAds: Boolean) {
+        this.isPreloadResumeAds = isPreloadResumeAds
+    }
+
+    fun getPreloadResumeAds(): Boolean {
+        return this.isPreloadResumeAds
     }
 
     fun setUseIdAdsFromRemoteConfig(isUseIdAdsFromRemoteConfig: Boolean) {
@@ -408,7 +418,9 @@ class AsyncSplash {
                 when (initWelcomeBack) {
                     "Normal" -> {
                         if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
-                            AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                            if (isPreloadResumeAds) {
+                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                            }
                             AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
                             activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
                         }
@@ -416,7 +428,9 @@ class AsyncSplash {
 
                     "Below" -> {
                         if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
-                            AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                            if (isPreloadResumeAds) {
+                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                            }
                             welcomeBackClass?.let {
                                 AppOpenManager.getInstance()
                                     .initWelcomeBackBelowAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
@@ -428,7 +442,9 @@ class AsyncSplash {
 
                     "Above" -> {
                         if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
-                            AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                            if (isPreloadResumeAds) {
+                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                            }
                             welcomeBackClass?.let {
                                 AppOpenManager.getInstance()
                                     .initWelcomeBackAboveAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
@@ -440,7 +456,9 @@ class AsyncSplash {
 
                     else -> {
                         if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
-                            AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                            if (isPreloadResumeAds) {
+                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                            }
                             AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
                             activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
                         }

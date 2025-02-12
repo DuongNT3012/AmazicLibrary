@@ -17,6 +17,10 @@ public class InterManager {
     private static final String TAG = "InterManager";
     private static final Map<String, InterstitialAd> listInter = new HashMap<>();
 
+    public static void loadAndShowInterAds(Activity activity, String adsKey, InterCallback interCallback) {
+        Admob.getInstance().loadInterAdsLoadAndShow(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, adsKey);
+    }
+
     public static void loadInterAds(Context context, String adsKey) {
         if (listInter.get(adsKey) == null) {
             Admob.getInstance().loadInterAds(context, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {

@@ -169,6 +169,133 @@ public class Admob {
     }
 
     //================================Start inter ads================================
+    public void loadInterAdsLoadAndShow(Activity activity, List<String> listIdInter, InterCallback interCallback, String adsKey) {
+        ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
+            Log.d(TAG, "INTER: Check condition. " + adsKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, adsKey));
+            if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.dismiss();
+            }
+            interCallback.onNextAction();
+            return;
+        }
+        loadingAdsDialog = new LoadingAdsDialog(activity);
+        if (!loadingAdsDialog.isShowing()) {
+            loadingAdsDialog.show();
+        }
+        EventTrackingHelper.logEvent(activity, adsKey + "_true");
+        AdRequest adRequest = new AdRequest.Builder().build();
+        InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        interCallback.onAdLoaded(interstitialAd);
+                        Log.i(TAG, "INTER: onAdLoaded. " + adsKey);
+                        showInterAdsLoadAndShow(activity, interstitialAd, interCallback, adsKey);
+                        //Tracking revenue
+                        interstitialAd.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.e(TAG, "INTER: onAdFailedToLoad. " + loadAdError + ". " + adsKey);
+                        interCallback.onAdFailedToLoad();
+                        if (!listIdInterTemp.isEmpty()) {
+                            listIdInterTemp.remove(0);
+                        }
+                        loadInterAdsLoadAndShow(activity, listIdInterTemp, interCallback, adsKey);
+                    }
+                });
+    }
+
+    public void showInterAdsLoadAndShow(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, String adsKey) {
+        if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
+            Log.d(TAG, "INTER: Not show interstitial because the time interval. " + adsKey);
+            interCallback.onNextAction();
+            return;
+        }
+        if (System.currentTimeMillis() - timeStart < timeIntervalFromStart) {
+            Log.d(TAG, "INTER: Not show interstitial because the time interval from start. " + adsKey);
+            interCallback.onNextAction();
+            return;
+        }
+        if (mInterstitialAd == null) {
+            Log.d(TAG, "INTER: The interstitial ad wasn't ready yet. " + adsKey);
+            interCallback.onNextAction();
+            return;
+        }
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdClicked() {
+                    AppOpenManager.isLastActionClickAd = true;
+                    // Called when a click is recorded for an ad.
+                    Log.d(TAG, "INTER: Ad was clicked. " + adsKey);
+                    EventTrackingHelper.logEvent(activity, adsKey + "_click");
+                    interCallback.onAdClicked();
+                }
+
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    // Called when ad is dismissed.
+                    // Set the ad reference to null so you don't show the ad a second time.
+                    Log.d(TAG, "INTER: Ad dismissed fullscreen content. " + adsKey);
+                    interCallback.onAdDismissedFullScreenContent();
+                    if (!openActivityAfterShowInterAds) {
+                        interCallback.onNextAction();
+                    }
+                    isInterOrRewardedShowing = false;
+                    lastTimeDismissInter = System.currentTimeMillis();
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    // Called when ad fails to show.
+                    Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + adsKey);
+                    interCallback.onAdFailedToShowFullScreenContent();
+                    if (!openActivityAfterShowInterAds) {
+                        interCallback.onNextAction();
+                    }
+                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        loadingAdsDialog.dismiss();
+                    }
+                    isInterOrRewardedShowing = false;
+                }
+
+                @Override
+                public void onAdImpression() {
+                    // Called when an impression is recorded for an ad.
+                    Log.d(TAG, "INTER: Ad recorded an impression. " + adsKey);
+                    EventTrackingHelper.logEvent(activity, adsKey + "_view");
+                    interCallback.onAdImpression();
+                }
+
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    // Called when ad is shown.
+                    Log.d(TAG, "INTER: Ad showed fullscreen content. " + adsKey);
+                    interCallback.onAdShowedFullScreenContent();
+                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        loadingAdsDialog.dismiss();
+                    }
+                    isInterOrRewardedShowing = true;
+                }
+            });
+            isInterOrRewardedShowing = true;
+            if (openActivityAfterShowInterAds) {
+                interCallback.onNextAction();
+            }
+            mInterstitialAd.show(activity);
+        }, 250);
+    }
+
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String adsKey) {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Check condition

@@ -15,6 +15,7 @@ import com.amazic.library.ads.banner_ads.BannerBuilder;
 import com.amazic.library.ads.banner_ads.BannerManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.BannerCallback;
+import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.inter_ads.InterManager;
@@ -78,11 +79,17 @@ public class MainActivity extends AppCompatActivity {
         //nativeManager.setAlwaysReloadOnResume(true);
         //nativeManager.setIntervalReloadNative(3000L);
 
-        InterManager.loadInterAds(this, "inter_all");
+        //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, SplashActivity.class);
-            startActivity(intent);
-            finish();
+            InterManager.loadAndShowInterAds(this, "inter_all", new InterCallback(){
+                @Override
+                public void onNextAction() {
+                    super.onNextAction();
+                    Intent intent = new Intent(MainActivity.this, MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+            });
         });
         RewardManager.loadRewardAds(this, "rewarded");
         binding.tvShowReward.setOnClickListener(view -> {

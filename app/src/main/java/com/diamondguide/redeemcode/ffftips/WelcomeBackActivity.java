@@ -30,7 +30,7 @@ public class WelcomeBackActivity extends AppCompatActivity {
 
         binding.tvWelcomeBack.setOnClickListener(view -> {
             Toast.makeText(this, "ClickTvWelcomeBack", Toast.LENGTH_SHORT).show();
-            finish();
+            //finish();
             /*AppOpenManager.getInstance().showAdIfAvailableWelcomeBack(this, AdmobApi.getInstance().getListIDByName("resume_wb"), new AppOpenCallback(){
                 @Override
                 public void onAdDismissedFullScreenContent() {
@@ -44,6 +44,26 @@ public class WelcomeBackActivity extends AppCompatActivity {
                     finish();
                 }
             }, "resume_wb");*/
+            //load and show
+            AppOpenManager.getInstance().loadAndShowResumeAds(this, AdmobApi.getInstance().getListIDByName("resume_wb"), new AppOpenCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    super.onAdDismissedFullScreenContent();
+                    finish();
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent() {
+                    super.onAdFailedToShowFullScreenContent();
+                    finish();
+                }
+
+                @Override
+                public void onAdFailedToLoad() {
+                    super.onAdFailedToLoad();
+                    finish();
+                }
+            }, "resume_wb");
         });
     }
 }

@@ -72,6 +72,7 @@ class AsyncSplash {
     //
     private var isUseIdAdsFromRemoteConfig = false
     private var isPreloadResumeAds = true
+    private var isAsyncSplashAds = false
 
     //1.end
     //2.use for log event
@@ -136,9 +137,14 @@ class AsyncSplash {
         this.initTechManager = false
         this.isUseIdAdsFromRemoteConfig = false
         this.isPreloadResumeAds = false
+        this.isAsyncSplashAds = false
     }
 
-    fun setPreloadResumeAds(isPreloadResumeAds: Boolean) {
+    fun setAsyncSplashAds(isAsyncSplashAds: Boolean) { //Show splash ads without wait any thing
+        this.isAsyncSplashAds = isAsyncSplashAds
+    }
+
+    fun setPreloadResumeAds(isPreloadResumeAds: Boolean) { //Set can preload resume ads or not (Note: set false when you need to load and show resume ads)
         this.isPreloadResumeAds = isPreloadResumeAds
     }
 
@@ -146,11 +152,11 @@ class AsyncSplash {
         return this.isPreloadResumeAds
     }
 
-    fun setUseIdAdsFromRemoteConfig(isUseIdAdsFromRemoteConfig: Boolean) {
+    fun setUseIdAdsFromRemoteConfig(isUseIdAdsFromRemoteConfig: Boolean) { //Use id ads from remote config or not (Key remote: id_ads)
         this.isUseIdAdsFromRemoteConfig = isUseIdAdsFromRemoteConfig
     }
 
-    fun setTimeOutCallApi(timeOutCallApi: Int) {
+    fun setTimeOutCallApi(timeOutCallApi: Int) { //Timeout call id ads from server
         this.timeOutCallApi = timeOutCallApi
     }
 
@@ -158,7 +164,7 @@ class AsyncSplash {
         return this.useTechManagerOrDetectTestAd
     }
 
-    fun setUseTechManager() {
+    fun setUseTechManager() { //Use TechManager (Organic) or not
         this.useTechManagerOrDetectTestAd = TECH_MANAGER
     }
 
@@ -166,7 +172,7 @@ class AsyncSplash {
         this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
     }
 
-    fun setLoopAdsSplash(isLoopAdsSplash: Boolean) {
+    fun setLoopAdsSplash(isLoopAdsSplash: Boolean) { //Load loop splash ads when load fail if time splash < 8s
         this.isLoopAdsSplash = isLoopAdsSplash
     }
 
@@ -190,13 +196,13 @@ class AsyncSplash {
         this.timeOutSplash = timeOutSplash
     }
 
-    fun setUseBilling(listProductDetailCustoms: ArrayList<ProductDetailCustom>) {
+    fun setUseBilling(listProductDetailCustoms: ArrayList<ProductDetailCustom>) { //If need use IAP
         this.isUseBilling = true
         this.listProductDetailCustoms.clear()
         this.listProductDetailCustoms.addAll(listProductDetailCustoms)
     }
 
-    fun setDebug(isDebug: Boolean) {
+    fun setDebug(isDebug: Boolean) { //Use for TechManager or DetectTestAd
         this.isDebug = isDebug
     }
 
@@ -204,7 +210,7 @@ class AsyncSplash {
         return this.isDebug
     }
 
-    fun checkShowSplashWhenFail() {
+    fun checkShowSplashWhenFail() { //Call on resume of splash screen (Reshow splash ads when show fail)
         if (adsSplash != null) {
             adsSplash?.onCheckShowSplashWhenFail(activity, appOpenCallback, interCallback)
         }
@@ -250,13 +256,13 @@ class AsyncSplash {
             if (!isShowAdsSplash && !isNoInternetAction) {
                 //1.log event timeout splash 12s
                 val bundle = Bundle()
-                bundle.putString("timeout_12s_detail", "${initAdmobApi}_${initRemoteConfig}_${initAdsConsentManager}_${initBilling}_${initTechManager}")
+                bundle.putString("timeout_splash_next_screen_detail", "${initAdmobApi}_${initRemoteConfig}_${initAdsConsentManager}_${initBilling}_${initTechManager}")
                 bundle.putString("initAdmobApi", initAdmobApi.toString())
                 bundle.putString("initRemoteConfig", initRemoteConfig.toString())
                 bundle.putString("initAdsConsentManager", initAdsConsentManager.toString())
                 bundle.putString("initBilling", initBilling.toString())
                 bundle.putString("initTechManager", initTechManager.toString())
-                EventTrackingHelper.logEventWithMultipleParams(context, "Timeout_Splash_12s", bundle)
+                EventTrackingHelper.logEventWithMultipleParams(context, "timeout_splash_next_screen", bundle)
                 //1.end log event timeout splash 12s
                 //2.increase splash open
                 SharePreferenceHelper.setInt(
@@ -290,25 +296,23 @@ class AsyncSplash {
                 val asyncTechManager = async { initTechManager(activity) }
                 try {
                     //wait to load banner splash (banner splash fix id, don't use api to reduce time load splash)
-                    awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
-                    if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
-                        turnOffSomeRemoteKeys(activity)
+                    if (!isAsyncSplashAds) {
+                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
+                        if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
+                            turnOffSomeRemoteKeys(activity)
+                        }
+                    } else {
+                        awaitAll(asyncUMP)
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
-                    //val asyncBannerSplash = async { loadBannerSplash(activity, lifecycleOwner, frAdsBannerSplash, listIdBannerSplash, adsKey) }
                     lifecycleCoroutineScope.launch {
                         loadBannerSplash(activity, lifecycleOwner, frAdsBannerSplash, listIdBannerSplash, adsKey)
                     }
                     try {
                         //wait to load inter or open splash
-                        if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
-                            asyncAdmobApi.await()
-                        } else {
-                            //awaitAll(asyncBannerSplash, asyncAdmobApi)
-                            asyncAdmobApi.await()
-                        }
+                        asyncAdmobApi.await()
                     } catch (e: Exception) {
                         e.printStackTrace()
                     } finally {
@@ -323,6 +327,12 @@ class AsyncSplash {
                             adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
                             adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
                             showAdsSplash(activity, appOpenCallback, interCallback)
+                        }
+                        if (isAsyncSplashAds) {
+                            awaitAll(asyncRemoteConfig, asyncTechManager)
+                            if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
+                                turnOffSomeRemoteKeys(activity)
+                            }
                         }
                     }
                 }
@@ -542,52 +552,6 @@ class AsyncSplash {
             frAdsBanner?.visibility = View.GONE
         }
     }
-
-    /*private suspend fun loadBannerSplash(
-        activity: AppCompatActivity?,
-        lifecycleOwner: LifecycleOwner,
-        frAdsBanner: FrameLayout?,
-        listIdBannerSplash: MutableList<String>,
-        adsKey: String
-    ) = suspendCoroutine<Unit> { continuation ->
-        if (isShowBannerSplash) {
-            //Reset TechManager to false
-            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && isDebug) {
-                TechManager.getInstance().detectedTech(activity, false)
-            }
-            frAdsBanner?.visibility = View.VISIBLE
-            val bannerBuilder = BannerBuilder()
-            bannerBuilder.setListId(listIdBannerSplash)
-            bannerBuilder.callBack = object : BannerCallback() {
-                private var isResumed = false
-                override fun onAdImpression() {
-                    super.onAdImpression()
-                    if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && TechManager.getInstance().isTech(activity) && !isDebug) {
-                        turnOffSomeRemoteKeys(activity)
-                    }
-                    if (!isResumed) {
-                        isResumed = true
-                        continuation.resume(Unit)
-                        Log.d(TAG, "showBannerSplash.")
-                    }
-                }
-
-                override fun onAdFailedToLoad() {
-                    super.onAdFailedToLoad()
-                    frAdsBanner?.visibility = View.GONE
-                    if (!isResumed) {
-                        isResumed = true
-                        continuation.resume(Unit)
-                        Log.d(TAG, "loadFailBannerSplash.")
-                    }
-                }
-            }
-            activity?.let { BannerManager(it, frAdsBanner, lifecycleOwner, bannerBuilder, adsKey) }
-        } else {
-            frAdsBanner?.visibility = View.GONE
-            continuation.resume(Unit)
-        }
-    }*/
 
     private fun showAdsSplash(activity: AppCompatActivity?, appOpenCallback: AppOpenCallback?, interCallback: InterCallback?) {
         Log.d(TAG, "showAdsSplash check $isTimeout $isNoInternetAction")

@@ -64,6 +64,7 @@ public class SplashActivity extends AppCompatActivity {
         //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true);
         AsyncSplash.Companion.getInstance().setDebug(false); //use for TechManager, DetectTestAd
         AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
+        AsyncSplash.Companion.getInstance().setAsyncSplashAds(true);
         //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
         AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
         //AsyncSplash.Companion.getInstance().setTimeOutCallApi(0);
@@ -78,7 +79,7 @@ public class SplashActivity extends AppCompatActivity {
         AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
         ArrayList<String> listIdBannerSplash = new ArrayList<>();
         listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
-        AsyncSplash.Companion.getInstance().setShowBannerSplash(true, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
+        AsyncSplash.Companion.getInstance().setShowBannerSplash(false, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
         AsyncSplash.Companion.getInstance().handleAsync(this, this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
             @Override
             public Unit invoke() {

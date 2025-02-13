@@ -136,7 +136,7 @@ class AsyncSplash {
         this.initBilling = false
         this.initTechManager = false
         this.isUseIdAdsFromRemoteConfig = false
-        this.isPreloadResumeAds = false
+        this.isPreloadResumeAds = true
         this.isAsyncSplashAds = false
     }
 

@@ -180,6 +180,16 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
+        if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
+            Log.d(TAG, "INTER: Not show interstitial because the time interval. " + adsKey);
+            interCallback.onNextAction();
+            return;
+        }
+        if (System.currentTimeMillis() - timeStart < timeIntervalFromStart) {
+            Log.d(TAG, "INTER: Not show interstitial because the time interval from start. " + adsKey);
+            interCallback.onNextAction();
+            return;
+        }
         loadingAdsDialog = new LoadingAdsDialog(activity);
         if (!loadingAdsDialog.isShowing()) {
             loadingAdsDialog.show();
@@ -216,18 +226,11 @@ public class Admob {
     }
 
     public void showInterAdsLoadAndShow(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, String adsKey) {
-        if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
-            Log.d(TAG, "INTER: Not show interstitial because the time interval. " + adsKey);
-            interCallback.onNextAction();
-            return;
-        }
-        if (System.currentTimeMillis() - timeStart < timeIntervalFromStart) {
-            Log.d(TAG, "INTER: Not show interstitial because the time interval from start. " + adsKey);
-            interCallback.onNextAction();
-            return;
-        }
         if (mInterstitialAd == null) {
             Log.d(TAG, "INTER: The interstitial ad wasn't ready yet. " + adsKey);
+            if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.dismiss();
+            }
             interCallback.onNextAction();
             return;
         }

@@ -827,7 +827,7 @@ public class Admob {
                 bannerCallback.onAdLoaded();
 
                 //DetectTestAd
-                if (adsKey.toLowerCase().trim().equals("banner_splash")
+                if ((adsKey.toLowerCase().trim().equals("banner_splash") || adsKey.toLowerCase().trim().equals("banner_setting"))
                         && !AsyncSplash.Companion.getInstance().getDebug()
                         && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
                 ) {
@@ -957,7 +957,7 @@ public class Admob {
                 }
                 bannerCallback.onAdLoaded();
                 //DetectTestAd
-                if (adsKey.toLowerCase().trim().equals("banner_splash")
+                if ((adsKey.toLowerCase().trim().equals("banner_splash") || adsKey.toLowerCase().trim().equals("banner_setting"))
                         && !AsyncSplash.Companion.getInstance().getDebug()
                         && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
                 ) {

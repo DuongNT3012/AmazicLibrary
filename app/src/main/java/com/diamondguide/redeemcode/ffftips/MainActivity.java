@@ -24,6 +24,7 @@ import com.amazic.library.ads.native_ads.NativeManager;
 import com.amazic.library.ads.reward_ads.RewardManager;
 import com.amazic.library.ads.reward_inter_ads.RewardInterManager;
 import com.amazic.library.organic.TechManager;
+import com.amazic.library.update_app.UpdateApplicationManager;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
@@ -81,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
 
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
-            InterManager.loadAndShowInterAds(this, "inter_all", new InterCallback(){
+            InterManager.loadAndShowInterAds(this, "inter_all", new InterCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();
@@ -120,5 +121,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
+        UpdateApplicationManager.checkVersionPlayStore(this, false, false, true);
     }
 }

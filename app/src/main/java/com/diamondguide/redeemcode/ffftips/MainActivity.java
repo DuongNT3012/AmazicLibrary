@@ -121,6 +121,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-        UpdateApplicationManager.checkVersionPlayStore(this, false, false, true);
+        UpdateApplicationManager.checkVersionPlayStore(this, false, true, true);
     }
 }

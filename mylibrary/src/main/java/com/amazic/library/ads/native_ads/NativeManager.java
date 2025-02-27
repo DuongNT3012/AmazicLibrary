@@ -10,6 +10,7 @@ import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.amazic.library.ads.admob.Admob;
+import com.google.android.gms.ads.nativead.NativeAd;
 
 public class NativeManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
@@ -22,6 +23,7 @@ public class NativeManager implements LifecycleEventObserver {
     private boolean isStop = false;
     private CountDownTimer countDownTimer;
     private String adsKey;
+    private NativeAd myNativeAd;
 
     public void setIntervalReloadNative(long intervalReloadNative) {
         if (intervalReloadNative > 0) {
@@ -75,6 +77,9 @@ public class NativeManager implements LifecycleEventObserver {
                 }
                 break;
             case ON_DESTROY:
+                if (myNativeAd != null) {
+                    myNativeAd.destroy();
+                }
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
                 this.lifecycleOwner.getLifecycle().removeObserver(this);
                 break;
@@ -82,7 +87,10 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadNativeFloor() {
-        Admob.getInstance().loadNativeAds(currentActivity,
+        if (myNativeAd != null) {
+            myNativeAd.destroy();
+        }
+        myNativeAd = Admob.getInstance().loadNativeAds(currentActivity,
                 builder.getListIdAd(),
                 builder.getFlAd(),
                 builder.getLayoutNativeAdmob(),

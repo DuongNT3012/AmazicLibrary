@@ -91,6 +91,7 @@ public class Admob {
     private boolean openActivityAfterShowInterAds = true;
     private boolean isDetectTestAdByView = false;
     private int countClickInterSplashAds = 0;
+    private NativeAd myNativeAd = null;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -1362,7 +1363,7 @@ public class Admob {
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression, String adsKey) {
+    public NativeAd loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression, String adsKey) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         if (adContainerView != null) {
             adContainerView.removeAllViews();
@@ -1371,7 +1372,7 @@ public class Admob {
         if (!NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
             Log.d(TAG, "NATIVE: Check condition. " + adsKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdNativeTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, adsKey));
             nativeCallback.onAdFailedToLoad();
-            return;
+            return null;
         }
         //log event can request ads
         EventTrackingHelper.logEvent(activity, adsKey + "_true");
@@ -1385,6 +1386,7 @@ public class Admob {
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNativeTemp.get(0));
         // OnLoadedListener implementation.
         builder.forNativeAd(nativeAd -> {
+            myNativeAd = nativeAd;
             Log.i(TAG, "NATIVE: onAdLoaded. " + adsKey);
             nativeCallback.onNativeAdLoaded(nativeAd);
             if (setShowNativeAfterLoaded) {
@@ -1449,6 +1451,8 @@ public class Admob {
         }).build();
 
         adLoader.loadAd(new AdRequest.Builder().build());
+
+        return myNativeAd;
     }
 
     public void loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, String adsKey) {

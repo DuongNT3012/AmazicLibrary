@@ -221,6 +221,9 @@ public class Admob {
                         if (!listIdInterTemp.isEmpty()) {
                             listIdInterTemp.remove(0);
                         }
+                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            loadingAdsDialog.dismiss();
+                        }
                         loadInterAdsLoadAndShow(activity, listIdInterTemp, interCallback, adsKey);
                     }
                 });

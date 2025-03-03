@@ -27,6 +27,7 @@ public class NativeBuilder {
     private int layoutNativeAdmob;
     private int layoutNativeMeta;
     private int layoutShimmerNative;
+    int maxRequest = 1;
 
     public NativeBuilder(Context context, FrameLayout flAd, @LayoutRes int idLayoutShimmer, @LayoutRes int idLayoutNative, @LayoutRes int idLayoutNativeMeta) {
         setLayoutAds(context, flAd, idLayoutShimmer, idLayoutNative, idLayoutNativeMeta);
@@ -65,6 +66,7 @@ public class NativeBuilder {
     public int getLayoutShimmerNative() {
         return this.layoutShimmerNative;
     }
+
     public int getLayoutNativeAdmob() {
         return this.layoutNativeAdmob;
     }

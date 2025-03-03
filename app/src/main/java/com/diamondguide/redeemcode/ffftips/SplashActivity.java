@@ -52,12 +52,6 @@ public class SplashActivity extends AppCompatActivity {
             }
         };
 
-        Admob.getInstance().setOpenActivityAfterShowInterAds(true);
-        //Admob.getInstance().setDetectTestAdByView(true);
-        Admob.getInstance().setTimeStart(System.currentTimeMillis());
-        //Admob.getInstance().setTimeIntervalFromStart(20000);
-        //Admob.getInstance().setTimeInterval(1000);
-
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
         //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
         AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
@@ -75,7 +69,6 @@ public class SplashActivity extends AppCompatActivity {
         AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
         //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
         ArrayList<String> listTurnOffRemote = new ArrayList<>();
-        //listTurnOffRemote.add("inter_splash");
         AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
         ArrayList<String> listIdBannerSplash = new ArrayList<>();
         listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");

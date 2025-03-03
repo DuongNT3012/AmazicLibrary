@@ -36,7 +36,7 @@ public class NativeManager implements LifecycleEventObserver {
 
                 @Override
                 public void onFinish() {
-                    loadNativeFloor();
+                    loadNativeFloor(1);
                 }
             };
         }
@@ -55,7 +55,7 @@ public class NativeManager implements LifecycleEventObserver {
         switch (event) {
             case ON_CREATE:
                 Log.d(TAG, "onStateChanged: ON_CREATE");
-                loadNativeFloor();
+                loadNativeFloor(builder.maxRequest);
                 break;
             case ON_RESUME:
                 if (countDownTimer != null && isStop) {
@@ -65,7 +65,7 @@ public class NativeManager implements LifecycleEventObserver {
                 Log.d(TAG, "onStateChanged: resume\n" + valueLog);
                 if (isStop && (isReloadAds || isAlwaysReloadOnResume)) {
                     isReloadAds = false;
-                    loadNativeFloor();
+                    loadNativeFloor(1);
                 }
                 isStop = false;
                 break;
@@ -86,11 +86,11 @@ public class NativeManager implements LifecycleEventObserver {
         }
     }
 
-    private void loadNativeFloor() {
+    private void loadNativeFloor(int maxRequest) {
         if (myNativeAd != null) {
             myNativeAd.destroy();
         }
-        myNativeAd = Admob.getInstance().loadNativeAds(currentActivity,
+        myNativeAd = Admob.getInstance().loadMultipleNativeAds(currentActivity,
                 builder.getListIdAd(),
                 builder.getFlAd(),
                 builder.getLayoutNativeAdmob(),
@@ -103,7 +103,7 @@ public class NativeManager implements LifecycleEventObserver {
                         countDownTimer.cancel();
                         countDownTimer.start();
                     }
-                }, adsKey);
+                }, adsKey, maxRequest);
     }
 
     public void setReloadAds() {
@@ -111,7 +111,7 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     public void reloadAdNow() {
-        loadNativeFloor();
+        loadNativeFloor(1);
     }
 
     public void setAlwaysReloadOnResume(boolean isAlwaysReloadOnResume) {

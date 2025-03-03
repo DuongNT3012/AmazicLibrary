@@ -247,7 +247,7 @@ class AsyncSplash {
         this.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
     }
 
-    fun handleAsync(context: Context, lifecycleOwner: LifecycleOwner, lifecycleCoroutineScope: LifecycleCoroutineScope, onNoInternetAction: () -> Unit) {
+    fun handleAsync(context: Context, lifecycleOwner: LifecycleOwner, lifecycleCoroutineScope: LifecycleCoroutineScope, onNoInternetAction: () -> Unit, onAsyncSplashDone: () -> Unit) {
         Admob.getInstance().timeStart = System.currentTimeMillis()
         timeStartSplash = System.currentTimeMillis()
         lifecycleCoroutineScope.launch {
@@ -333,6 +333,9 @@ class AsyncSplash {
                             if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
                                 turnOffSomeRemoteKeys(activity)
                             }
+                        }
+                        lifecycleCoroutineScope.launch {
+                            onAsyncSplashDone.invoke()
                         }
                     }
                 }

@@ -7,12 +7,10 @@ import android.util.Log;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwnerKt;
 
-import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
-import com.amazic.library.iap.BillingCallback;
 import com.amazic.library.iap.IAPManager;
 import com.amazic.library.iap.ProductDetailCustom;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivitySplashBinding;
@@ -77,6 +75,12 @@ public class SplashActivity extends AppCompatActivity {
             @Override
             public Unit invoke() {
                 interCallback.onNextAction();
+                return null;
+            }
+        }, new Function0<Unit>() {
+            @Override
+            public Unit invoke() {
+
                 return null;
             }
         });

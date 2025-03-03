@@ -844,6 +844,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     public void loadAndShowAppOpenResumeSplash(AppCompatActivity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        ArrayList<String> listIdOpenResumeTemp = new ArrayList<>(listIdOpenResume);
         //Set timeout ads splash 20s if cannot load
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
@@ -858,6 +859,28 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             handlerTimeoutSplash.postDelayed(runnable, 20000);
         }
 
+        // Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
+            Log.d(TAG, "SPLASH: Check condition loadAndShowAppOpenResumeSplash. " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResumeTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
+            appOpenCallback.onNextAction();
+            if (handlerTimeoutSplash != null && runnable != null) {
+                handlerTimeoutSplash.removeCallbacks(runnable);
+                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                handlerTimeoutSplash = null;
+            }
+            return;
+        }
+
+        // Do not load ad if there is an unused ad or one is already loading.
+        if (isLoadingAdSplash) {
+            Log.d(TAG, "SPLASH: Do not load ad if there is an unused ad or one is already loading.");
+            return;
+        }
+        if (isAdSplashAvailable()) {
+            showAdSplashIfAvailable(activity, appOpenCallback);
+            return;
+        }
+
         //Log event
         Bundle bundle = new Bundle();
         boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
@@ -870,34 +893,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
         EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
 
-        // Check condition
-        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "SPLASH: Check condition loadAndShowAppOpenResumeSplash. " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
-            appOpenCallback.onNextAction();
-            if (handlerTimeoutSplash != null && runnable != null) {
-                handlerTimeoutSplash.removeCallbacks(runnable);
-                handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                handlerTimeoutSplash = null;
-            }
-            return;
-        }
-        // Do not load ad if there is an unused ad or one is already loading.
-        if (isLoadingAdSplash) {
-            Log.d(TAG, "SPLASH: Do not load ad if there is an unused ad or one is already loading.");
-            return;
-        }
-        if (isAdSplashAvailable()) {
-            showAdSplashIfAvailable(activity, appOpenCallback);
-            return;
-        }
-
         //log event can request
         EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
         //end log event can request
 
         isLoadingAdSplash = true;
         AdRequest request = new AdRequest.Builder().build();
-        AppOpenAd.load(activity, listIdOpenResume.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
+        AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
                 // Called when an app open ad has loaded.
@@ -925,8 +927,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 // Called when an app open ad has failed to load.
                 Log.e(TAG, "SPLASH: Ad Failed To Load. " + loadAdError);
                 isLoadingAdSplash = false;
-                listIdOpenResume.remove(0);
-                loadAndShowAppOpenResumeSplash(activity, listIdOpenResume, appOpenCallback);
+                if (!listIdOpenResumeTemp.isEmpty()) {
+                    listIdOpenResumeTemp.remove(0);
+                }
+                loadAndShowAppOpenResumeSplash(activity, listIdOpenResumeTemp, appOpenCallback);
                 appOpenCallback.onAdFailedToLoad();
             }
         });
@@ -973,18 +977,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             return;
         }
 
-        //Log event
-        Bundle bundle = new Bundle();
-        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
-        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
-        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
-        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
-        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
-        bundle.putString(EventTrackingHelper.showallad, String.valueOf(Admob.getInstance().getShowAllAds()));
-        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
-        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
-        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
-
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || idOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
             Log.d(TAG, "Check condition loadAndShowAppOpenResumeSplash. " + NetworkUtil.isNetworkActive(activity) + "_" + idOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
@@ -996,6 +988,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
             return;
         }
+
         // Do not load ad if there is an unused ad or one is already loading.
         if (isLoadingAdSplash) {
             Log.d(TAG, "SPLASH: Do not load ad if there is an unused ad or one is already loading.");
@@ -1005,6 +998,18 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             showAdSplashIfAvailable(activity, appOpenCallback);
             return;
         }
+
+        //Log event
+        Bundle bundle = new Bundle();
+        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
+        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
+        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
+        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
+        bundle.putString(EventTrackingHelper.showallad, String.valueOf(Admob.getInstance().getShowAllAds()));
+        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
+        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
 
         //log event can request
         EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);

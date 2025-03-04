@@ -18,6 +18,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.RatingBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -1350,6 +1351,7 @@ public class Admob {
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                nativeCallback.onAdImpression();
                 Log.d(TAG, "NATIVE: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_view");
             }
@@ -1357,6 +1359,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                nativeCallback.onAdClicked();
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "NATIVE: onAdClicked. " + ". " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
@@ -1439,6 +1442,7 @@ public class Admob {
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                nativeCallback.onAdImpression();
                 iOnAdsImpression.onAdsImpression();
                 Log.d(TAG, "NATIVE: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_view");
@@ -1447,6 +1451,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                nativeCallback.onAdClicked();
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "NATIVE: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
@@ -1500,6 +1505,7 @@ public class Admob {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
                 }
+                nativeCallback.onAdShown(adView);
             }
             //Tracking revenue
             nativeAd.setOnPaidEventListener(adValue -> {
@@ -1525,12 +1531,13 @@ public class Admob {
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
                 }
-                loadNativeAds(activity, listIdNativeTemp, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback, iOnAdsImpression, adsKey);
+                loadMultipleNativeAds(activity, listIdNativeTemp, adContainerView, layoutNative, layoutNativeMeta, layoutShimmerNative, setShowNativeAfterLoaded, nativeCallback, iOnAdsImpression, adsKey, maxRequest);
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                nativeCallback.onAdImpression();
                 iOnAdsImpression.onAdsImpression();
                 Log.d(TAG, "NATIVE: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_view");
@@ -1539,6 +1546,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                nativeCallback.onAdClicked();
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "NATIVE: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");
@@ -1622,6 +1630,7 @@ public class Admob {
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                nativeCallback.onAdImpression();
                 Log.d(TAG, "NATIVE: onAdImpression. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_view");
             }
@@ -1629,6 +1638,7 @@ public class Admob {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                nativeCallback.onAdClicked();
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "NATIVE: onAdClicked. " + adsKey);
                 EventTrackingHelper.logEvent(activity, adsKey + "_click");

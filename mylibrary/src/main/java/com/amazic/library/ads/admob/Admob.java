@@ -1502,7 +1502,7 @@ public class Admob {
                 }
                 Admob.getInstance().populateNativeAdView(nativeAd, adView);
                 if (adContainerView != null) {
-                    adContainerView.removeAllViews();
+                    adContainerView.removeView(shimmerNative);
                     adContainerView.addView(adView);
                 }
                 nativeCallback.onAdShown(adView);

@@ -47,20 +47,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivityRemote", "interval start: " + RemoteConfigHelper.getInstance().get_config_long(this, RemoteConfigHelper.interval_interstitial_from_start));
         Log.d("MainActivityRemote", "interval reloadNative: " + RemoteConfigHelper.getInstance().get_config_long(this, RemoteConfigHelper.interval_reload_native));
         AppOpenManager.getInstance().isShowAdResumeAfterAdClick = false;
-        BannerBuilder bannerBuilder = new BannerBuilder().isIdApi();
-        bannerBuilder.setCallBack(new BannerCallback() {
-            @Override
-            public void onAdImpression() {
-                super.onAdImpression();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        Log.d("MainActivity", "run: " + TechManager.getInstance().isTech(MainActivity.this));
-                    }
-                }, 3000);
-            }
-        });
-        BannerManager bannerManager = new BannerManager(this, binding.adViewContainer, this, bannerBuilder, "banner_all");
         //bannerManager.setAlwaysReloadOnResume(true);
         //bannerManager.setIntervalReloadBanner(5000L);
 
@@ -75,6 +61,7 @@ public class MainActivity extends AppCompatActivity {
                 com.amazic.mylibrary.R.layout.layout_native_adview,
                 com.amazic.mylibrary.R.layout.layout_native_adview);
         nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDNativeAll());
+        nativeBuilder.maxRequest = 3;
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_all");
         nativeManager.setIntervalReloadNative(2000);
         //nativeManager.setAlwaysReloadOnResume(true);

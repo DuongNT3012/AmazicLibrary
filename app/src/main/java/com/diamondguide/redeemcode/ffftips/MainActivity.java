@@ -18,6 +18,8 @@ import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
+import com.amazic.library.ads.collapse_banner_ads.CollapseBannerBuilder;
+import com.amazic.library.ads.collapse_banner_ads.CollapseBannerManager;
 import com.amazic.library.ads.inter_ads.InterManager;
 import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
@@ -50,10 +52,9 @@ public class MainActivity extends AppCompatActivity {
         //bannerManager.setAlwaysReloadOnResume(true);
         //bannerManager.setIntervalReloadBanner(5000L);
 
-        /*CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder().isIdApi();
-        CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder);
+        CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder().isIdApi();
+        CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder,"fdkfjkd");
         collapseBannerManager.setAlwaysReloadOnResume(true);
-        collapseBannerManager.setIntervalReloadBanner(5000L);*/
 
         NativeBuilder nativeBuilder = new NativeBuilder(
                 this, binding.frAdsNative,

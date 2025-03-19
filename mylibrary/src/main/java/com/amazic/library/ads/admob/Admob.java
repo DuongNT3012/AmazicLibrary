@@ -1435,7 +1435,9 @@ public class Admob {
     public NativeAd loadNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression, String adsKey) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         if (adContainerView != null) {
-            adContainerView.removeAllViews();
+            while (adContainerView.getChildCount() > 0) {
+                adContainerView.removeViewAt(0);
+            }
         }
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
@@ -1529,7 +1531,9 @@ public class Admob {
     public NativeAd loadMultipleNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression, String adsKey, int maxRequest) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         if (adContainerView != null) {
-            adContainerView.removeAllViews();
+            while (adContainerView.getChildCount() > 0) {
+                adContainerView.removeViewAt(0);
+            }
         }
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {

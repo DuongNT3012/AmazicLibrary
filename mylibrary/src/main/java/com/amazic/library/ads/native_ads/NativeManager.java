@@ -22,7 +22,7 @@ public class NativeManager implements LifecycleEventObserver {
     private long intervalReloadNative = 0;
     private boolean isStop = false;
     private CountDownTimer countDownTimer;
-    private String adsKey;
+    private final String adsKey;
     private NativeAd myNativeAd;
 
     public void setIntervalReloadNative(long intervalReloadNative) {

@@ -1405,6 +1405,7 @@ public class Admob {
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + adsKey);
                 nativeCallback.onAdFailedToLoad();
+                EventTrackingHelper.logEventWithAParam(activity, adsKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
                 }
@@ -1497,6 +1498,7 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + adsKey);
+                EventTrackingHelper.logEventWithAParam(activity, adsKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
                 nativeCallback.onAdFailedToLoad();
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
@@ -1526,6 +1528,10 @@ public class Admob {
         adLoader.loadAd(new AdRequest.Builder().build());
 
         return myNativeAd;
+    }
+
+    public static String limitString(String str, int maxLength) {
+        return str.length() > maxLength ? str.substring(0, maxLength) : str;
     }
 
     public NativeAd loadMultipleNativeAds(Activity activity, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression, String adsKey, int maxRequest) {
@@ -1594,6 +1600,7 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + adsKey);
+                EventTrackingHelper.logEventWithAParam(activity, adsKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
                 nativeCallback.onAdFailedToLoad();
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
@@ -1687,6 +1694,7 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + adsKey);
+                EventTrackingHelper.logEventWithAParam(activity, adsKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
                 nativeCallback.onAdFailedToLoad();
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);

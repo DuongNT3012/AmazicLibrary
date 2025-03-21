@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintTop_toTopOf="parent">
 
-        <!--<include layout="@layout/layout_shimmer_banner" />-->
+        <include layout="@layout/layout_shimmer_native" />
     </FrameLayout>
 
     <TextView

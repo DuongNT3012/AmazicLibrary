@@ -90,20 +90,28 @@ public class NativeManager implements LifecycleEventObserver {
         if (myNativeAd != null) {
             myNativeAd.destroy();
         }
-        myNativeAd = Admob.getInstance().loadMultipleNativeAds(currentActivity,
-                builder.getListIdAd(),
-                builder.getFlAd(),
-                builder.getLayoutNativeAdmob(),
-                builder.getLayoutNativeMeta(),
-                builder.getLayoutShimmerNative(),
-                true,
-                builder.getCallback(),
-                () -> {
-                    if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
-                        countDownTimer.cancel();
-                        countDownTimer.start();
-                    }
-                }, adsKey, maxRequest);
+        if (!builder.getListIdAd().isEmpty()) {
+            myNativeAd = Admob.getInstance().loadMultipleNativeAds1Id(currentActivity,
+                    builder.getListIdAd().get(0),
+                    builder.getFlAd(),
+                    builder.getLayoutNativeAdmob(),
+                    builder.getLayoutNativeMeta(),
+                    builder.getLayoutShimmerNative(),
+                    true,
+                    builder.getCallback(),
+                    () -> {
+                        if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
+                            countDownTimer.cancel();
+                            countDownTimer.start();
+                        }
+                    },
+                    () -> {
+                        if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
+                            countDownTimer.cancel();
+                            countDownTimer.start();
+                        }
+                    }, adsKey, maxRequest);
+        }
     }
 
     public void setReloadAds() {

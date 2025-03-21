@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.Utils.RemoteConfigHelper;
+import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.banner_ads.BannerBuilder;
@@ -52,8 +53,11 @@ public class MainActivity extends AppCompatActivity {
         //bannerManager.setAlwaysReloadOnResume(true);
         //bannerManager.setIntervalReloadBanner(5000L);
 
+        RemoteConfigHelper.getInstance().set_config(this, "collapse_banner", true);
+        RemoteConfigHelper.getInstance().set_config(this, "native_all", true);
+
         CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder().isIdApi();
-        CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder,"fdkfjkd");
+        CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder,"collapse_banner");
         collapseBannerManager.setAlwaysReloadOnResume(true);
 
         NativeBuilder nativeBuilder = new NativeBuilder(

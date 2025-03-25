@@ -1,5 +1,6 @@
 package com.amazic.library.ads.splash_ads
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -348,7 +349,7 @@ class AsyncSplash {
         }
     }
 
-    private fun turnOffSomeRemoteKeys(activity: AppCompatActivity?) {
+    fun turnOffSomeRemoteKeys(activity: Context?) {
         listTurnOffRemoteKeys.forEach {
             Log.d(TAG, "turnOffSomeRemoteKeys: $it")
             RemoteConfigHelper.getInstance().set_config(activity, it, false)
@@ -529,7 +530,7 @@ class AsyncSplash {
         Log.d(TAG, "loadBannerSplash.")
         if (isShowBannerSplash) {
             //Reset TechManager to false
-            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
+            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && isDebug) {
                 TechManager.getInstance().detectedTech(activity, false)
             }
             frAdsBanner?.visibility = View.VISIBLE

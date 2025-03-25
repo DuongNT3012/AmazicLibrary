@@ -839,6 +839,12 @@ public class Admob {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
+
+                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                            && TechManager.getInstance().isTech(activity)
+                            && !AsyncSplash.Companion.getInstance().getDebug()) {
+                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                    }
                 }
 
                 //Tracking revenue
@@ -969,6 +975,12 @@ public class Admob {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(context, isTestAd);
+
+                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                            && TechManager.getInstance().isTech(context)
+                            && !AsyncSplash.Companion.getInstance().getDebug()) {
+                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);
+                    }
                 }
                 //Tracking revenue
                 adView.setOnPaidEventListener(adValue -> {

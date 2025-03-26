@@ -831,7 +831,6 @@ public class Admob {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
                 }
-                bannerCallback.onAdLoaded();
 
                 //DetectTestAd
                 //Reset TechManager to false
@@ -860,6 +859,7 @@ public class Admob {
                         AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
                     }
                 });
+                bannerCallback.onAdLoaded();
             }
 
             @Override
@@ -972,7 +972,6 @@ public class Admob {
                     adContainerView.removeAllViews();
                     adContainerView.addView(adView);
                 }
-                bannerCallback.onAdLoaded();
                 //DetectTestAd
                 //Reset TechManager to false
                 if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
@@ -999,6 +998,7 @@ public class Admob {
                         AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
                     }
                 });
+                bannerCallback.onAdLoaded();
             }
 
             @Override

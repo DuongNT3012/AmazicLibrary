@@ -530,7 +530,7 @@ class AsyncSplash {
         Log.d(TAG, "loadBannerSplash.")
         if (isShowBannerSplash) {
             //Reset TechManager to false
-            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && isDebug) {
+            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
                 TechManager.getInstance().detectedTech(activity, false)
             }
             frAdsBanner?.visibility = View.VISIBLE

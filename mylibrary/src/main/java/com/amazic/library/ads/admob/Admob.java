@@ -1,5 +1,7 @@
 package com.amazic.library.ads.admob;
 
+import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
+
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
@@ -832,15 +834,19 @@ public class Admob {
                 bannerCallback.onAdLoaded();
 
                 //DetectTestAd
+                //Reset TechManager to false
+                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                    TechManager.getInstance().detectedTech(activity, false);
+                }
                 if ((adsKey.toLowerCase().trim().equals("banner_splash") || adsKey.toLowerCase().trim().equals("banner_setting"))
                         && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                             && TechManager.getInstance().isTech(activity)
                             && !AsyncSplash.Companion.getInstance().getDebug()) {
                         AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
@@ -968,15 +974,19 @@ public class Admob {
                 }
                 bannerCallback.onAdLoaded();
                 //DetectTestAd
+                //Reset TechManager to false
+                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                    TechManager.getInstance().detectedTech(context, false);
+                }
                 if ((adsKey.toLowerCase().trim().equals("banner_splash") || adsKey.toLowerCase().trim().equals("banner_setting"))
                         && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(context, isTestAd);
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(AsyncSplash.DETECT_TEST_AD)
+                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                             && TechManager.getInstance().isTech(context)
                             && !AsyncSplash.Companion.getInstance().getDebug()) {
                         AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);

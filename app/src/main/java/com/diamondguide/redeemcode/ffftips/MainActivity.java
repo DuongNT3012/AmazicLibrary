@@ -2,33 +2,26 @@ package com.diamondguide.redeemcode.ffftips;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.amazic.library.Utils.RemoteConfigHelper;
-import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
-import com.amazic.library.ads.banner_ads.BannerBuilder;
-import com.amazic.library.ads.banner_ads.BannerManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
-import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.library.ads.callback.InterCallback;
+import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
-import com.amazic.library.ads.collapse_banner_ads.CollapseBannerBuilder;
-import com.amazic.library.ads.collapse_banner_ads.CollapseBannerManager;
 import com.amazic.library.ads.inter_ads.InterManager;
 import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
 import com.amazic.library.ads.reward_ads.RewardManager;
 import com.amazic.library.ads.reward_inter_ads.RewardInterManager;
-import com.amazic.library.organic.TechManager;
 import com.amazic.library.update_app.UpdateApplicationManager;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivityMainBinding;
+import com.google.android.gms.ads.nativead.NativeAd;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
@@ -39,37 +32,25 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        Log.d("MainActivity", "onCreate.");
-        Log.d("MainActivity", "TechManager: " + TechManager.getInstance().isTech(this));
-
-        Log.d("MainActivityRemote", "banner_splash: " + RemoteConfigHelper.getInstance().get_config(this, RemoteConfigHelper.banner_splash));
-        Log.d("MainActivityRemote", "inter_splash: " + RemoteConfigHelper.getInstance().get_config(this, RemoteConfigHelper.inter_splash));
-        Log.d("MainActivityRemote", "open_splash: " + RemoteConfigHelper.getInstance().get_config(this, RemoteConfigHelper.open_splash));
-        Log.d("MainActivityRemote", "rate: " + RemoteConfigHelper.getInstance().get_config_string(this, RemoteConfigHelper.rate_aoa_inter_splash));
-        Log.d("MainActivityRemote", "interval start: " + RemoteConfigHelper.getInstance().get_config_long(this, RemoteConfigHelper.interval_interstitial_from_start));
-        Log.d("MainActivityRemote", "interval reloadNative: " + RemoteConfigHelper.getInstance().get_config_long(this, RemoteConfigHelper.interval_reload_native));
-        AppOpenManager.getInstance().isShowAdResumeAfterAdClick = false;
-        //bannerManager.setAlwaysReloadOnResume(true);
-        //bannerManager.setIntervalReloadBanner(5000L);
-
-        RemoteConfigHelper.getInstance().set_config(this, "collapse_banner", true);
-        RemoteConfigHelper.getInstance().set_config(this, "native_all", true);
-
-        CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder().isIdApi();
-        CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder,"collapse_banner");
-        collapseBannerManager.setAlwaysReloadOnResume(true);
-
         NativeBuilder nativeBuilder = new NativeBuilder(
                 this, binding.frAdsNative,
                 com.amazic.mylibrary.R.layout.layout_shimmer_native,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
-                com.amazic.mylibrary.R.layout.layout_native_adview);
-        nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDNativeAll());
-        nativeBuilder.maxRequest = 3;
-        NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_all");
+                com.amazic.mylibrary.R.layout.layout_native_adview,
+                true);
+        nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDByName("native_wb"));
+        nativeBuilder.setListIdAdFirst(AdmobApi.getInstance().getListIDByName("native_wb"));
+        nativeBuilder.setCallback(new NativeCallback() {
+            @Override
+            public void onNativeAdLoaded(NativeAd nativeAd) {
+                super.onNativeAdLoaded(nativeAd);
+                if (nativeAd.getResponseInfo() != null)
+                    Log.d("lfksdlfkas", "onNativeAdLoaded: " + nativeAd.getResponseInfo().getResponseId());
+            }
+        });
+        NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb2");
         nativeManager.setIntervalReloadNative(2000);
-        //nativeManager.setAlwaysReloadOnResume(true);
+        nativeManager.setAlwaysReloadOnResume(true);
         //nativeManager.setIntervalReloadNative(3000L);
 
         //InterManager.loadInterAds(this, "inter_all");

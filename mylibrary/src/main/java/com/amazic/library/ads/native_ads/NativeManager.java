@@ -3,6 +3,7 @@ package com.amazic.library.ads.native_ads;
 import android.app.Activity;
 import android.os.CountDownTimer;
 import android.util.Log;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.Lifecycle;
@@ -10,7 +11,9 @@ import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.ads.callback.NativeCallback;
 import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.gms.ads.nativead.NativeAdView;
 
 public class NativeManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
@@ -23,7 +26,8 @@ public class NativeManager implements LifecycleEventObserver {
     private boolean isStop = false;
     private CountDownTimer countDownTimer;
     private final String adsKey;
-    private NativeAd myNativeAd;
+    private NativeAd myNativeAdSecond;
+    private NativeAd myNativeAdFist;
 
     public void setIntervalReloadNative(long intervalReloadNative) {
         if (intervalReloadNative > 0) {
@@ -36,7 +40,7 @@ public class NativeManager implements LifecycleEventObserver {
 
                 @Override
                 public void onFinish() {
-                    loadNativeFloor(1);
+                    loadNativeFloor(builder.maxRequestReload);
                 }
             };
         }
@@ -65,7 +69,7 @@ public class NativeManager implements LifecycleEventObserver {
                 Log.d(TAG, "onStateChanged: resume\n" + valueLog);
                 if (isStop && (isReloadAds || isAlwaysReloadOnResume)) {
                     isReloadAds = false;
-                    loadNativeFloor(1);
+                    loadNativeFloor(builder.maxRequestReload);
                 }
                 isStop = false;
                 break;
@@ -77,8 +81,8 @@ public class NativeManager implements LifecycleEventObserver {
                 }
                 break;
             case ON_DESTROY:
-                if (myNativeAd != null) {
-                    myNativeAd.destroy();
+                if (myNativeAdSecond != null) {
+                    myNativeAdSecond.destroy();
                 }
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
                 this.lifecycleOwner.getLifecycle().removeObserver(this);
@@ -87,11 +91,131 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadNativeFloor(int maxRequest) {
-        if (myNativeAd != null) {
-            myNativeAd.destroy();
+        Log.d(TAG, "loadNativeFloor: "+builder.useNewAdLoading);
+        if (builder.useNewAdLoading) {
+            loadNewAdFormat();
+        } else loadOldAdFormat(maxRequest);
+    }
+
+    private void loadNewAdFormat() {
+        if (myNativeAdFist != null) {
+            myNativeAdSecond.destroy();
+        }
+        if (myNativeAdSecond != null) {
+            myNativeAdSecond.destroy();
+        }
+
+        if (!builder.getListIdAdFirst().isEmpty()) {
+            loadAdFirst();
         }
         if (!builder.getListIdAd().isEmpty()) {
-            myNativeAd = Admob.getInstance().loadMultipleNativeAds1Id(currentActivity,
+            loadAdSecond();
+        }
+    }
+
+    private void loadAdSecond() {
+        Log.d(TAG, "loadAdSecond: ");
+        Admob.getInstance().loadMultipleNativeAd(currentActivity, builder.getListIdAd().get(0),
+                new NativeCallback() {
+                    @Override
+                    public void onNativeAdLoaded(NativeAd nativeAd) {
+                        super.onNativeAdLoaded(nativeAd);
+                        myNativeAdSecond = nativeAd;
+                        builder.getCallback().onNativeAdLoaded(nativeAd);
+                        builder.nativeAdView.setVisibility(View.VISIBLE);
+                        builder.shimmerFrameLayout.setVisibility(View.GONE);
+                        builder.nativeAdView.setNativeAd(myNativeAdSecond);
+                        Admob.getInstance().populateNativeAdView(myNativeAdSecond, builder.nativeAdView);
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad() {
+                        super.onAdFailedToLoad();
+                        builder.getCallback().onAdFailedToLoad();
+                        if (countDownTimer != null && NativeManager.this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
+                            countDownTimer.cancel();
+                            countDownTimer.start();
+                        }
+                    }
+
+                    @Override
+                    public void onAdImpression() {
+                        super.onAdImpression();
+                        builder.getCallback().onAdImpression();
+                        if (countDownTimer != null && NativeManager.this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
+                            countDownTimer.cancel();
+                            countDownTimer.start();
+                            Log.d(TAG, "onAdImpression: countDownTimer");
+                        }
+                        Log.d(TAG, "onAdImpression: getListIdAd");
+                    }
+
+                    @Override
+                    public void onAdClicked() {
+                        super.onAdClicked();
+                        builder.getCallback().onAdClicked();
+                    }
+
+                    @Override
+                    public void onAdShown(NativeAdView adView) {
+                        super.onAdShown(adView);
+                        builder.getCallback().onAdShown(adView);
+                    }
+                }, adsKey, builder.maxRequest);
+    }
+
+    private void loadAdFirst() {
+        Log.d(TAG, "loadAdFirst: ");
+        Admob.getInstance().loadMultipleNativeAd(currentActivity, builder.getListIdAdFirst().get(0),
+                new NativeCallback() {
+                    @Override
+                    public void onNativeAdLoaded(NativeAd nativeAd) {
+                        super.onNativeAdLoaded(nativeAd);
+                        myNativeAdFist = nativeAd;
+                        builder.nativeAdView.setVisibility(View.INVISIBLE);
+                        builder.nativeAdViewBackup.setVisibility(View.VISIBLE);
+                        builder.shimmerFrameLayout.setVisibility(View.GONE);
+                        builder.nativeAdViewBackup.setNativeAd(myNativeAdFist);
+                        Admob.getInstance().populateNativeAdView(myNativeAdFist, builder.nativeAdViewBackup);
+                        builder.getCallback().onNativeAdLoaded(nativeAd);
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad() {
+                        super.onAdFailedToLoad();
+                        builder.getCallback().onAdFailedToLoad();
+                    }
+
+                    @Override
+                    public void onAdImpression() {
+                        super.onAdImpression();
+                        builder.getCallback().onAdImpression();
+                        Log.d(TAG, "onAdImpression: getListIdAdFirst");
+                        if (myNativeAdSecond != null) {
+                            builder.nativeAdView.setVisibility(View.VISIBLE);
+                        }
+                    }
+
+                    @Override
+                    public void onAdClicked() {
+                        super.onAdClicked();
+                        builder.getCallback().onAdClicked();
+                    }
+
+                    @Override
+                    public void onAdShown(NativeAdView adView) {
+                        super.onAdShown(adView);
+                        builder.getCallback().onAdShown(adView);
+                    }
+                }, adsKey, builder.maxRequest);
+    }
+
+    private void loadOldAdFormat(int maxRequest) {
+        if (myNativeAdSecond != null) {
+            myNativeAdSecond.destroy();
+        }
+        if (!builder.getListIdAd().isEmpty()) {
+            myNativeAdSecond = Admob.getInstance().loadMultipleNativeAds1Id(currentActivity,
                     builder.getListIdAd().get(0),
                     builder.getFlAd(),
                     builder.getLayoutNativeAdmob(),
@@ -119,7 +243,7 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     public void reloadAdNow() {
-        loadNativeFloor(1);
+        loadNativeFloor(builder.maxRequestReload);
     }
 
     public void setAlwaysReloadOnResume(boolean isAlwaysReloadOnResume) {

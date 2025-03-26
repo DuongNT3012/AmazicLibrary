@@ -1,6 +1,5 @@
 package com.amazic.library.ads.splash_ads
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -62,6 +61,8 @@ class AsyncSplash {
     private var timeOutSplash = 12000L
     private var isLoopAdsSplash = false
     private var useTechManagerOrDetectTestAd = DETECT_TEST_AD
+    private var isUsingServerID = true
+    private var nameRemoteID = ""
 
     //1.use for log event time out 12s
     private var initRemoteConfig = false
@@ -107,6 +108,22 @@ class AsyncSplash {
         this.jsonIdAdsDefault = jsonIdAdsDefault
         this.linkServer = linkServer
         this.appId = appId
+        this.appOpenCallback = appOpenCallback
+        this.interCallback = interCallback
+    }
+
+    fun init(
+        activity: AppCompatActivity,
+        appOpenCallback: AppOpenCallback,
+        interCallback: InterCallback,
+        adjustKey: String,
+        nameRemoteID: String
+    ) {
+        isUsingServerID = false
+        resetVarToDefault()
+        this.activity = activity
+        this.adjustKey = adjustKey
+        this.nameRemoteID = nameRemoteID
         this.appOpenCallback = appOpenCallback
         this.interCallback = interCallback
     }
@@ -248,7 +265,13 @@ class AsyncSplash {
         this.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
     }
 
-    fun handleAsync(context: Context, lifecycleOwner: LifecycleOwner, lifecycleCoroutineScope: LifecycleCoroutineScope, onNoInternetAction: () -> Unit, onAsyncSplashDone: () -> Unit) {
+    fun handleAsync(
+        context: Context,
+        lifecycleOwner: LifecycleOwner,
+        lifecycleCoroutineScope: LifecycleCoroutineScope,
+        onNoInternetAction: () -> Unit,
+        onAsyncSplashDone: () -> Unit
+    ) {
         Admob.getInstance().timeStart = System.currentTimeMillis()
         timeStartSplash = System.currentTimeMillis()
         lifecycleCoroutineScope.launch {
@@ -257,7 +280,10 @@ class AsyncSplash {
             if (!isShowAdsSplash && !isNoInternetAction) {
                 //1.log event timeout splash 12s
                 val bundle = Bundle()
-                bundle.putString("timeout_splash_next_screen_detail", "${initAdmobApi}_${initRemoteConfig}_${initAdsConsentManager}_${initBilling}_${initTechManager}")
+                bundle.putString(
+                    "timeout_splash_next_screen_detail",
+                    "${initAdmobApi}_${initRemoteConfig}_${initAdsConsentManager}_${initBilling}_${initTechManager}"
+                )
                 bundle.putString("initAdmobApi", initAdmobApi.toString())
                 bundle.putString("initRemoteConfig", initRemoteConfig.toString())
                 bundle.putString("initAdsConsentManager", initAdsConsentManager.toString())
@@ -374,6 +400,9 @@ class AsyncSplash {
             Admob.getInstance().setTimeIntervalFromStart(
                 RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_interstitial_from_start) * 1000
             )
+            if (!isUsingServerID)
+                AdmobApi.getInstance()
+                    .convertJsonIdAdsDefaultToList(RemoteConfigHelper.getInstance().get_config_string(activity, nameRemoteID))
             if (!isResumed) {
                 isResumed = true
                 continuation.resume(Unit)
@@ -423,69 +452,79 @@ class AsyncSplash {
     }
 
     private suspend fun initAdmobApi(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
-        AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-        AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
-        AdmobApi.getInstance().init(activity, linkServer, appId, object : ApiCallback() {
-            private var isResumed = false
-            override fun onReady() {
-                super.onReady()
-                when (initWelcomeBack) {
-                    "Normal" -> {
-                        if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
-                            if (isPreloadResumeAds) {
-                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
-                            }
-                            AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
-                            activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
-                        }
-                    }
-
-                    "Below" -> {
-                        if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
-                            if (isPreloadResumeAds) {
-                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
-                            }
-                            welcomeBackClass?.let {
-                                AppOpenManager.getInstance()
-                                    .initWelcomeBackBelowAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
-                                AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
-                            }
-                            activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
-                        }
-                    }
-
-                    "Above" -> {
-                        if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
-                            if (isPreloadResumeAds) {
-                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
-                            }
-                            welcomeBackClass?.let {
-                                AppOpenManager.getInstance()
-                                    .initWelcomeBackAboveAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
-                                AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
-                            }
-                            activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
-                        }
-                    }
-
-                    else -> {
-                        if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
-                            if (isPreloadResumeAds) {
-                                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
-                            }
-                            AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
-                            activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
-                        }
+        if (isUsingServerID) {
+            AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
+            AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
+            AdmobApi.getInstance().init(activity, linkServer, appId, object : ApiCallback() {
+                private var isResumed = false
+                override fun onReady() {
+                    super.onReady()
+                    initWelcomeBack(activity)
+                    if (!isResumed) {
+                        isResumed = true
+                        continuation.resume(Unit)
+                        initAdmobApi = true
+                        Log.d(TAG, "initAdmobApi.")
                     }
                 }
-                if (!isResumed) {
-                    isResumed = true
-                    continuation.resume(Unit)
-                    initAdmobApi = true
-                    Log.d(TAG, "initAdmobApi.")
+            })
+        } else {
+            continuation.resume(Unit)
+        }
+    }
+
+    private fun initWelcomeBack(activity: AppCompatActivity?) {
+        when (initWelcomeBack) {
+            "Normal" -> {
+                if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
+                    if (isPreloadResumeAds) {
+                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                    }
+                    AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
+                    activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
                 }
             }
-        })
+
+            "Below" -> {
+                if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
+                    if (isPreloadResumeAds) {
+                        AppOpenManager.getInstance()
+                            .loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                    }
+                    welcomeBackClass?.let {
+                        AppOpenManager.getInstance()
+                            .initWelcomeBackBelowAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
+                        AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
+                    }
+                    activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
+                }
+            }
+
+            "Above" -> {
+                if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
+                    if (isPreloadResumeAds) {
+                        AppOpenManager.getInstance()
+                            .loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                    }
+                    welcomeBackClass?.let {
+                        AppOpenManager.getInstance()
+                            .initWelcomeBackAboveAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
+                        AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
+                    }
+                    activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
+                }
+            }
+
+            else -> {
+                if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
+                    if (isPreloadResumeAds) {
+                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                    }
+                    AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
+                    activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
+                }
+            }
+        }
     }
 
     private suspend fun initBilling() = suspendCoroutine<Unit> { continuation ->

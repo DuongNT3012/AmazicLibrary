@@ -74,13 +74,12 @@ public class SplashActivity extends AppCompatActivity {
         AsyncSplash.Companion.getInstance().handleAsync(this, this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
             @Override
             public Unit invoke() {
-                interCallback.onNextAction();
                 return null;
             }
         }, new Function0<Unit>() {
             @Override
             public Unit invoke() {
-
+                interCallback.onNextAction();
                 return null;
             }
         });

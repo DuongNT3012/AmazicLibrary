@@ -165,6 +165,7 @@ public class Admob {
     }
 
     public void setShowAllAds(boolean isShowAllAds) {
+        Log.d(TAG, "setShowAllAds: " + isShowAllAds);
         this.isShowAllAds = isShowAllAds;
     }
 
@@ -1459,7 +1460,13 @@ public class Admob {
     public void loadMultipleNativeAd(Activity activity, String idNative, NativeCallback nativeCallback, String adsKey, int maxRequest) {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || idNative.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, adsKey)) {
-            Log.d(TAG, "NATIVE: Check condition. " + adsKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, adsKey));
+            Log.d(TAG, "NATIVE: 1. Check condition. " + adsKey + ". " +
+                    NetworkUtil.isNetworkActive(activity) + "_" +
+                    AdsConsentManager.getConsentResult(activity) + "_" +
+                    idNative.isEmpty() + "_" +
+                    isShowAllAds + "_" +
+                    IAPManager.getInstance().isPurchase() + "_" +
+                    RemoteConfigHelper.getInstance().get_config(activity, adsKey));
             nativeCallback.onAdFailedToLoad();
             return;
         }

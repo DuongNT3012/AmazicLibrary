@@ -32,6 +32,7 @@ public class NativeBuilder {
     private int layoutNativeMeta;
     private int layoutShimmerNative;
     public boolean useNewAdLoading = false;
+    public int maxRequestBackup = 1;
     public int maxRequest = 1;
     public int maxRequestReload = 1;
 

@@ -393,6 +393,7 @@ class AsyncSplash {
                 }
                 Log.d(TAG, "Id ads size = ${AdmobApi.getInstance().listAdsSize}")
             }
+            Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")
             Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)
             Admob.getInstance().setTimeInterval(
                 RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_between_interstitial) * 1000

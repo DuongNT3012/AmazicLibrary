@@ -19,3 +19,5 @@ dependencyResolutionManagement {
 rootProject.name = "AmazicLibrary"
 include ':app'
 include ':mylibrary'
+include ':customevent'
+include ':sdk'

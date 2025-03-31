@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
 
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
-            InterManager.loadAndShowInterAds(this, "inter_all", new InterCallback() {
+            InterManager.loadAndShowInterAds(this, "inter_all", "inter_all", new InterCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();
@@ -84,9 +84,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-        RewardManager.loadRewardAds(this, "rewarded");
+        RewardManager.loadRewardAds(this, "rewarded", "rewarded");
         binding.tvShowReward.setOnClickListener(view -> {
-            RewardManager.showRewardAds(this, "rewarded", new RewardedCallback() {
+            RewardManager.showRewardAds(this, "rewarded", "rewarded", new RewardedCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();
@@ -94,9 +94,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             }, true);
         });
-        RewardInterManager.loadRewardInterAds(this, "rewarded_inter");
+        RewardInterManager.loadRewardInterAds(this, "rewarded_inter", "rewarded_inter");
         binding.tvShowRewardInter.setOnClickListener(view -> {
-            RewardInterManager.showRewardInterAds(this, "rewarded_inter", new RewardedInterCallback() {
+            RewardInterManager.showRewardInterAds(this, "rewarded_inter", "rewarded_inter", new RewardedInterCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();

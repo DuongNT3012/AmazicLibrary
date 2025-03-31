@@ -17,11 +17,11 @@ public class InterManager {
     private static final String TAG = "InterManager";
     private static final Map<String, InterstitialAd> listInter = new HashMap<>();
 
-    public static void loadAndShowInterAds(Activity activity, String adsKey, InterCallback interCallback) {
-        Admob.getInstance().loadInterAdsLoadAndShow(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, adsKey);
+    public static void loadAndShowInterAds(Activity activity, String adsKey, String remoteKey, InterCallback interCallback) {
+        Admob.getInstance().loadInterAdsLoadAndShow(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, remoteKey);
     }
 
-    public static void loadInterAds(Context context, String adsKey) {
+    public static void loadInterAds(Context context, String adsKey, String remoteKey) {
         if (listInter.get(adsKey) == null) {
             Admob.getInstance().loadInterAds(context, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {
                 @Override
@@ -30,13 +30,13 @@ public class InterManager {
                     listInter.put(adsKey, interstitialAd);
                     Log.d(TAG, "onAdLoaded: " + listInter);
                 }
-            }, adsKey);
+            }, remoteKey);
         } else {
             Log.d(TAG, "Inter already loaded. (inter != null)");
         }
     }
 
-    public static void showInterAds(Activity activity, String adsKey, InterCallback interCallback, boolean isReloadInterAfterShow) {
+    public static void showInterAds(Activity activity, String adsKey, String remoteKey, InterCallback interCallback, boolean isReloadInterAfterShow) {
         Admob.getInstance().showInterAds(activity, listInter.get(adsKey), new InterCallback() {
             @Override
             public void onNextAction() {
@@ -44,7 +44,7 @@ public class InterManager {
                 interCallback.onNextAction();
                 listInter.put(adsKey, null);
                 if (isReloadInterAfterShow) {
-                    loadInterAds(activity, adsKey);
+                    loadInterAds(activity, adsKey, remoteKey);
                 }
                 Log.d(TAG, "onNextAction: " + listInter);
             }
@@ -91,6 +91,6 @@ public class InterManager {
                 super.onAdShowedFullScreenContent();
                 interCallback.onAdShowedFullScreenContent();
             }
-        }, adsKey);
+        }, remoteKey);
     }
 }

@@ -15,8 +15,7 @@ import java.util.Map;
 public class RewardManager {
     private static final String TAG = "RewardManager";
     private static final Map<String, RewardedAd> listReward = new HashMap<>();
-
-    public static void loadRewardAds(Activity activity, String adsKey) {
+    public static void loadRewardAds(Activity activity, String adsKey, String remoteKey) {
         if (listReward.get(adsKey) == null) {
             Admob.getInstance().loadRewardAds(activity, AdmobApi.getInstance().getListIDByName(adsKey), new RewardedCallback() {
                 @Override
@@ -25,13 +24,13 @@ public class RewardManager {
                     listReward.put(adsKey, ad);
                     Log.d(TAG, "onAdLoaded: " + listReward);
                 }
-            }, adsKey);
+            }, remoteKey);
         } else {
             Log.d(TAG, "Reward already loaded. (Reward != null)");
         }
     }
 
-    public static void showRewardAds(Activity activity, String adsKey, RewardedCallback rewardedCallback, boolean isReloadRewardAfterShow) {
+    public static void showRewardAds(Activity activity, String adsKey, String remoteKey, RewardedCallback rewardedCallback, boolean isReloadRewardAfterShow) {
         Admob.getInstance().showReward(activity, listReward.get(adsKey), new RewardedCallback() {
             @Override
             public void onNextAction() {
@@ -39,7 +38,7 @@ public class RewardManager {
                 rewardedCallback.onNextAction();
                 listReward.put(adsKey, null);
                 if (isReloadRewardAfterShow) {
-                    loadRewardAds(activity, adsKey);
+                    loadRewardAds(activity, adsKey, remoteKey);
                 }
                 Log.d(TAG, "onNextAction: " + listReward);
             }
@@ -92,6 +91,6 @@ public class RewardManager {
                 super.onUserEarnedReward();
                 rewardedCallback.onUserEarnedReward();
             }
-        }, adsKey);
+        }, remoteKey);
     }
 }

@@ -16,7 +16,7 @@ public class RewardInterManager {
     private static final String TAG = "RewardInterManager";
     private static final Map<String, RewardedInterstitialAd> listRewardInter = new HashMap<>();
 
-    public static void loadRewardInterAds(Activity activity, String adsKey) {
+    public static void loadRewardInterAds(Activity activity, String adsKey, String remoteKey) {
         if (listRewardInter.get(adsKey) == null) {
             Admob.getInstance().loadRewardInterAds(activity, AdmobApi.getInstance().getListIDByName(adsKey), new RewardedInterCallback() {
                 @Override
@@ -25,13 +25,13 @@ public class RewardInterManager {
                     listRewardInter.put(adsKey, ad);
                     Log.d(TAG, "onAdLoaded: " + listRewardInter);
                 }
-            }, adsKey);
+            }, remoteKey);
         } else {
             Log.d(TAG, "Reward Inter already loaded. (Reward Inter != null)");
         }
     }
 
-    public static void showRewardInterAds(Activity activity, String adsKey, RewardedInterCallback rewardedInterCallback, boolean isReloadRewardAfterShow) {
+    public static void showRewardInterAds(Activity activity, String adsKey, String remoteKey, RewardedInterCallback rewardedInterCallback, boolean isReloadRewardAfterShow) {
         Admob.getInstance().showRewardInterAds(activity, listRewardInter.get(adsKey), new RewardedInterCallback() {
             @Override
             public void onNextAction() {
@@ -39,7 +39,7 @@ public class RewardInterManager {
                 rewardedInterCallback.onNextAction();
                 listRewardInter.put(adsKey, null);
                 if (isReloadRewardAfterShow) {
-                    loadRewardInterAds(activity, adsKey);
+                    loadRewardInterAds(activity, adsKey, remoteKey);
                 }
                 Log.d(TAG, "onNextAction: " + listRewardInter);
             }
@@ -92,6 +92,6 @@ public class RewardInterManager {
                 super.onUserEarnedReward();
                 rewardedInterCallback.onUserEarnedReward();
             }
-        }, adsKey);
+        }, remoteKey);
     }
 }

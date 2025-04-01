@@ -98,7 +98,7 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadNewAdFormat() {
-        if (Admob.getInstance().checkCondition(currentActivity, adsKey)) {
+        if (Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
             if (myNativeAdFist != null) {
                 myNativeAdSecond.destroy();
             }
@@ -173,7 +173,7 @@ public class NativeManager implements LifecycleEventObserver {
                         super.onAdShown(adView);
                         builder.getCallback().onAdShown(adView);
                     }
-                }, adsKey, builder.maxRequestBackup);
+                }, remoteKey, builder.maxRequestBackup);
     }
 
     private void loadAdFirst() {
@@ -223,7 +223,7 @@ public class NativeManager implements LifecycleEventObserver {
                         super.onAdShown(adView);
                         builder.getCallback().onAdShown(adView);
                     }
-                }, adsKey, builder.maxRequest);
+                }, remoteKey, builder.maxRequest);
     }
 
     private void loadOldAdFormat(int maxRequest) {

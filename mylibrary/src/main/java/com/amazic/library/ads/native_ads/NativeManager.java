@@ -84,6 +84,9 @@ public class NativeManager implements LifecycleEventObserver {
                 if (myNativeAdSecond != null) {
                     myNativeAdSecond.destroy();
                 }
+                if (myNativeAdFist != null) {
+                    myNativeAdFist.destroy();
+                }
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
                 this.lifecycleOwner.getLifecycle().removeObserver(this);
                 break;
@@ -100,7 +103,7 @@ public class NativeManager implements LifecycleEventObserver {
     private void loadNewAdFormat() {
         if (Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
             if (myNativeAdFist != null) {
-                myNativeAdSecond.destroy();
+                myNativeAdFist.destroy();
             }
             if (myNativeAdSecond != null) {
                 myNativeAdSecond.destroy();

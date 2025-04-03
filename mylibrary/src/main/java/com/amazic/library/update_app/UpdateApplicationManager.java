@@ -80,6 +80,7 @@ public class UpdateApplicationManager {
         }).addOnFailureListener(e -> {
             EventTrackingHelper.logEvent(activity, "request_update_fail");
             Log.d(TAG, "Request the update fail." + e.getMessage());
+            ionUpdateApplication.requestUpdateFail();
         });
     }
 
@@ -181,5 +182,6 @@ public class UpdateApplicationManager {
         void onUpdateApplicationSuccess();
 
         void onMustNotUpdateApplication();
+        void requestUpdateFail();
     }
 }

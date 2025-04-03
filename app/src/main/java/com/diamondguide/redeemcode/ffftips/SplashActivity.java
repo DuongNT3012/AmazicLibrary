@@ -55,23 +55,34 @@ public class SplashActivity extends AppCompatActivity {
                     @Override
                     public void onUpdateApplicationFail() {
                         //show ads
+                        handleAsync();
                     }
 
                     @Override
                     public void onUpdateApplicationSuccess() {
                         //show ads
+                        handleAsync();
                     }
 
                     @Override
                     public void onMustNotUpdateApplication() {
                         //show ads
+                        handleAsync();
+                    }
+
+                    @Override
+                    public void requestUpdateFail() {
+                        //show ads
+                        handleAsync();
                     }
                 }, "\uD83D\uDE80 New Update Available!",
                 "Upgrade now for a smoother experience, bug fixes for better performance. ⚡",
                 "Update Now",
                 "No"
         );
+    }
 
+    private void handleAsync(){
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
         //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
         AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd

@@ -13,6 +13,7 @@ import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.iap.IAPManager;
 import com.amazic.library.iap.ProductDetailCustom;
+import com.amazic.library.update_app.UpdateApplicationManager;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivitySplashBinding;
 
 import java.util.ArrayList;
@@ -50,6 +51,27 @@ public class SplashActivity extends AppCompatActivity {
             }
         };
 
+        UpdateApplicationManager.checkVersionPlayStore(this, true, false, false, new UpdateApplicationManager.IonUpdateApplication() {
+                    @Override
+                    public void onUpdateApplicationFail() {
+                        //show ads
+                    }
+
+                    @Override
+                    public void onUpdateApplicationSuccess() {
+                        //show ads
+                    }
+
+                    @Override
+                    public void onMustNotUpdateApplication() {
+                        //show ads
+                    }
+                }, "\uD83D\uDE80 New Update Available!",
+                "Upgrade now for a smoother experience, bug fixes for better performance. ⚡",
+                "Update Now",
+                "No"
+        );
+
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
         //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
         AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
@@ -70,6 +92,8 @@ public class SplashActivity extends AppCompatActivity {
         AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
         ArrayList<String> listIdBannerSplash = new ArrayList<>();
         listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
+        AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
+        AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
         AsyncSplash.Companion.getInstance().setShowBannerSplash(false, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
         AsyncSplash.Companion.getInstance().handleAsync(this, this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
             @Override

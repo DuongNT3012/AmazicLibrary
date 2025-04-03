@@ -19,6 +19,16 @@ public class AdsSplash {
     enum STATE {INTER, OPEN, NO_ADS}
 
     private boolean isLoopAdsSplash = false;
+    private String keyAdsInterSplash = "inter_splash";
+    private String keyAdsOpenSplash = "open_splash";
+
+    public void setKeyAdsInterSplash(String keyAdsInterSplash) {
+        this.keyAdsInterSplash = keyAdsInterSplash;
+    }
+
+    public void setKeyAdsOpenSplash(String keyAdsOpenSplash) {
+        this.keyAdsOpenSplash = keyAdsOpenSplash;
+    }
 
     public static AdsSplash init(boolean showOpen, boolean showInter, String rate) {
         AdsSplash adsSplash = new AdsSplash();
@@ -74,15 +84,15 @@ public class AdsSplash {
         Log.d(TAG, "state show: " + getState());
         if (getState() == STATE.OPEN) {
             if (this.isLoopAdsSplash) {
-                AdmobApi.getInstance().loadOpenAppAdSplashLoop(activity, appOpenCallback);
+                AdmobApi.getInstance().loadOpenAppAdSplashLoop(activity, keyAdsOpenSplash, appOpenCallback);
             } else {
-                AdmobApi.getInstance().loadOpenAppAdSplashFloor(activity, appOpenCallback);
+                AdmobApi.getInstance().loadOpenAppAdSplashFloor(activity, keyAdsOpenSplash, appOpenCallback);
             }
         } else if (getState() == STATE.INTER) {
             if (this.isLoopAdsSplash) {
-                AdmobApi.getInstance().loadInterAdSplashLoop(activity, interCallback);
+                AdmobApi.getInstance().loadInterAdSplashLoop(activity, keyAdsInterSplash, interCallback);
             } else {
-                AdmobApi.getInstance().loadInterAdSplashFloor(activity, interCallback);
+                AdmobApi.getInstance().loadInterAdSplashFloor(activity, keyAdsInterSplash, interCallback);
             }
         } else {
             interCallback.onNextAction();

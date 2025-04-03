@@ -269,19 +269,19 @@ public class AdmobApi {
         }
     }
 
-    public void loadOpenAppAdSplashFloor(AppCompatActivity activity, AppOpenCallback appOpenCallback) {
-        AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(activity, AdmobApi.getInstance().getListIDOpenSplash(), appOpenCallback);
+    public void loadOpenAppAdSplashFloor(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback) {
+        AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
     }
 
-    public void loadInterAdSplashFloor(AppCompatActivity activity, InterCallback interCallback) {
-        Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDInterSplash(), interCallback);
+    public void loadInterAdSplashFloor(AppCompatActivity activity, String adsKey, InterCallback interCallback) {
+        Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
     }
 
-    public void loadOpenAppAdSplashLoop(AppCompatActivity activity, AppOpenCallback appOpenCallback) {
-        AppOpenManager.getInstance().loadAndShowAppOpenResumeSplashLoop(activity, AdmobApi.getInstance().getListIDOpenSplash(), appOpenCallback);
+    public void loadOpenAppAdSplashLoop(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback) {
+        AppOpenManager.getInstance().loadAndShowAppOpenResumeSplashLoop(activity, AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
     }
 
-    public void loadInterAdSplashLoop(AppCompatActivity activity, InterCallback interCallback) {
-        Admob.getInstance().loadAndShowInterAdSplashLoop(activity, AdmobApi.getInstance().getListIDInterSplash(), interCallback);
+    public void loadInterAdSplashLoop(AppCompatActivity activity, String adsKey, InterCallback interCallback) {
+        Admob.getInstance().loadAndShowInterAdSplashLoop(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
     }
 }

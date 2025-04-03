@@ -1,6 +1,5 @@
 package com.amazic.library.ads.splash_ads
 
-import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.util.Log
@@ -80,6 +79,10 @@ class AsyncSplash {
     private var timeStartSplash = System.currentTimeMillis()
     //2.end
 
+    //Use for inter and open splash 1, 2, 3...
+    private var keyAdsInterSplash = "inter_splash"
+    private var keyAdsOpenSplash = "open_splash"
+
     companion object {
         const val TECH_MANAGER = "TechManager"
         const val DETECT_TEST_AD = "DetectTestAd"
@@ -139,6 +142,16 @@ class AsyncSplash {
         this.isUseIdAdsFromRemoteConfig = false
         this.isPreloadResumeAds = true
         this.isAsyncSplashAds = false
+        this.keyAdsInterSplash = "inter_splash"
+        this.keyAdsOpenSplash = "open_splash"
+    }
+
+    fun setKeyAdsInterSplash(keyAdsInterSplash: String) {
+        this.keyAdsInterSplash = keyAdsInterSplash
+    }
+
+    fun setKeyAdsOpenSplash(keyAdsOpenSplash: String) {
+        this.keyAdsOpenSplash = keyAdsOpenSplash
     }
 
     fun setAsyncSplashAds(isAsyncSplashAds: Boolean) { //Show splash ads without wait any thing
@@ -326,6 +339,8 @@ class AsyncSplash {
                             val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.open_splash)
                             val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.inter_splash)
                             adsSplash = AdsSplash.init(isShowOpenSplash, isShowInterSplash, rateAoaInterSplash)
+                            adsSplash?.setKeyAdsInterSplash(keyAdsInterSplash)
+                            adsSplash?.setKeyAdsOpenSplash(keyAdsOpenSplash)
                             adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
                             showAdsSplash(activity, appOpenCallback, interCallback)
                         }

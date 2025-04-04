@@ -85,6 +85,9 @@ class AsyncSplash {
     private var keyAdsInterSplash = "inter_splash"
     private var keyAdsOpenSplash = "open_splash"
 
+    //
+    private var isUseAppUpdateManager = false
+
     companion object {
         const val TECH_MANAGER = "TechManager"
         const val DETECT_TEST_AD = "DetectTestAd"
@@ -162,6 +165,11 @@ class AsyncSplash {
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
+        this.isUseAppUpdateManager = false
+    }
+
+    fun setUseAppUpdateManager(isUseAppUpdateManager: Boolean) {
+        this.isUseAppUpdateManager = isUseAppUpdateManager
     }
 
     fun setKeyAdsInterSplash(keyAdsInterSplash: String) {
@@ -399,32 +407,36 @@ class AsyncSplash {
     }
 
     private suspend fun initRemoteConfig(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
-        var isResumed = false
-        RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
-            if (isUseIdAdsFromRemoteConfig) {
-                val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.id_ads)
-                if (jsonIdAdsFromRemoteConfig.contains("app_id")) { //get id ads from remote config successfully
-                    AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
-                    AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
+        if (isUseAppUpdateManager) {
+            continuation.resume(Unit)
+        } else {
+            var isResumed = false
+            RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
+                if (isUseIdAdsFromRemoteConfig) {
+                    val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.id_ads)
+                    if (jsonIdAdsFromRemoteConfig.contains("app_id")) { //get id ads from remote config successfully
+                        AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
+                        AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
+                    }
+                    Log.d(TAG, "Id ads size = ${AdmobApi.getInstance().listAdsSize}")
                 }
-                Log.d(TAG, "Id ads size = ${AdmobApi.getInstance().listAdsSize}")
-            }
-            Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")
-            Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)
-            Admob.getInstance().setTimeInterval(
-                RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_between_interstitial) * 1000
-            )
-            Admob.getInstance().setTimeIntervalFromStart(
-                RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_interstitial_from_start) * 1000
-            )
-            if (!isUsingServerID)
-                AdmobApi.getInstance()
-                    .convertJsonIdAdsDefaultToList(RemoteConfigHelper.getInstance().get_config_string(activity, nameRemoteID))
-            if (!isResumed) {
-                isResumed = true
-                continuation.resume(Unit)
-                initRemoteConfig = true
-                Log.d(TAG, "initRemoteConfig.")
+                Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")
+                Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)
+                Admob.getInstance().setTimeInterval(
+                    RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_between_interstitial) * 1000
+                )
+                Admob.getInstance().setTimeIntervalFromStart(
+                    RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_interstitial_from_start) * 1000
+                )
+                if (!isUsingServerID)
+                    AdmobApi.getInstance()
+                        .convertJsonIdAdsDefaultToList(RemoteConfigHelper.getInstance().get_config_string(activity, nameRemoteID))
+                if (!isResumed) {
+                    isResumed = true
+                    continuation.resume(Unit)
+                    initRemoteConfig = true
+                    Log.d(TAG, "initRemoteConfig.")
+                }
             }
         }
     }

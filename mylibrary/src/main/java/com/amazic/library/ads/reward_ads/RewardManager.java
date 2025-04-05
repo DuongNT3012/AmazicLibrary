@@ -36,10 +36,6 @@ public class RewardManager {
             public void onNextAction() {
                 super.onNextAction();
                 rewardedCallback.onNextAction();
-                listReward.put(adsKey, null);
-                if (isReloadRewardAfterShow) {
-                    loadRewardAds(activity, adsKey, remoteKey);
-                }
                 Log.d(TAG, "onNextAction: " + listReward);
             }
 
@@ -92,5 +88,9 @@ public class RewardManager {
                 rewardedCallback.onUserEarnedReward();
             }
         }, remoteKey);
+        listReward.put(adsKey, null);
+        if (isReloadRewardAfterShow) {
+            loadRewardAds(activity, adsKey, remoteKey);
+        }
     }
 }

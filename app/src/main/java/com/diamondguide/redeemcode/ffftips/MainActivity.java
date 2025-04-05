@@ -72,6 +72,13 @@ public class MainActivity extends AppCompatActivity {
                 public void onNextAction() {
                     super.onNextAction();
                     Toast.makeText(MainActivity.this, "Show Reward Ads On next action.", Toast.LENGTH_SHORT).show();
+                    RewardManager.showRewardAds(MainActivity.this, "rewarded", "rewarded", new RewardedCallback() {
+                        @Override
+                        public void onNextAction() {
+                            super.onNextAction();
+                            Toast.makeText(MainActivity.this, "Show Reward Ads On next action.", Toast.LENGTH_SHORT).show();
+                        }
+                    }, true);
                 }
             }, true);
         });

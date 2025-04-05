@@ -50,32 +50,28 @@ public class SplashActivity extends AppCompatActivity {
                 startNextAct();
             }
         };
+        UpdateApplicationManager.getInstance().init(this, new UpdateApplicationManager.IonUpdateApplication() {
+            @Override
+            public void onUpdateApplicationFail() {
+                handleAsync();
+            }
 
-        UpdateApplicationManager.checkVersionPlayStore(this, true, false, new UpdateApplicationManager.IonUpdateApplication() {
-                    @Override
-                    public void onUpdateApplicationFail() {
-                        //show ads
-                        handleAsync();
-                    }
+            @Override
+            public void onUpdateApplicationSuccess() {
+                handleAsync();
+            }
 
-                    @Override
-                    public void onUpdateApplicationSuccess() {
-                        //show ads
-                        handleAsync();
-                    }
+            @Override
+            public void onMustNotUpdateApplication() {
+                handleAsync();
+            }
 
-                    @Override
-                    public void onMustNotUpdateApplication() {
-                        //show ads
-                        handleAsync();
-                    }
-
-                    @Override
-                    public void requestUpdateFail() {
-                        //show ads
-                        handleAsync();
-                    }
-                }, "\uD83D\uDE80 New Update Available!",
+            @Override
+            public void requestUpdateFail() {
+                handleAsync();
+            }
+        });
+        UpdateApplicationManager.getInstance().checkVersionPlayStore(this, true, false, "\uD83D\uDE80 New Update Available!",
                 "Upgrade now for a smoother experience, bug fixes for better performance. ⚡",
                 "Update Now",
                 "No"

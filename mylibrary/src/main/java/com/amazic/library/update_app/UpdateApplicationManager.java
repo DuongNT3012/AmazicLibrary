@@ -13,8 +13,6 @@ import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -33,42 +31,62 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 
 public class UpdateApplicationManager {
     private static final String TAG = "UpdateApplicationManager";
-    private static Dialog dialog;
-    private static ProgressBar progressBar;
-    private static TextView tvOk;
-    public static void checkVersionPlayStore(AppCompatActivity activity,
-                                             boolean isForceUpdate,
-                                             boolean isCancelableDialog,
-                                             IonUpdateApplication ionUpdateApplication,
-                                             String title,
-                                             String content,
-                                             String positiveText,
-                                             String negativeText) {
-        ActivityResultLauncher<IntentSenderRequest> activityResultLauncher = activity.registerForActivityResult(
+    private static UpdateApplicationManager INSTANCE;
+
+    public static UpdateApplicationManager getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new UpdateApplicationManager();
+        }
+        return INSTANCE;
+    }
+
+    private Dialog dialog;
+    private ProgressBar progressBar;
+    private TextView tvOk;
+    private ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
+    private IonUpdateApplication ionUpdateApplication;
+
+    public void init(AppCompatActivity activity, IonUpdateApplication ionUpdateApplication) {
+        this.ionUpdateApplication = ionUpdateApplication;
+        activityResultLauncher = activity.registerForActivityResult(
                 new ActivityResultContracts.StartIntentSenderForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        // handle callback
-                        activity.runOnUiThread(() -> {
+                result -> {
+                    // handle callback
+                    activity.runOnUiThread(() -> {
+                        if (tvOk != null) {
                             tvOk.setEnabled(true);
-                            if (result.getResultCode() != RESULT_OK) {
-                                EventTrackingHelper.logEvent(activity, "update_application_not_ok_" + result.getResultCode());
+                        }
+                        if (result.getResultCode() != RESULT_OK) {
+                            EventTrackingHelper.logEvent(activity, "update_application_not_ok_" + result.getResultCode());
+                            if (progressBar != null) {
                                 progressBar.setVisibility(View.GONE);
-                                Log.d(TAG, "Update flow failed! Result code: " + result.getResultCode());
-                                // If the update is canceled or fails,
-                                // you can request to start the update again.
-                                ionUpdateApplication.onUpdateApplicationFail();
-                            } else {
-                                EventTrackingHelper.logEvent(activity, "update_application_ok");
-                                Log.d(TAG, "Update flow success.");
-                                progressBar.setVisibility(View.GONE);
-                                dialog.dismiss();
-                                ionUpdateApplication.onUpdateApplicationSuccess();
                             }
-                        });
-                    }
+                            Log.d(TAG, "Update flow failed! Result code: " + result.getResultCode());
+                            // If the update is canceled or fails,
+                            // you can request to start the update again.
+                            this.ionUpdateApplication.onUpdateApplicationFail();
+                        } else {
+                            EventTrackingHelper.logEvent(activity, "update_application_ok");
+                            Log.d(TAG, "Update flow success.");
+                            if (progressBar != null) {
+                                progressBar.setVisibility(View.GONE);
+                            }
+                            if (dialog != null && dialog.isShowing()) {
+                                dialog.dismiss();
+                            }
+                            this.ionUpdateApplication.onUpdateApplicationSuccess();
+                        }
+                    });
                 });
+    }
+
+    public void checkVersionPlayStore(AppCompatActivity activity,
+                                      boolean isForceUpdate,
+                                      boolean isCancelableDialog,
+                                      String title,
+                                      String content,
+                                      String positiveText,
+                                      String negativeText) {
         EventTrackingHelper.logEvent(activity, "check_version_play_store");
         Log.d(TAG, "Check version play store.");
         AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(activity);
@@ -98,25 +116,25 @@ public class UpdateApplicationManager {
             } else {
                 EventTrackingHelper.logEvent(activity, "update_not_available");
                 Log.d(TAG, "Update not available.");
-                ionUpdateApplication.onMustNotUpdateApplication();
+                this.ionUpdateApplication.onMustNotUpdateApplication();
             }
         }).addOnFailureListener(e -> {
             EventTrackingHelper.logEvent(activity, "request_update_fail");
             Log.d(TAG, "Request the update fail." + e.getMessage());
-            ionUpdateApplication.requestUpdateFail();
+            this.ionUpdateApplication.requestUpdateFail();
         });
     }
 
-    private static void initDialogUpdate(AppCompatActivity activity,
-                                         ActivityResultLauncher<IntentSenderRequest> activityResultLauncher,
-                                         boolean isForceUpdate,
-                                         AppUpdateManager appUpdateManager,
-                                         AppUpdateInfo appUpdateInfo,
-                                         boolean isCancelableDialog,
-                                         String title,
-                                         String content,
-                                         String positiveText,
-                                         String negativeText) {
+    private void initDialogUpdate(AppCompatActivity activity,
+                                  ActivityResultLauncher<IntentSenderRequest> activityResultLauncher,
+                                  boolean isForceUpdate,
+                                  AppUpdateManager appUpdateManager,
+                                  AppUpdateInfo appUpdateInfo,
+                                  boolean isCancelableDialog,
+                                  String title,
+                                  String content,
+                                  String positiveText,
+                                  String negativeText) {
         dialog = new Dialog(activity);
         View view = LayoutInflater.from(activity).inflate(R.layout.dialog_update_app, null, false);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);

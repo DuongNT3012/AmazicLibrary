@@ -35,6 +35,7 @@ public class UpdateApplicationManager {
     private static final String TAG = "UpdateApplicationManager";
     private static Dialog dialog;
     private static ProgressBar progressBar;
+    private static TextView tvOk;
     public static void checkVersionPlayStore(AppCompatActivity activity,
                                              boolean isForceUpdate,
                                              boolean isCancelableDialog,
@@ -50,6 +51,7 @@ public class UpdateApplicationManager {
                     public void onActivityResult(ActivityResult result) {
                         // handle callback
                         activity.runOnUiThread(() -> {
+                            tvOk.setEnabled(true);
                             if (result.getResultCode() != RESULT_OK) {
                                 EventTrackingHelper.logEvent(activity, "update_application_not_ok_" + result.getResultCode());
                                 progressBar.setVisibility(View.GONE);
@@ -130,7 +132,7 @@ public class UpdateApplicationManager {
         TextView tvTitle = view.findViewById(R.id.tv_title);
         TextView tvContent = view.findViewById(R.id.tv_content);
         TextView tvNo = view.findViewById(R.id.tv_no);
-        TextView tvOk = view.findViewById(R.id.tv_ok);
+        tvOk = view.findViewById(R.id.tv_ok);
         progressBar = view.findViewById(R.id.progress_bar);
 
         tvTitle.setText(title);
@@ -144,6 +146,7 @@ public class UpdateApplicationManager {
 
         tvNo.setOnClickListener(v -> dialog.dismiss());
         tvOk.setOnClickListener(v -> {
+            tvOk.setEnabled(false);
             progressBar.setVisibility(View.VISIBLE);
             AppOpenManager.getInstance().disableAppResumeWithActivity(activity.getClass());
             EventTrackingHelper.logEvent(activity, "start_update_flow_for_result");

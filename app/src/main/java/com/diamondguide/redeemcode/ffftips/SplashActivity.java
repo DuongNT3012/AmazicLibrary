@@ -51,7 +51,7 @@ public class SplashActivity extends AppCompatActivity {
             }
         };
 
-        UpdateApplicationManager.checkVersionPlayStore(this, true, false, false, new UpdateApplicationManager.IonUpdateApplication() {
+        UpdateApplicationManager.checkVersionPlayStore(this, true, false, new UpdateApplicationManager.IonUpdateApplication() {
                     @Override
                     public void onUpdateApplicationFail() {
                         //show ads

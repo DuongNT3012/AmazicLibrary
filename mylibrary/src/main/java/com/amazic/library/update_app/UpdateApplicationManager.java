@@ -3,10 +3,8 @@ package com.amazic.library.update_app;
 import static android.app.Activity.RESULT_OK;
 
 import android.app.Dialog;
-import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
-import android.net.Uri;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,93 +33,16 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 
 public class UpdateApplicationManager {
     private static final String TAG = "UpdateApplicationManager";
-
+    private static Dialog dialog;
+    private static ProgressBar progressBar;
     public static void checkVersionPlayStore(AppCompatActivity activity,
                                              boolean isForceUpdate,
                                              boolean isCancelableDialog,
-                                             boolean isDirectToStore,
                                              IonUpdateApplication ionUpdateApplication,
                                              String title,
                                              String content,
                                              String positiveText,
                                              String negativeText) {
-        EventTrackingHelper.logEvent(activity, "check_version_play_store");
-        Log.d(TAG, "Check version play store.");
-        AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(activity);
-
-        // Returns an intent object that you use to check for an update.
-        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
-
-        // Checks that the platform will allow the specified type of update.
-        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
-            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
-                    // This example applies an immediate update. To apply a flexible update
-                    // instead, pass in AppUpdateType.FLEXIBLE
-                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
-                // Request the update.
-                EventTrackingHelper.logEvent(activity, "update_available");
-                Log.d(TAG, "Update available.");
-                showDialogUpdate(activity,
-                        isForceUpdate,
-                        appUpdateManager,
-                        appUpdateInfo,
-                        isCancelableDialog,
-                        isDirectToStore,
-                        ionUpdateApplication,
-                        title,
-                        content,
-                        positiveText,
-                        negativeText);
-            } else {
-                EventTrackingHelper.logEvent(activity, "update_not_available");
-                Log.d(TAG, "Update not available.");
-                ionUpdateApplication.onMustNotUpdateApplication();
-            }
-        }).addOnFailureListener(e -> {
-            EventTrackingHelper.logEvent(activity, "request_update_fail");
-            Log.d(TAG, "Request the update fail." + e.getMessage());
-            ionUpdateApplication.requestUpdateFail();
-        });
-    }
-
-    private static void showDialogUpdate(AppCompatActivity activity,
-                                         boolean isForceUpdate,
-                                         AppUpdateManager appUpdateManager,
-                                         AppUpdateInfo appUpdateInfo,
-                                         boolean isCancelableDialog,
-                                         boolean isDirectToStore,
-                                         IonUpdateApplication ionUpdateApplication,
-                                         String title,
-                                         String content,
-                                         String positiveText,
-                                         String negativeText) {
-        Dialog dialog = new Dialog(activity);
-        View view = LayoutInflater.from(activity).inflate(R.layout.dialog_update_app, null, false);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(view);
-        dialog.setCancelable(isCancelableDialog);
-        if (dialog.getWindow() != null) {
-            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            int width = (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.8);
-            int height = ViewGroup.LayoutParams.WRAP_CONTENT;
-            dialog.getWindow().setLayout(width, height);
-        }
-
-        TextView tvTitle = view.findViewById(R.id.tv_title);
-        TextView tvContent = view.findViewById(R.id.tv_content);
-        TextView tvNo = view.findViewById(R.id.tv_no);
-        TextView tvOk = view.findViewById(R.id.tv_ok);
-        ProgressBar progressBar = view.findViewById(R.id.progress_bar);
-
-        tvTitle.setText(title);
-        tvContent.setText(content);
-        tvNo.setText(negativeText);
-        tvOk.setText(positiveText);
-
-        if (isForceUpdate) {
-            tvNo.setVisibility(View.GONE);
-        }
-
         ActivityResultLauncher<IntentSenderRequest> activityResultLauncher = activity.registerForActivityResult(
                 new ActivityResultContracts.StartIntentSenderForResult(),
                 new ActivityResultCallback<ActivityResult>() {
@@ -146,31 +67,95 @@ public class UpdateApplicationManager {
                         });
                     }
                 });
+        EventTrackingHelper.logEvent(activity, "check_version_play_store");
+        Log.d(TAG, "Check version play store.");
+        AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(activity);
+
+        // Returns an intent object that you use to check for an update.
+        Task<AppUpdateInfo> appUpdateInfoTask = appUpdateManager.getAppUpdateInfo();
+
+        // Checks that the platform will allow the specified type of update.
+        appUpdateInfoTask.addOnSuccessListener(appUpdateInfo -> {
+            if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                    // This example applies an immediate update. To apply a flexible update
+                    // instead, pass in AppUpdateType.FLEXIBLE
+                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+                // Request the update.
+                EventTrackingHelper.logEvent(activity, "update_available");
+                Log.d(TAG, "Update available.");
+                initDialogUpdate(activity,
+                        activityResultLauncher,
+                        isForceUpdate,
+                        appUpdateManager,
+                        appUpdateInfo,
+                        isCancelableDialog,
+                        title,
+                        content,
+                        positiveText,
+                        negativeText);
+            } else {
+                EventTrackingHelper.logEvent(activity, "update_not_available");
+                Log.d(TAG, "Update not available.");
+                ionUpdateApplication.onMustNotUpdateApplication();
+            }
+        }).addOnFailureListener(e -> {
+            EventTrackingHelper.logEvent(activity, "request_update_fail");
+            Log.d(TAG, "Request the update fail." + e.getMessage());
+            ionUpdateApplication.requestUpdateFail();
+        });
+    }
+
+    private static void initDialogUpdate(AppCompatActivity activity,
+                                         ActivityResultLauncher<IntentSenderRequest> activityResultLauncher,
+                                         boolean isForceUpdate,
+                                         AppUpdateManager appUpdateManager,
+                                         AppUpdateInfo appUpdateInfo,
+                                         boolean isCancelableDialog,
+                                         String title,
+                                         String content,
+                                         String positiveText,
+                                         String negativeText) {
+        dialog = new Dialog(activity);
+        View view = LayoutInflater.from(activity).inflate(R.layout.dialog_update_app, null, false);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(view);
+        dialog.setCancelable(isCancelableDialog);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            int width = (int) (activity.getResources().getDisplayMetrics().widthPixels * 0.8);
+            int height = ViewGroup.LayoutParams.WRAP_CONTENT;
+            dialog.getWindow().setLayout(width, height);
+        }
+
+        TextView tvTitle = view.findViewById(R.id.tv_title);
+        TextView tvContent = view.findViewById(R.id.tv_content);
+        TextView tvNo = view.findViewById(R.id.tv_no);
+        TextView tvOk = view.findViewById(R.id.tv_ok);
+        progressBar = view.findViewById(R.id.progress_bar);
+
+        tvTitle.setText(title);
+        tvContent.setText(content);
+        tvNo.setText(negativeText);
+        tvOk.setText(positiveText);
+
+        if (isForceUpdate) {
+            tvNo.setVisibility(View.GONE);
+        }
 
         tvNo.setOnClickListener(v -> dialog.dismiss());
         tvOk.setOnClickListener(v -> {
             progressBar.setVisibility(View.VISIBLE);
             AppOpenManager.getInstance().disableAppResumeWithActivity(activity.getClass());
-            if (isDirectToStore) {
-                try {
-                    String packageName = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0).packageName;
-                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
-                    activity.startActivity(intent);
-                } catch (Exception e) {
-                    Log.d(TAG, "Open play store fail." + e.getMessage());
-                }
-            } else {
-                EventTrackingHelper.logEvent(activity, "start_update_flow_for_result");
-                Log.d(TAG, "Start update flow for result.");
-                appUpdateManager.startUpdateFlowForResult(
-                        // Pass the intent that is returned by 'getAppUpdateInfo()'.
-                        appUpdateInfo,
-                        // an activity result launcher registered via registerForActivityResult
-                        activityResultLauncher,
-                        // Or pass 'AppUpdateType.FLEXIBLE' to newBuilder() for
-                        // flexible updates.
-                        AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build());
-            }
+            EventTrackingHelper.logEvent(activity, "start_update_flow_for_result");
+            Log.d(TAG, "Start update flow for result.");
+            appUpdateManager.startUpdateFlowForResult(
+                    // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                    appUpdateInfo,
+                    // an activity result launcher registered via registerForActivityResult
+                    activityResultLauncher,
+                    // Or pass 'AppUpdateType.FLEXIBLE' to newBuilder() for
+                    // flexible updates.
+                    AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build());
         });
 
         dialog.show();
@@ -182,6 +167,7 @@ public class UpdateApplicationManager {
         void onUpdateApplicationSuccess();
 
         void onMustNotUpdateApplication();
+
         void requestUpdateFail();
     }
 }

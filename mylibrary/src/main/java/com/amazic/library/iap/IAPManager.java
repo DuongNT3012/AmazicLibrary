@@ -172,7 +172,7 @@ public class IAPManager {
         }
     }
 
-    public String purchase(Activity activity, String productId) {
+    public String purchase(Activity activity, String productId) {//use for by lifetime
         ProductDetails productDetails = productDetailsINAPMap.get(productId);
         if (isPurchaseTest) {
             PurchaseTestBottomSheet purchaseTestBottomSheet = new PurchaseTestBottomSheet(typeIAP, productDetails, activity, purchaseCallback);
@@ -216,7 +216,7 @@ public class IAPManager {
         return "";
     }
 
-    public String subscribe(Activity activity, String productId) {
+    public String subscribe(Activity activity, String productId) { //use for buy sub
         if (isPurchaseTest) {
             purchase(activity, PRODUCT_ID_TEST);
         }

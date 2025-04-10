@@ -50,6 +50,17 @@ public class BannerManager implements LifecycleEventObserver {
             };
         }
     }
+    public void cancelAutoReloadBanner(){
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
+    public void resumeAutoReloadBanner(){
+        if (countDownTimer != null) {
+            countDownTimer.start();
+        }
+    }
 
     public BannerManager(@NonNull Activity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, BannerBuilder builder, String remoteKey) {
         this.isLoadBannerFragment = false;

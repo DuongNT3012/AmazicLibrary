@@ -156,7 +156,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         ArrayList<String> listIdOpenResumeTemp = new ArrayList<>(listIdOpenResume);
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
-            Log.d(TAG, "Check condition. " + remoteKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResumeTemp.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            Log.d(TAG, "Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResumeTemp.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             appOpenCallback.onAdFailedToLoad();
             return;
         }
@@ -255,7 +255,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
-            Log.d(TAG, "WELCOME BACK: Check condition showAdIfAvailableWelcomeBackLoadAndShow. " + remoteKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            Log.d(TAG, "WELCOME BACK: Check condition showAdIfAvailableWelcomeBackLoadAndShow. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IDEmpty:" + listIdOpenResume.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             if (appOpenCallback != null) {
                 appOpenCallback.onAdFailedToShowFullScreenContent();
             }
@@ -332,7 +332,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         ArrayList<String> listIdOpenResumeTemp = new ArrayList<>(listIdOpenResume);
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
-            Log.d(TAG, "Check condition. " + remoteKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResumeTemp.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            Log.d(TAG, "Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResumeTemp.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             appOpenCallback.onAdFailedToLoad();
             return;
         }
@@ -387,7 +387,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         ArrayList<String> listIdOpenResumeTemp = new ArrayList<>(listIdOpenResume);
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "Check condition loadAdNotCheckRemote. " + remoteKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResumeTemp.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            Log.d(TAG, "Check condition loadAdNotCheckRemote. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResumeTemp.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             return;
         }
         // Do not load ad if there is an unused ad or one is already loading.
@@ -428,7 +428,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         ArrayList<String> listIdOpenResumeTemp = new ArrayList<>(listIdOpenResume);
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
-            Log.d(TAG, "Check condition loadAd. " + remoteKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResumeTemp.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            Log.d(TAG, "Check condition loadAd. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResumeTemp.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_UMP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             return;
         }
         // Do not load ad if there is an unused ad or one is already loading.
@@ -520,7 +520,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
-            Log.d(TAG, "Check condition showAdIfAvailable. " + remoteKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            Log.d(TAG, "Check condition showAdIfAvailable. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResume.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             if (appOpenCallback != null) {
                 appOpenCallback.onAdFailedToShowFullScreenContent();
             }
@@ -600,7 +600,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void showAdIfAvailableWelcomeBack(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
-            Log.d(TAG, "WELCOME BACK: Check condition showAdIfAvailableWelcomeBack. " + remoteKey + ". " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResume.size() + "_" + NetworkUtil.isNetworkActive(activity) + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase() + "_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            Log.d(TAG, "WELCOME BACK: Check condition showAdIfAvailableWelcomeBack. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResume.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             if (appOpenCallback != null) {
                 appOpenCallback.onAdFailedToShowFullScreenContent();
             }
@@ -861,7 +861,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "SPLASH: Check condition loadAndShowAppOpenResumeSplash. " + NetworkUtil.isNetworkActive(activity) + "_" + listIdOpenResumeTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
+            Log.d(TAG, "SPLASH: Check condition loadAndShowAppOpenResumeSplash. Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResumeTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase());
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
@@ -979,7 +979,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || idOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "Check condition loadAndShowAppOpenResumeSplash. " + NetworkUtil.isNetworkActive(activity) + "_" + idOpenResume.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + IAPManager.getInstance().isPurchase());
+            Log.d(TAG, "Check condition loadAndShowAppOpenResumeSplash. Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + idOpenResume.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + IAPManager.getInstance().isPurchase());
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);

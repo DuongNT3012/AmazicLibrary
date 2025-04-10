@@ -46,6 +46,18 @@ public class NativeManager implements LifecycleEventObserver {
         }
     }
 
+    public void cancelAutoReloadNative(){
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
+    public void resumeAutoReloadNative(){
+        if (countDownTimer != null) {
+            countDownTimer.start();
+        }
+    }
+
     public NativeManager(@NonNull Activity currentActivity, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey) {
         this.builder = builder;
         this.currentActivity = currentActivity;

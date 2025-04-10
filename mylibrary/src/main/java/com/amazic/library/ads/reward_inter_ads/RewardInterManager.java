@@ -37,10 +37,6 @@ public class RewardInterManager {
             public void onNextAction() {
                 super.onNextAction();
                 rewardedInterCallback.onNextAction();
-                listRewardInter.put(adsKey, null);
-                if (isReloadRewardAfterShow) {
-                    loadRewardInterAds(activity, adsKey, remoteKey);
-                }
                 Log.d(TAG, "onNextAction: " + listRewardInter);
             }
 
@@ -93,5 +89,9 @@ public class RewardInterManager {
                 rewardedInterCallback.onUserEarnedReward();
             }
         }, remoteKey);
+        listRewardInter.put(adsKey, null);
+        if (isReloadRewardAfterShow) {
+            loadRewardInterAds(activity, adsKey, remoteKey);
+        }
     }
 }

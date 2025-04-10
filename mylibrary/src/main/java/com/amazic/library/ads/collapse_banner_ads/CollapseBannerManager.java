@@ -53,6 +53,18 @@ public class CollapseBannerManager implements LifecycleEventObserver {
         }
     }
 
+    public void cancelAutoReloadCollapseBanner(){
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
+    public void resumeAutoReloadCollapseBanner(){
+        if (countDownTimer != null) {
+            countDownTimer.start();
+        }
+    }
+
     public CollapseBannerManager(@NonNull Activity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, CollapseBannerBuilder builder, String remoteKey) {
         this.isLoadBannerFragment = false;
         this.builder = builder;

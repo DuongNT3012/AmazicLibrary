@@ -3,10 +3,13 @@ package com.diamondguide.redeemcode.ffftips;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwnerKt;
 
+import com.amazic.library.Utils.RemoteConfigHelper;
+import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
@@ -50,15 +53,17 @@ public class SplashActivity extends AppCompatActivity {
                 startNextAct();
             }
         };
+        //User must update to the newest version to use the app
         UpdateApplicationManager.getInstance().init(this, new UpdateApplicationManager.IonUpdateApplication() {
             @Override
             public void onUpdateApplicationFail() {
                 handleAsync();
+                Toast.makeText(SplashActivity.this, "Update Application Fail", Toast.LENGTH_SHORT).show();
             }
 
             @Override
             public void onUpdateApplicationSuccess() {
-                handleAsync();
+                Toast.makeText(SplashActivity.this, "Update Application Success", Toast.LENGTH_SHORT).show();
             }
 
             @Override
@@ -71,18 +76,33 @@ public class SplashActivity extends AppCompatActivity {
                 handleAsync();
             }
         });
-        UpdateApplicationManager.getInstance().checkVersionPlayStore(this, true, false, "\uD83D\uDE80 New Update Available!",
-                "Upgrade now for a smoother experience, bug fixes for better performance. ⚡",
-                "Update Now",
-                "No"
-        );
+        RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(SplashActivity.this, () -> {
+            Admob.getInstance().setShowAllAds(RemoteConfigHelper.getInstance().get_config(SplashActivity.this, RemoteConfigHelper.show_all_ads));
+            Admob.getInstance().setTimeInterval(RemoteConfigHelper.getInstance().get_config_long(SplashActivity.this, RemoteConfigHelper.interval_between_interstitial) * 1000);
+            Admob.getInstance().setTimeIntervalFromStart(RemoteConfigHelper.getInstance().get_config_long(SplashActivity.this, RemoteConfigHelper.interval_interstitial_from_start) * 1000);
+            if (RemoteConfigHelper.getInstance().get_config(SplashActivity.this, "force_update_version")) {
+                AsyncSplash.Companion.getInstance().setUseAppUpdateManager(true); // Do not recall remote config
+                UpdateApplicationManager.getInstance().checkVersionPlayStore(
+                        SplashActivity.this,
+                        true,
+                        false,
+                        "\uD83D\uDE80 New Update Available!",
+                        "Upgrade now for a smoother experience, bug fixes for better performance. ⚡",
+                        "Update Now",
+                        "No"
+                );
+            } else {
+                AsyncSplash.Companion.getInstance().setUseAppUpdateManager(false); // Call remote config again
+                handleAsync();
+            }
+        });
     }
 
-    private void handleAsync(){
+    private void handleAsync() {
         AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
         //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
         AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
-        //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true);
+        //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
         AsyncSplash.Companion.getInstance().setDebug(false); //use for TechManager, DetectTestAd
         AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
         AsyncSplash.Companion.getInstance().setAsyncSplashAds(true);
@@ -104,22 +124,16 @@ public class SplashActivity extends AppCompatActivity {
         AsyncSplash.Companion.getInstance().setShowBannerSplash(false, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
         AsyncSplash.Companion.getInstance().handleAsync(this, this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
             @Override
-            public Unit invoke() {
-                return null;
-            }
-        }, new Function0<Unit>() {
-            @Override
-            public Unit invoke() {
+            public Unit invoke() { //no internet
                 interCallback.onNextAction();
                 return null;
             }
+        }, new Function0<Unit>() { //async splash done
+            @Override
+            public Unit invoke() {
+                return null;
+            }
         });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        AsyncSplash.Companion.getInstance().checkShowSplashWhenFail();
     }
 
     private void startNextAct() {
@@ -127,5 +141,11 @@ public class SplashActivity extends AppCompatActivity {
         Intent intent = new Intent(SplashActivity.this, MainActivity.class);
         startActivity(intent);
         finish();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        AsyncSplash.Companion.getInstance().checkShowSplashWhenFail();
     }
 }

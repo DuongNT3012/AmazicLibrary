@@ -87,6 +87,7 @@ class AsyncSplash {
 
     //
     private var isUseAppUpdateManager = false
+    private var remoteKeyIdAdsServer = "id_ads"
 
     companion object {
         const val TECH_MANAGER = "TechManager"
@@ -192,8 +193,10 @@ class AsyncSplash {
         return this.isPreloadResumeAds
     }
 
-    fun setUseIdAdsFromRemoteConfig(isUseIdAdsFromRemoteConfig: Boolean) { //Use id ads from remote config or not (Key remote: id_ads)
+    fun setUseIdAdsFromRemoteConfig(isUseIdAdsFromRemoteConfig: Boolean, remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
         this.isUseIdAdsFromRemoteConfig = isUseIdAdsFromRemoteConfig
+        this.remoteKeyIdAdsServer = remoteKeyIdAdsServer
+        this.timeOutCallApi = 0
     }
 
     fun setTimeOutCallApi(timeOutCallApi: Int) { //Timeout call id ads from server

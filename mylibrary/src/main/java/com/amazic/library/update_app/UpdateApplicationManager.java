@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
@@ -169,14 +170,19 @@ public class UpdateApplicationManager {
             AppOpenManager.getInstance().disableAppResumeWithActivity(activity.getClass());
             EventTrackingHelper.logEvent(activity, "start_update_flow_for_result");
             Log.d(TAG, "Start update flow for result.");
-            appUpdateManager.startUpdateFlowForResult(
-                    // Pass the intent that is returned by 'getAppUpdateInfo()'.
-                    appUpdateInfo,
-                    // an activity result launcher registered via registerForActivityResult
-                    activityResultLauncher,
-                    // Or pass 'AppUpdateType.FLEXIBLE' to newBuilder() for
-                    // flexible updates.
-                    AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build());
+            if (activityResultLauncher != null) {
+                appUpdateManager.startUpdateFlowForResult(
+                        // Pass the intent that is returned by 'getAppUpdateInfo()'.
+                        appUpdateInfo,
+                        // an activity result launcher registered via registerForActivityResult
+                        activityResultLauncher,
+                        // Or pass 'AppUpdateType.FLEXIBLE' to newBuilder() for
+                        // flexible updates.
+                        AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build());
+            } else {
+                Log.d(TAG, "Call init UpdateApplicationManager first!");
+                Toast.makeText(activity, "Call init UpdateApplicationManager first!", Toast.LENGTH_SHORT).show();
+            }
         });
 
         dialog.show();

@@ -166,7 +166,7 @@ class AsyncSplash {
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
-        this.isUseAppUpdateManager = false
+        //this.isUseAppUpdateManager = false
     }
 
     fun setUseAppUpdateManager(isUseAppUpdateManager: Boolean) {

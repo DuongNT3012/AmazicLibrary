@@ -38,6 +38,7 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
     private final String TAG = "NativeAdMapper";
     private final NativeAd nativeAd;
     private MediationNativeAdCallback mediationNativeAdCallback;
+
     public void setMediationNativeAdCallback(MediationNativeAdCallback mediationNativeAdCallback) {
         this.mediationNativeAdCallback = mediationNativeAdCallback;
     }
@@ -61,9 +62,19 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
         setImages(nativeAd.getImages());
 
         if (nativeAd.getPrice() != null) {
-            NumberFormat formatter = NumberFormat.getCurrencyInstance();
-            String priceString = formatter.format(nativeAd.getPrice());
-            setPrice(priceString);
+            try {
+                double price = Double.parseDouble(nativeAd.getPrice());
+                NumberFormat formatter = NumberFormat.getCurrencyInstance();
+                String priceString = formatter.format(price);
+                setPrice(priceString);
+            } catch (Exception e) {
+                e.printStackTrace();
+                try {
+                    setPrice(nativeAd.getPrice());
+                } catch (Exception exception) {
+                    exception.printStackTrace();
+                }
+            }
         }
 
         /*Bundle extras = new Bundle();

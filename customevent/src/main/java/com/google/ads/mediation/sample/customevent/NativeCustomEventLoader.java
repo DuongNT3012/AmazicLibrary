@@ -30,6 +30,7 @@ import com.google.android.gms.ads.AdLoader;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.VideoOptions;
+import com.google.android.gms.ads.admanager.AdManagerAdRequest;
 import com.google.android.gms.ads.mediation.MediationAdLoadCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
 import com.google.android.gms.ads.mediation.MediationNativeAdConfiguration;
@@ -143,6 +144,6 @@ public class NativeCustomEventLoader {
                     mediationNativeAdCallback.onAdOpened();
             }
         }).build();
-        adLoader.loadAd(new AdRequest.Builder().build());
+        adLoader.loadAd(new AdManagerAdRequest.Builder().build());
     }
 }

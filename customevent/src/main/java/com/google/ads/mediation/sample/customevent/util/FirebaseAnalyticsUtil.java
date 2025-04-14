@@ -16,12 +16,17 @@ public class FirebaseAnalyticsUtil {
     public static void logEventMediationAdmob(Context context, String adsType) {
         Bundle bundle = new Bundle();
         Log.e(TAG, "Mediation Admob :" + adsType);
-        FirebaseAnalytics.getInstance(context).logEvent("MediationAdmob: " + adsType, bundle);
+        FirebaseAnalytics.getInstance(context).logEvent("mediation_admob: " + adsType, bundle);
     }
 
     public static void logEventMediationAdx(Context context, String adsType) {
         Bundle bundle = new Bundle();
         Log.e(TAG, "MediationAdmob Adx :" + adsType);
-        FirebaseAnalytics.getInstance(context).logEvent("MediationAdx: " + adsType, bundle);
+        FirebaseAnalytics.getInstance(context).logEvent("mediation_adx: " + adsType, bundle);
+    }
+
+    public static void logEventMediationAdx(Context context, String name, Bundle bundle) {
+        Log.e(TAG, "MediationAdmob Adx :" + name);
+        FirebaseAnalytics.getInstance(context).logEvent(name, bundle);
     }
 }

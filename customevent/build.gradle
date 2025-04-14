@@ -26,6 +26,6 @@ dependencies {
     implementation project(':sdk')
     implementation rootProject.ext.playServicesAds
     implementation rootProject.ext.appcompat
-    implementation platform('com.google.firebase:firebase-bom:33.11.0')
+    implementation platform('com.google.firebase:firebase-bom:33.12.0')
     implementation 'com.google.firebase:firebase-analytics'
 }

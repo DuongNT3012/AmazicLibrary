@@ -17,6 +17,7 @@
 package com.google.ads.mediation.sample.customevent;
 
 import android.content.Context;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -75,23 +76,25 @@ public class NativeCustomEventLoader {
      * Loads the native ad from the third party ad network.
      */
     public void loadAd() {
+        Context context = mediationNativeAdConfiguration.getContext();
         // All custom events have a server parameter named "parameter" that returns back the parameter
         // entered into the AdMob UI when defining the custom event.
         String serverParameter = mediationNativeAdConfiguration.getServerParameters().getString("parameter");
+        //log event to firebase
+        FirebaseAnalyticsUtil.logEventMediationAdx(context, FirebaseAnalyticsUtil.NATIVE + "_" + serverParameter);
+        Log.d(TAG, "Received server parameter: " + serverParameter);
         if (TextUtils.isEmpty(serverParameter)) {
+            FirebaseAnalyticsUtil.logEventMediationAdx(context, "id_empty", new Bundle());
+            Log.d(TAG, "Id empty");
             mediationAdLoadCallback.onFailure(CustomEventError.createCustomEventNoAdIdError());
             return;
         }
-        Log.d(TAG, "Received server parameter.");
-
-        Context context = mediationNativeAdConfiguration.getContext();
-
-        //log event to firebase
-        FirebaseAnalyticsUtil.logEventMediationAdx(context, FirebaseAnalyticsUtil.NATIVE);
+        Log.d(TAG, "Start load native ad: " + serverParameter);
 
         AdLoader.Builder builder = new AdLoader.Builder(context, serverParameter);
         // OnLoadedListener implementation.
         builder.forNativeAd(nativeAd -> {
+            Log.d(TAG, "onAdLoad success headline: " + nativeAd.getHeadline());
             NativeAdMapper mappedAd = new NativeAdMapper(nativeAd, context);
             mediationNativeAdCallback = mediationAdLoadCallback.onSuccess(mappedAd);
             mappedAd.setMediationNativeAdCallback(mediationNativeAdCallback);
@@ -100,7 +103,7 @@ public class NativeCustomEventLoader {
         VideoOptions videoOptions =
                 new VideoOptions.Builder().setStartMuted(true).build();
 
-        NativeAdOptions adOptions = new NativeAdOptions.Builder().setVideoOptions(videoOptions).build();
+        NativeAdOptions adOptions = mediationNativeAdConfiguration.getNativeAdOptions();
 
         builder.withNativeAdOptions(adOptions);
 
@@ -108,6 +111,7 @@ public class NativeCustomEventLoader {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 super.onAdFailedToLoad(loadAdError);
+                Log.d(TAG, "onAdFailedToLoad." + loadAdError.getMessage());
                 mediationAdLoadCallback.onFailure(new AdError(loadAdError.getCode(), loadAdError.getMessage(), loadAdError.getDomain()));
             }
 

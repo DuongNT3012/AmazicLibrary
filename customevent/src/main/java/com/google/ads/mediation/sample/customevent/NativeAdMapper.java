@@ -17,6 +17,7 @@
 package com.google.ads.mediation.sample.customevent;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 
@@ -34,7 +35,7 @@ import java.util.Map;
  * Ads SDK's {@link com.google.android.gms.ads.nativead.NativeAd} interface.
  */
 public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeAdMapper {
-
+    private final String TAG = "NativeAdMapper";
     private final NativeAd nativeAd;
     private MediationNativeAdCallback mediationNativeAdCallback;
     public void setMediationNativeAdCallback(MediationNativeAdCallback mediationNativeAdCallback) {
@@ -69,8 +70,8 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
         extras.putString(CustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
         this.setExtras(extras);*/
 
-        setOverrideClickHandling(false);
-        setOverrideImpressionRecording(false);
+        setOverrideClickHandling(true);
+        setOverrideImpressionRecording(true);
 
         try {
             if (nativeAd.getAdChoicesInfo() != null) {
@@ -85,11 +86,13 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
 
     @Override
     public void recordImpression() {
+        Log.d(TAG, "recordImpression.");
         this.mediationNativeAdCallback.reportAdImpression();
     }
 
     @Override
     public void handleClick(@NonNull View view) {
+        Log.d(TAG, "handleClick.");
         this.mediationNativeAdCallback.reportAdClicked();
     }
 

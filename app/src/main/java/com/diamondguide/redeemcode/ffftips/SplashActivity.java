@@ -80,8 +80,8 @@ public class SplashActivity extends AppCompatActivity {
             Admob.getInstance().setShowAllAds(RemoteConfigHelper.getInstance().get_config(SplashActivity.this, RemoteConfigHelper.show_all_ads));
             Admob.getInstance().setTimeInterval(RemoteConfigHelper.getInstance().get_config_long(SplashActivity.this, RemoteConfigHelper.interval_between_interstitial) * 1000);
             Admob.getInstance().setTimeIntervalFromStart(RemoteConfigHelper.getInstance().get_config_long(SplashActivity.this, RemoteConfigHelper.interval_interstitial_from_start) * 1000);
+            AsyncSplash.Companion.getInstance().setUseAppUpdateManager(true); // Do not recall remote config
             if (RemoteConfigHelper.getInstance().get_config(SplashActivity.this, "force_update_version")) {
-                AsyncSplash.Companion.getInstance().setUseAppUpdateManager(true); // Do not recall remote config
                 UpdateApplicationManager.getInstance().checkVersionPlayStore(
                         SplashActivity.this,
                         true,
@@ -92,7 +92,6 @@ public class SplashActivity extends AppCompatActivity {
                         "No"
                 );
             } else {
-                AsyncSplash.Companion.getInstance().setUseAppUpdateManager(false); // Call remote config again
                 handleAsync();
             }
         });

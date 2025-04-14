@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 android {
     compileSdk rootProject.ext.compileSdkVersion
@@ -11,6 +12,13 @@ android {
         versionName "1.0.0"
         buildConfigField("String", "SDK_VERSION", "\"${versionName}\"")
     }
+
+    publishing {
+        singleVariant("release") {
+            withSourcesJar()
+            withJavadocJar()
+        }
+    }
     buildFeatures {
         buildConfig = true
     }
@@ -18,6 +26,20 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+publishing {
+    publications {
+        release(MavenPublication) {
+            groupId = 'com.github.DuongNT3012'
+            artifactId = 'com.google.ads.mediation.sample.sdk'
+            version = '1.0.0'
+
+            afterEvaluate {
+                from components.release
+            }
         }
     }
 }

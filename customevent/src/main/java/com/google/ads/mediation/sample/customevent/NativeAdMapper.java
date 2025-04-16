@@ -24,7 +24,9 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
+import com.google.android.gms.ads.VideoController;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
+import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 
 import java.text.NumberFormat;
@@ -38,6 +40,7 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
     private final String TAG = "NativeAdMapper";
     private final NativeAd nativeAd;
     private MediationNativeAdCallback mediationNativeAdCallback;
+    private MediaView mediaView;
 
     public void setMediationNativeAdCallback(MediationNativeAdCallback mediationNativeAdCallback) {
         this.mediationNativeAdCallback = mediationNativeAdCallback;
@@ -59,8 +62,32 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
             setIcon(nativeAd.getIcon());
         if (nativeAd.getAdvertiser() != null)
             setAdvertiser(nativeAd.getAdvertiser());
-        setImages(nativeAd.getImages());
 
+        if (nativeAd.getMediaContent() != null) {
+            if (nativeAd.getMediaContent().hasVideoContent()) {
+                Log.d(TAG, "==================\nNativeAdMapper: video");
+                MediaView mediaView = new MediaView(context);
+                mediaView.setMediaContent(nativeAd.getMediaContent());
+                setMediaView(mediaView);
+                VideoController videoController = nativeAd.getMediaContent().getVideoController();
+                videoController.setVideoLifecycleCallbacks(new VideoController.VideoLifecycleCallbacks() {
+                    @Override
+                    public void onVideoStart() {
+                        // Optional: log or animate UI
+                        Log.d(TAG, "onVideoStart: ");
+                    }
+
+                    @Override
+                    public void onVideoEnd() {
+                        // Optional: UI handling after video ends
+                        Log.d(TAG, "onVideoEnd: ");
+                    }
+                });
+            } else {
+                Log.d(TAG, "==================\nNativeAdMapper: image");
+                setImages(nativeAd.getImages());
+            }
+        }
         if (nativeAd.getPrice() != null) {
             try {
                 double price = Double.parseDouble(nativeAd.getPrice());
@@ -68,21 +95,15 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
                 String priceString = formatter.format(price);
                 setPrice(priceString);
             } catch (Exception e) {
-                e.printStackTrace();
                 try {
                     setPrice(nativeAd.getPrice());
                 } catch (Exception exception) {
-                    exception.printStackTrace();
                 }
             }
         }
 
-        /*Bundle extras = new Bundle();
-        extras.putString(CustomEvent.DEGREE_OF_AWESOMENESS, ad.getDegreeOfAwesomeness());
-        this.setExtras(extras);*/
-
-        setOverrideClickHandling(true);
-        setOverrideImpressionRecording(true);
+        setOverrideClickHandling(false);
+        setOverrideImpressionRecording(false);
 
         try {
             if (nativeAd.getAdChoicesInfo() != null) {
@@ -98,13 +119,21 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
     @Override
     public void recordImpression() {
         Log.d(TAG, "recordImpression.");
-        this.mediationNativeAdCallback.reportAdImpression();
+        if (mediationNativeAdCallback != null) {
+            Log.d(TAG, "Reporting ad impression...");
+            mediationNativeAdCallback.reportAdImpression();
+        }
+        super.recordImpression();
     }
 
     @Override
     public void handleClick(@NonNull View view) {
         Log.d(TAG, "handleClick.");
-        this.mediationNativeAdCallback.reportAdClicked();
+        if (mediationNativeAdCallback != null) {
+            Log.d(TAG, "Reporting ad click...");
+            mediationNativeAdCallback.reportAdClicked();
+        }
+        super.handleClick(view);
     }
 
     // The Sample SDK doesn't do its own impression/click tracking, instead relies on its
@@ -119,6 +148,8 @@ public class NativeAdMapper extends com.google.android.gms.ads.mediation.NativeA
         super.trackViews(containerView, clickableAssetViews, nonClickableAssetViews);
         // If your ad network SDK does its own impression tracking, here is where you can track the
         // top level native ad view and its individual asset views.
+        Log.d(TAG, "trackViews called " + clickableAssetViews.size() + "_" + nonClickableAssetViews.size());
+        mediaView = containerView.findViewById(R.id.ad_media);
     }
 
     @Override

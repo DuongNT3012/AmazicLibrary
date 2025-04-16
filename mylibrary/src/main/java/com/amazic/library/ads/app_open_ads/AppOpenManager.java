@@ -29,6 +29,7 @@ import com.amazic.library.dialog.LoadingAdsResumeDialog;
 import com.amazic.library.iap.IAPManager;
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
+import com.amazic.mylibrary.R;
 import com.google.android.gms.ads.AdActivity;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
@@ -52,6 +53,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private Activity currentActivity;
     private Application application;
     private LoadingAdsResumeDialog loadingAdsResumeDialog;
+    public int animationDialogRaw = R.raw.custom_loading;
+    private boolean isCustomAnimationDialog = false;
     private List<String> listIdOpenResumeAd = new ArrayList<>();
     private boolean isFailToShowAdSplash = false;
     private final ArrayList<Class> disabledAppOpenList = new ArrayList<>();
@@ -113,6 +116,27 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void setApplication(Application application) {
         this.application = application;
         this.application.registerActivityLifecycleCallbacks(this);
+    }
+
+    public boolean isCustomAnimationDialog() {
+        return isCustomAnimationDialog;
+    }
+
+    public void setCustomAnimationDialog(boolean customAnimationDialog, int animationDialogRaw) {
+        this.isCustomAnimationDialog = customAnimationDialog;
+        this.animationDialogRaw = animationDialogRaw;
+    }
+
+    public void setCustomAnimationDialog(boolean customAnimationDialog) {
+        this.isCustomAnimationDialog = customAnimationDialog;
+    }
+
+    public AppOpenAd getAppOpenAdSplash() {
+        return appOpenAdSplash;
+    }
+
+    public void setAppOpenAdSplash(AppOpenAd appOpenAdSplash) {
+        this.appOpenAdSplash = appOpenAdSplash;
     }
 
     public boolean isShowingAd() {
@@ -856,7 +880,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, 20000);
+            handlerTimeoutSplash.postDelayed(runnable, Admob.getInstance().getTimeOutCallAds());
         }
 
         // Check condition
@@ -949,7 +973,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, 20000);
+            handlerTimeoutSplash.postDelayed(runnable, Admob.getInstance().getTimeOutCallAds());
         }
         // Check list id size
         if (listIdOpenResume.isEmpty()) {

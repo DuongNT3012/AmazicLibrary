@@ -100,6 +100,7 @@ public class BannerCustomEventLoader {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
+                Log.d(TAG, "onAdLoaded: ");
                 bannerAdCallback = mediationAdLoadCallback.onSuccess(new MediationBannerAd() {
                     @NonNull
                     @Override
@@ -112,12 +113,14 @@ public class BannerCustomEventLoader {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 super.onAdFailedToLoad(loadAdError);
+                Log.d(TAG, "onAdFailedToLoad: ");
                 mediationAdLoadCallback.onFailure(new AdError(loadAdError.getCode(), loadAdError.getMessage(), loadAdError.getDomain()));
             }
 
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                Log.d(TAG, "onAdImpression: ");
                 if (bannerAdCallback != null)
                     bannerAdCallback.reportAdImpression();
             }
@@ -125,6 +128,7 @@ public class BannerCustomEventLoader {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                Log.d(TAG, "onAdClicked: ");
                 if (bannerAdCallback != null)
                     bannerAdCallback.reportAdClicked();
             }
@@ -132,6 +136,7 @@ public class BannerCustomEventLoader {
             @Override
             public void onAdClosed() {
                 super.onAdClosed();
+                Log.d(TAG, "onAdClosed: ");
                 if (bannerAdCallback != null)
                     bannerAdCallback.onAdClosed();
             }
@@ -139,6 +144,7 @@ public class BannerCustomEventLoader {
             @Override
             public void onAdOpened() {
                 super.onAdOpened();
+                Log.d(TAG, "onAdOpened: ");
                 if (bannerAdCallback != null)
                     bannerAdCallback.onAdOpened();
             }

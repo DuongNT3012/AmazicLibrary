@@ -11,6 +11,7 @@ import androidx.lifecycle.LifecycleOwnerKt;
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
+import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
@@ -130,6 +131,8 @@ public class SplashActivity extends AppCompatActivity {
         }, new Function0<Unit>() { //async splash done
             @Override
             public Unit invoke() {
+                Admob.getInstance().setCustomAnimationDialog(true, R.raw.custom_loading);
+                AppOpenManager.getInstance().setCustomAnimationDialog(true, R.raw.custom_loading);
                 return null;
             }
         });

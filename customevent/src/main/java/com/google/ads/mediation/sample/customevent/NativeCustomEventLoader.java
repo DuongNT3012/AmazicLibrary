@@ -27,7 +27,6 @@ import com.google.ads.mediation.sample.customevent.util.FirebaseAnalyticsUtil;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.VideoOptions;
 import com.google.android.gms.ads.admanager.AdManagerAdRequest;
@@ -104,7 +103,7 @@ public class NativeCustomEventLoader {
         VideoOptions videoOptions =
                 new VideoOptions.Builder().setStartMuted(true).build();
 
-        NativeAdOptions adOptions = mediationNativeAdConfiguration.getNativeAdOptions();
+        NativeAdOptions adOptions = new NativeAdOptions.Builder().setVideoOptions(videoOptions).build();
 
         builder.withNativeAdOptions(adOptions);
 
@@ -119,6 +118,7 @@ public class NativeCustomEventLoader {
             @Override
             public void onAdImpression() {
                 super.onAdImpression();
+                Log.d(TAG, "onAdImpression.");
                 if (mediationNativeAdCallback != null)
                     mediationNativeAdCallback.reportAdImpression();
             }
@@ -126,6 +126,7 @@ public class NativeCustomEventLoader {
             @Override
             public void onAdClicked() {
                 super.onAdClicked();
+                Log.d(TAG, "onAdClicked.");
                 if (mediationNativeAdCallback != null)
                     mediationNativeAdCallback.reportAdClicked();
             }
@@ -133,6 +134,7 @@ public class NativeCustomEventLoader {
             @Override
             public void onAdClosed() {
                 super.onAdClosed();
+                Log.d(TAG, "onAdClosed.");
                 if (mediationNativeAdCallback != null)
                     mediationNativeAdCallback.onAdClosed();
             }
@@ -140,6 +142,7 @@ public class NativeCustomEventLoader {
             @Override
             public void onAdOpened() {
                 super.onAdOpened();
+                Log.d(TAG, "onAdOpened.");
                 if (mediationNativeAdCallback != null)
                     mediationNativeAdCallback.onAdOpened();
             }

@@ -78,7 +78,9 @@ import java.util.List;
 public class Admob {
     private static Admob INSTANCE;
     private static final String TAG = "Admob";
-    private LoadingAdsDialog loadingAdsDialog;
+    public LoadingAdsDialog loadingAdsDialog;
+    public int animationDialogRaw = R.raw.custom_loading;
+    private boolean isCustomAnimationDialog = false;
     private boolean isInterOrRewardedShowing = false;
     private boolean isShowAllAds = true;
     private InterstitialAd mInterstitialAdSplash;
@@ -95,6 +97,7 @@ public class Admob {
     private boolean isDetectTestAdByView = false;
     private int countClickInterSplashAds = 0;
     private NativeAd myNativeAd = null;
+    private int timeOutCallAds = 12000;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -104,6 +107,7 @@ public class Admob {
     }
 
     public void initAdmob(Activity activity, IOnInitAdmobDone iOnInitAdmobDone) {
+        initLoadingDialog(activity);
         new Thread(() -> {
             // Initialize the Google Mobile Ads SDK on a background thread.
             MobileAds.initialize(activity, initializationStatus -> {
@@ -113,9 +117,44 @@ public class Admob {
         }).start();
     }
 
+    public void initLoadingDialog(Context context) {
+        if (loadingAdsDialog == null) {
+            loadingAdsDialog = new LoadingAdsDialog(context);
+        }
+    }
+
     public boolean checkCondition(Context context, String adsKey) {
         Log.d(TAG, "checkCondition: Network_" + NetworkUtil.isNetworkActive(context) + "_UMP_" + AdsConsentManager.getConsentResult(context) + "_showAllAds_" + isShowAllAds + "_IAP_" + IAPManager.getInstance().isPurchase() + "_RemoteConfig_" + RemoteConfigHelper.getInstance().get_config(context, adsKey));
         return NetworkUtil.isNetworkActive(context) && AdsConsentManager.getConsentResult(context) && isShowAllAds && !IAPManager.getInstance().isPurchase() && RemoteConfigHelper.getInstance().get_config(context, adsKey);
+    }
+
+    public boolean isCustomAnimationDialog() {
+        return isCustomAnimationDialog;
+    }
+
+    public void setCustomAnimationDialog(boolean customAnimationDialog, int animationDialogRaw) {
+        this.isCustomAnimationDialog = customAnimationDialog;
+        this.animationDialogRaw = animationDialogRaw;
+    }
+
+    public void setCustomAnimationDialog(boolean customAnimationDialog) {
+        this.isCustomAnimationDialog = customAnimationDialog;
+    }
+
+    public InterstitialAd getInterstitialAdSplash() {
+        return mInterstitialAdSplash;
+    }
+
+    public void setInterstitialAdSplash(InterstitialAd mInterstitialAdSplash) {
+        this.mInterstitialAdSplash = mInterstitialAdSplash;
+    }
+
+    public int getTimeOutCallAds() {
+        return timeOutCallAds;
+    }
+
+    public void setTimeOutCallAds(int timeOutCallAds) {
+        this.timeOutCallAds = timeOutCallAds;
     }
 
     public boolean isDetectTestAdByView() {
@@ -123,7 +162,7 @@ public class Admob {
     }
 
     public void setDetectTestAdByView(boolean detectTestAdByView) {
-        isDetectTestAdByView = detectTestAdByView;
+        this.isDetectTestAdByView = detectTestAdByView;
     }
 
     public boolean isOpenActivityAfterShowInterAds() {
@@ -588,7 +627,7 @@ public class Admob {
             }
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, 20000);
+            handlerTimeoutSplash.postDelayed(runnable, timeOutCallAds);
         }
 
         //Check condition
@@ -669,7 +708,7 @@ public class Admob {
             }
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, 20000);
+            handlerTimeoutSplash.postDelayed(runnable, timeOutCallAds);
         }
         // Check list id size
         if (listIdInter.isEmpty()) {

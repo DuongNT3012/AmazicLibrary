@@ -98,11 +98,13 @@ public class InterstitialCustomEventLoader {
         AdManagerInterstitialAd.load(context, serverParameter, adRequest, new AdManagerInterstitialAdLoadCallback() {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                Log.d(TAG, "onAdFailedToLoad: ");
                 mediationAdLoadCallback.onFailure(new AdError(loadAdError.getCode(), loadAdError.getMessage(), loadAdError.getDomain()));
             }
 
             @Override
             public void onAdLoaded(@NonNull AdManagerInterstitialAd interstitialAd) {
+                Log.d(TAG, "onAdLoaded: ");
                 interstitialAdCallback = mediationAdLoadCallback.onSuccess(new MediationInterstitialAd() {
                     @Override
                     public void showAd(@NonNull Context context) {
@@ -114,6 +116,7 @@ public class InterstitialCustomEventLoader {
                     @Override
                     public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
                         super.onAdFailedToShowFullScreenContent(adError);
+                        Log.d(TAG, "onAdFailedToShowFullScreenContent: ");
                         if (interstitialAdCallback != null)
                             interstitialAdCallback.onAdFailedToShow(adError);
                     }
@@ -121,6 +124,7 @@ public class InterstitialCustomEventLoader {
                     @Override
                     public void onAdImpression() {
                         super.onAdImpression();
+                        Log.d(TAG, "onAdImpression: ");
                         if (interstitialAdCallback != null)
                             interstitialAdCallback.reportAdImpression();
                     }
@@ -128,6 +132,7 @@ public class InterstitialCustomEventLoader {
                     @Override
                     public void onAdDismissedFullScreenContent() {
                         super.onAdDismissedFullScreenContent();
+                        Log.d(TAG, "onAdDismissedFullScreenContent: ");
                         if (interstitialAdCallback != null)
                             interstitialAdCallback.onAdClosed();
                     }
@@ -135,6 +140,7 @@ public class InterstitialCustomEventLoader {
                     @Override
                     public void onAdClicked() {
                         super.onAdClicked();
+                        Log.d(TAG, "onAdClicked: ");
                         if (interstitialAdCallback != null)
                             interstitialAdCallback.reportAdClicked();
                     }

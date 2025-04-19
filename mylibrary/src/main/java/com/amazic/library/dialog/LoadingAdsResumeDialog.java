@@ -29,6 +29,7 @@ public class LoadingAdsResumeDialog extends Dialog {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(binding.getRoot());
+        setCancelable(false);
     }
 
     public void setUseAnimationView(int resId) {

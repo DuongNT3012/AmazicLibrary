@@ -88,6 +88,7 @@ class AsyncSplash {
     //
     private var isUseAppUpdateManager = false
     private var remoteKeyIdAdsServer = "id_ads"
+    private var onPrepareLoadInterOpenSplashAds: (() -> Unit?)? = null
 
     companion object {
         const val TECH_MANAGER = "TechManager"
@@ -167,6 +168,10 @@ class AsyncSplash {
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
         //this.isUseAppUpdateManager = false
+    }
+
+    fun setOnPrepareLoadInterOpenSplashAds(onPrepareLoadInterOpenSplashAds: () -> Unit) {
+        this.onPrepareLoadInterOpenSplashAds = onPrepareLoadInterOpenSplashAds
     }
 
     fun setUseAppUpdateManager(isUseAppUpdateManager: Boolean) {
@@ -368,6 +373,7 @@ class AsyncSplash {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     } finally {
+                        onPrepareLoadInterOpenSplashAds?.invoke()
                         lifecycleCoroutineScope.launch {
                             var rateAoaInterSplash: String =
                                 RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.rate_aoa_inter_splash)

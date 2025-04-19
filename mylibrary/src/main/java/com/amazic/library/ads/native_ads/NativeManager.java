@@ -158,7 +158,7 @@ public class NativeManager implements LifecycleEventObserver {
                         if (myNativeAdSecond == null) {
                             builder.shimmerFrameLayout.setVisibility(View.GONE);
                             builder.nativeAdView.setVisibility(View.GONE);
-                            Admob.getInstance().populateNativeAdView(myNativeAdSecond, builder.nativeAdView);
+                            Admob.getInstance().populateNativeAdView(myNativeAdFist, builder.nativeAdView);
                         }
                         if (countDownTimer != null && NativeManager.this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
                             countDownTimer.cancel();
@@ -214,7 +214,7 @@ public class NativeManager implements LifecycleEventObserver {
                         if (myNativeAdFist == null) {
                             builder.shimmerFrameLayout.setVisibility(View.GONE);
                             builder.nativeAdViewBackup.setVisibility(View.GONE);
-                            Admob.getInstance().populateNativeAdView(myNativeAdFist, builder.nativeAdViewBackup);
+                            Admob.getInstance().populateNativeAdView(myNativeAdSecond, builder.nativeAdView);
                         }
                         builder.getCallback().onAdFailedToLoad();
                     }
@@ -226,6 +226,7 @@ public class NativeManager implements LifecycleEventObserver {
                         Log.d(TAG, "onAdImpression: getListIdAdFirst");
                         if (myNativeAdSecond != null) {
                             builder.nativeAdView.setVisibility(View.VISIBLE);
+                            Admob.getInstance().populateNativeAdView(myNativeAdSecond, builder.nativeAdView);
                         }
                     }
 

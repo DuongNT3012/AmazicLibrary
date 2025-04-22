@@ -12,6 +12,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.callback.NativeCallback;
+import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 
@@ -151,10 +152,10 @@ public class NativeManager implements LifecycleEventObserver {
                     }
 
                     @Override
-                    public void onAdFailedToLoad() {
-                        super.onAdFailedToLoad();
+                    public void onAdFailedToLoad(LoadAdError loadAdError) {
+                        super.onAdFailedToLoad(loadAdError);
                         Log.d(TAG, "onNativeAdLoaded: onAdFailedToLoad");
-                        builder.getCallback().onAdFailedToLoad();
+                        builder.getCallback().onAdFailedToLoad(loadAdError);
                         if (myNativeAdSecond == null) {
                             builder.shimmerFrameLayout.setVisibility(View.GONE);
                             builder.nativeAdView.setVisibility(View.GONE);
@@ -209,14 +210,14 @@ public class NativeManager implements LifecycleEventObserver {
                     }
 
                     @Override
-                    public void onAdFailedToLoad() {
-                        super.onAdFailedToLoad();
+                    public void onAdFailedToLoad(LoadAdError loadAdError) {
+                        super.onAdFailedToLoad(loadAdError);
                         if (myNativeAdFist == null) {
                             builder.shimmerFrameLayout.setVisibility(View.GONE);
                             builder.nativeAdViewBackup.setVisibility(View.GONE);
                             Admob.getInstance().populateNativeAdView(myNativeAdSecond, builder.nativeAdView);
                         }
-                        builder.getCallback().onAdFailedToLoad();
+                        builder.getCallback().onAdFailedToLoad(loadAdError);
                     }
 
                     @Override

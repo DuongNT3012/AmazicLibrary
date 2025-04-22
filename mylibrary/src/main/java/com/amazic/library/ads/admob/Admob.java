@@ -1417,6 +1417,7 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
+                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
                 nativeCallback.onAdFailedToLoad(loadAdError);
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);

@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
                 com.amazic.mylibrary.R.layout.layout_native_adview,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
                 true);
-        nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDByName("native_wb"));
+        //nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDByName("native_wb"));
         nativeBuilder.setListIdAdFirst(AdmobApi.getInstance().getListIDByName("native_wb"));
         nativeBuilder.setCallback(new NativeCallback() {
             @Override
@@ -49,9 +49,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb2");
-        nativeManager.setIntervalReloadNative(2000);
+        nativeManager.setIntervalReloadNative(4000);
         nativeManager.setAlwaysReloadOnResume(true);
-        //nativeManager.setIntervalReloadNative(3000L);
 
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {

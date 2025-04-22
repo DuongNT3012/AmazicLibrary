@@ -103,17 +103,17 @@ public class RemoteConfigHelper {
         return "String";
     }
 
-    public boolean getRemoteConfigBoolean(String adUnitId) {
+    private boolean getRemoteConfigBoolean(String adUnitId) {
         FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         return mFirebaseRemoteConfig.getBoolean(adUnitId);
     }
 
-    public long getRemoteConfigLong(String adUnitId) {
+    private long getRemoteConfigLong(String adUnitId) {
         FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         return mFirebaseRemoteConfig.getLong(adUnitId);
     }
 
-    public String getRemoteConfigString(String adUnitId) {
+    private String getRemoteConfigString(String adUnitId) {
         FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         return mFirebaseRemoteConfig.getString(adUnitId);
     }
@@ -130,6 +130,13 @@ public class RemoteConfigHelper {
         editor.apply();
     }
 
+    public void set_config_commit(Context context, String name_config, boolean config) {
+        SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pre.edit();
+        editor.putBoolean(name_config, config);
+        editor.commit();
+    }
+
     public String get_config_string(Context context, String name_config) {
         SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
         return pre.getString(name_config, "0_100");
@@ -142,11 +149,25 @@ public class RemoteConfigHelper {
         editor.apply();
     }
 
+    public void set_config_string_commit(Context context, String name_config, String config) {
+        SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pre.edit();
+        editor.putString(name_config, config);
+        editor.commit();
+    }
+
     public void set_config_long(Context context, String name_config, Long config) {
         SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = pre.edit();
         editor.putLong(name_config, config);
         editor.apply();
+    }
+
+    public void set_config_long_commit(Context context, String name_config, Long config) {
+        SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = pre.edit();
+        editor.putLong(name_config, config);
+        editor.commit();
     }
 
     public Long get_config_long(Context context, String name_config) {

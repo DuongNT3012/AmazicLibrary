@@ -1417,7 +1417,12 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 40));
+                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName());
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
                 nativeCallback.onAdFailedToLoad(loadAdError);
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
@@ -1482,8 +1487,13 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 40));
+                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName());
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
                 nativeCallback.onAdFailedToLoad(loadAdError);
-                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
                 }
@@ -1546,8 +1556,13 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 40));
+                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName());
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
                 nativeCallback.onAdFailedToLoad(loadAdError);
-                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
             }
 
             @Override
@@ -1636,7 +1651,12 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 40));
+                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName());
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
                 nativeCallback.onAdFailedToLoad(loadAdError);
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
@@ -1738,7 +1758,12 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 40));
+                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName());
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
                 nativeCallback.onAdFailedToLoad(loadAdError);
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);
@@ -1835,7 +1860,12 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 40));
+                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName());
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
                 nativeCallback.onAdFailedToLoad(loadAdError);
                 iOnAdsFailToLoad.onAdsFailToLoad();
             }
@@ -1926,7 +1956,12 @@ public class Admob {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                EventTrackingHelper.logEventWithAParam(activity, remoteKey + "_failed", "failed_message", limitString(loadAdError.getMessage(), 40));
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 40));
+                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName());
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
                 nativeCallback.onAdFailedToLoad(loadAdError);
                 if (!listIdNativeTemp.isEmpty()) {
                     listIdNativeTemp.remove(0);

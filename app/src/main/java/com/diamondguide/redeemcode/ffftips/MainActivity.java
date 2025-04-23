@@ -38,8 +38,8 @@ public class MainActivity extends AppCompatActivity {
                 com.amazic.mylibrary.R.layout.layout_native_adview,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
                 true);
-        nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDByName("native_wb"));
-        nativeBuilder.setListIdAdFirst(AdmobApi.getInstance().getListIDByName("native_wb"));
+        nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDByName("inter_all"));
+        nativeBuilder.setListIdAdFirst(AdmobApi.getInstance().getListIDByName("inter_all"));
         nativeBuilder.setCallback(new NativeCallback() {
             @Override
             public void onNativeAdLoaded(NativeAd nativeAd) {

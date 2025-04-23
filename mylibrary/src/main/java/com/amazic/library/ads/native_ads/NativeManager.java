@@ -115,7 +115,7 @@ public class NativeManager implements LifecycleEventObserver {
         if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
             builder.shimmerFrameLayout.setVisibility(View.GONE);
             builder.nativeAdViewMain.setVisibility(View.GONE);
-            builder.nativeAdViewSecondary.setVisibility(View.GONE);
+            if (builder.nativeAdViewSecondary != null) builder.nativeAdViewSecondary.setVisibility(View.GONE);
             return;
         }
         loadMainNative();
@@ -213,23 +213,25 @@ public class NativeManager implements LifecycleEventObserver {
         myNativeAdMain = nativeAd;
         Admob.getInstance().populateNativeAdView(nativeAd, builder.nativeAdViewMain);
         builder.nativeAdViewMain.setVisibility(View.VISIBLE);
-        builder.nativeAdViewSecondary.setVisibility(View.GONE);
+        if (builder.nativeAdViewSecondary != null) builder.nativeAdViewSecondary.setVisibility(View.GONE);
         builder.shimmerFrameLayout.setVisibility(View.GONE);
     }
 
     private void showNativeSecondary(NativeAd nativeAd) {
-        myNativeAdSecondary = nativeAd;
-        Admob.getInstance().populateNativeAdView(nativeAd, builder.nativeAdViewSecondary);
-        builder.nativeAdViewSecondary.setVisibility(View.VISIBLE);
-        builder.nativeAdViewMain.setVisibility(View.GONE);
-        builder.shimmerFrameLayout.setVisibility(View.GONE);
+        if (builder.nativeAdViewSecondary != null) {
+            myNativeAdSecondary = nativeAd;
+            Admob.getInstance().populateNativeAdView(nativeAd, builder.nativeAdViewSecondary);
+            builder.nativeAdViewSecondary.setVisibility(View.VISIBLE);
+            builder.nativeAdViewMain.setVisibility(View.GONE);
+            builder.shimmerFrameLayout.setVisibility(View.GONE);
+        }
     }
 
 
     private void handleImpressionNativeSecondary() {
         if (myNativeAdMain != null) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                builder.nativeAdViewSecondary.setVisibility(View.GONE);
+                if (builder.nativeAdViewSecondary != null) builder.nativeAdViewSecondary.setVisibility(View.GONE);
                 builder.nativeAdViewMain.setVisibility(View.VISIBLE);
                 builder.shimmerFrameLayout.setVisibility(View.GONE);
             }, 800);

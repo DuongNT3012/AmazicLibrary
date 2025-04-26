@@ -9,6 +9,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
 import com.amazic.library.Utils.EventTrackingHelper
+import com.amazic.library.Utils.EventTrackingHelper.time_splash_check
 import com.amazic.library.Utils.NetworkUtil
 import com.amazic.library.Utils.RemoteConfigHelper
 import com.amazic.library.Utils.SharePreferenceHelper
@@ -90,6 +91,9 @@ class AsyncSplash {
     private var remoteKeyIdAdsServer = "id_ads"
     private var onPrepareLoadInterOpenSplashAds: (() -> Unit?)? = null
 
+    //Log event 26/04/2025
+    private var timeSplashCheck = System.currentTimeMillis()
+
     companion object {
         const val TECH_MANAGER = "TechManager"
         const val DETECT_TEST_AD = "DetectTestAd"
@@ -168,6 +172,14 @@ class AsyncSplash {
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
         //this.isUseAppUpdateManager = false
+    }
+
+    fun setTimeSplashCheck() {
+        this.timeSplashCheck = System.currentTimeMillis()
+    }
+
+    fun getTimeSplashCheck(): Long {
+        return this.timeSplashCheck
     }
 
     fun setOnPrepareLoadInterOpenSplashAds(onPrepareLoadInterOpenSplashAds: () -> Unit) {
@@ -373,6 +385,8 @@ class AsyncSplash {
                     } catch (e: Exception) {
                         e.printStackTrace()
                     } finally {
+                        val timeAsync = (System.currentTimeMillis() - timeSplashCheck) / 1000
+                        EventTrackingHelper.logEventWithAParam(activity, time_splash_check, time_splash_check, timeAsync.toString())
                         onPrepareLoadInterOpenSplashAds?.invoke()
                         lifecycleCoroutineScope.launch {
                             var rateAoaInterSplash: String =

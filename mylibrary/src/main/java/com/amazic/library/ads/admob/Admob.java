@@ -1,5 +1,7 @@
 package com.amazic.library.ads.admob;
 
+import static com.amazic.library.Utils.EventTrackingHelper.time_splash_loading_ad_show;
+import static com.amazic.library.Utils.EventTrackingHelper.time_splash_loading_show;
 import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
 
 import android.app.Activity;
@@ -98,6 +100,8 @@ public class Admob {
     private int countClickInterSplashAds = 0;
     private NativeAd myNativeAd = null;
     private int timeOutCallAds = 12000;
+    //Log event 26/04/2025
+    private long timeSplashLoadingAdShow = 0;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -564,6 +568,7 @@ public class Admob {
                     Log.d(TAG, "SPLASH: Ad recorded an impression.");
                     interCallback.onAdImpression();
                     //log event
+                    EventTrackingHelper.logEventWithAParam(activity, time_splash_loading_ad_show, time_splash_loading_show, String.valueOf((System.currentTimeMillis() - timeSplashLoadingAdShow) / 1000));
                     EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
                     int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
                     if (splashOpenTimes <= 3) {
@@ -657,6 +662,8 @@ public class Admob {
         //log event can request
         EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
         //end log event can request
+        //time start load splash ads
+        timeSplashLoadingAdShow = System.currentTimeMillis();
 
         AdRequest adRequest = new AdRequest.Builder().build();
         InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,
@@ -763,6 +770,8 @@ public class Admob {
         //log event can request
         EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
         //end log event can request
+        //time start load splash ads
+        timeSplashLoadingAdShow = System.currentTimeMillis();
 
         AdRequest adRequest = new AdRequest.Builder().build();
         InterstitialAd.load(activity, idInterSplash, adRequest,

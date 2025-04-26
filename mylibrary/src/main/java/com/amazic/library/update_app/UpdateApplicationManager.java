@@ -1,5 +1,6 @@
 package com.amazic.library.update_app;
 
+import static android.app.Activity.RESULT_CANCELED;
 import static android.app.Activity.RESULT_OK;
 
 import android.app.Dialog;
@@ -46,6 +47,16 @@ public class UpdateApplicationManager {
     private TextView tvOk;
     private ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
     private IonUpdateApplication ionUpdateApplication;
+    private int updateType = AppUpdateType.IMMEDIATE;//must update then can use app
+    // or AppUpdateType.FLEXIBLE: can use app when updating app
+
+    public void setUseImmediateUpdate() {
+        this.updateType = AppUpdateType.IMMEDIATE;
+    }
+
+    public void setUseFlexibleUpdate() {
+        this.updateType = AppUpdateType.FLEXIBLE;
+    }
 
     public void init(AppCompatActivity activity, IonUpdateApplication ionUpdateApplication) {
         this.ionUpdateApplication = ionUpdateApplication;
@@ -58,11 +69,16 @@ public class UpdateApplicationManager {
                             tvOk.setEnabled(true);
                         }
                         if (result.getResultCode() != RESULT_OK) {
-                            EventTrackingHelper.logEvent(activity, "update_application_not_ok_" + result.getResultCode());
+                            if (result.getResultCode() == RESULT_CANCELED) {
+                                EventTrackingHelper.logEvent(activity, "update_application_not_ok_cancel");
+                                Log.d(TAG, "update_application_not_ok_cancel: " + result.getResultCode());
+                            } else {
+                                EventTrackingHelper.logEvent(activity, "update_application_not_ok_fail");
+                                Log.d(TAG, "update_application_not_ok_fail: " + result.getResultCode());
+                            }
                             if (progressBar != null) {
                                 progressBar.setVisibility(View.GONE);
                             }
-                            Log.d(TAG, "Update flow failed! Result code: " + result.getResultCode());
                             // If the update is canceled or fails,
                             // you can request to start the update again.
                             this.ionUpdateApplication.onUpdateApplicationFail();
@@ -81,7 +97,7 @@ public class UpdateApplicationManager {
                 });
     }
 
-    public void checkVersionPlayStore(AppCompatActivity activity,
+    public AppUpdateManager checkVersionPlayStore(AppCompatActivity activity,
                                       boolean isForceUpdate,
                                       boolean isCancelableDialog,
                                       String title,
@@ -100,7 +116,7 @@ public class UpdateApplicationManager {
             if (appUpdateInfo.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
                     // This example applies an immediate update. To apply a flexible update
                     // instead, pass in AppUpdateType.FLEXIBLE
-                    && appUpdateInfo.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+                    && appUpdateInfo.isUpdateTypeAllowed(updateType)) {
                 // Request the update.
                 EventTrackingHelper.logEvent(activity, "update_available");
                 Log.d(TAG, "Update available.");
@@ -120,10 +136,15 @@ public class UpdateApplicationManager {
                 this.ionUpdateApplication.onMustNotUpdateApplication();
             }
         }).addOnFailureListener(e -> {
-            EventTrackingHelper.logEvent(activity, "request_update_fail");
+            if (e.getMessage() != null) {
+                EventTrackingHelper.logEventWithAParam(activity, "request_update_fail", "message", limitString(e.getMessage(), 100));
+            } else {
+                EventTrackingHelper.logEvent(activity, "request_update_fail");
+            }
             Log.d(TAG, "Request the update fail." + e.getMessage());
             this.ionUpdateApplication.requestUpdateFail();
         });
+        return appUpdateManager;
     }
 
     private void initDialogUpdate(AppCompatActivity activity,
@@ -178,7 +199,7 @@ public class UpdateApplicationManager {
                         activityResultLauncher,
                         // Or pass 'AppUpdateType.FLEXIBLE' to newBuilder() for
                         // flexible updates.
-                        AppUpdateOptions.newBuilder(AppUpdateType.IMMEDIATE).build());
+                        AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build());
             } else {
                 Log.d(TAG, "Call init UpdateApplicationManager first!");
                 Toast.makeText(activity, "Call init UpdateApplicationManager first!", Toast.LENGTH_SHORT).show();
@@ -186,6 +207,10 @@ public class UpdateApplicationManager {
         });
 
         dialog.show();
+    }
+
+    private String limitString(String str, int maxLength) {
+        return str.length() > maxLength ? str.substring(0, maxLength) : str;
     }
 
     public interface IonUpdateApplication {

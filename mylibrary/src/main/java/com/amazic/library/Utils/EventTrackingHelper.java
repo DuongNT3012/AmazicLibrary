@@ -32,6 +32,11 @@ public class EventTrackingHelper {
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         firebaseAnalytics.logEvent(eventName, bundle);
     }
+    public static String time_splash_loading_notshow = "time_splash_loading_notshow";
+    public static String time_splash_loading_ad_notshow = "time_splash_loading_ad_notshow";
+    public static String time_splash_loading_show = "time_splash_loading_show";
+    public static String time_splash_loading_ad_show = "time_splash_loading_ad_show";
+    public static String time_splash_check = "time_splash_check";
     public static String inter_splash = "inter_splash";
     public static String open_splash = "open_splash";
     public static String banner_splash = "banner_splash";

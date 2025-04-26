@@ -2,7 +2,8 @@ package com.diamondguide.redeemcode.ffftips;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Looper;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,7 +12,6 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
-import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.inter_ads.InterManager;
@@ -19,9 +19,9 @@ import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
 import com.amazic.library.ads.reward_ads.RewardManager;
 import com.amazic.library.ads.reward_inter_ads.RewardInterManager;
-import com.amazic.library.update_app.UpdateApplicationManager;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivityMainBinding;
-import com.google.android.gms.ads.nativead.NativeAd;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
@@ -32,26 +32,22 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+
         NativeBuilder nativeBuilder = new NativeBuilder(
                 this, binding.frAdsNative,
                 com.amazic.mylibrary.R.layout.layout_shimmer_native,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
-                true);
-        nativeBuilder.setListIdAd(AdmobApi.getInstance().getListIDByName("inter_all"));
-        nativeBuilder.setListIdAdFirst(AdmobApi.getInstance().getListIDByName("inter_all"));
-        nativeBuilder.setCallback(new NativeCallback() {
-            @Override
-            public void onNativeAdLoaded(NativeAd nativeAd) {
-                super.onNativeAdLoaded(nativeAd);
-                if (nativeAd.getResponseInfo() != null)
-                    Log.d("lfksdlfkas", "onNativeAdLoaded: " + nativeAd.getResponseInfo().getResponseId());
-            }
-        });
+                false);
+        nativeBuilder.maxRequest = 10;
+        nativeBuilder.maxRequestReload = 10;
+        nativeBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("native_wb"));
+        nativeBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("native_wb"));
+        nativeBuilder.setListIdAdBackup(List.of("ca-app-pub-3940256099942544/1044960115"));
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb2");
         nativeManager.setIntervalReloadNative(4000);
         nativeManager.setAlwaysReloadOnResume(true);
-
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
             InterManager.loadAndShowInterAds(this, "inter_all", "inter_all", new InterCallback() {

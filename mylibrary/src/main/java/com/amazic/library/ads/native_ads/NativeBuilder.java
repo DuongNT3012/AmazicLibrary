@@ -1,7 +1,6 @@
 package com.amazic.library.ads.native_ads;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
@@ -21,10 +20,11 @@ import java.util.List;
 public class NativeBuilder {
     private static final String TAG = "NativeBuilder";
     private NativeCallback callback = new NativeCallback();
-    List<String> listIdAd = new ArrayList<>();
-    List<String> listIdAdFirst = new ArrayList<>();
-    NativeAdView nativeAdView;
-    NativeAdView nativeAdViewBackup;
+    List<String> listIdAdMain = new ArrayList<>();
+    List<String> listIdAdSecondary = new ArrayList<>();
+    List<String> listIdAdBackup = new ArrayList<>();
+    NativeAdView nativeAdViewMain;
+    NativeAdView nativeAdViewSecondary;
     NativeAdView nativeMetaAdView;
     ShimmerFrameLayout shimmerFrameLayout;
     private FrameLayout flAd;
@@ -57,14 +57,14 @@ public class NativeBuilder {
 
         //layout native admob
         if (_nativeAdView instanceof NativeAdView) {
-            nativeAdView = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNative, null);
+            nativeAdViewMain = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNative, null);
         } else {
             layoutNativeAdmob = com.amazic.mylibrary.R.layout.ads_native_large;
-            nativeAdView = (NativeAdView) LayoutInflater.from(context).inflate(com.amazic.mylibrary.R.layout.ads_native_large, null);
+            nativeAdViewMain = (NativeAdView) LayoutInflater.from(context).inflate(com.amazic.mylibrary.R.layout.ads_native_large, null);
         }
         //layout native meta
         if (_nativeMetaAdView instanceof NativeAdView) {
-            nativeMetaAdView = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNativeMeta, null);;
+            nativeMetaAdView = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNativeMeta, null);
         } else {
             layoutNativeMeta = R.layout.ads_native_meta_large;
             nativeMetaAdView = (NativeAdView) LayoutInflater.from(context).inflate(R.layout.ads_native_meta_large, null);
@@ -79,11 +79,11 @@ public class NativeBuilder {
 
         if (useNewAdLoading) {
             flAd.removeAllViews();
-            nativeAdViewBackup = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNative, null);
-            nativeAdView.setVisibility(View.GONE);
-            nativeAdViewBackup.setVisibility(View.GONE);
-            flAd.addView(nativeAdViewBackup);
-            flAd.addView(nativeAdView);
+            nativeAdViewSecondary = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNative, null);
+            nativeAdViewMain.setVisibility(View.GONE);
+            nativeAdViewSecondary.setVisibility(View.GONE);
+            flAd.addView(nativeAdViewSecondary);
+            flAd.addView(nativeAdViewMain);
             flAd.addView(shimmerFrameLayout);
         }
     }
@@ -104,32 +104,46 @@ public class NativeBuilder {
         return this.flAd;
     }
 
-    public List<String> getListIdAd() {
-        return this.listIdAd;
+    public List<String> getListIdAdMain() {
+        return this.listIdAdMain;
     }
 
-    public void setListIdAd(List<String> listIdAd) {
-        this.listIdAd.clear();
-        this.listIdAd.addAll(listIdAd);
+    public void setListIdAdMain(List<String> listIdAd) {
+        this.listIdAdMain.clear();
+        this.listIdAdMain.addAll(listIdAd);
     }
 
-    public void setListIdAd(String nameIdAd) {
-        this.listIdAd.clear();
-        this.listIdAd.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
+    public void setListIdAdMain(String nameIdAd) {
+        this.listIdAdMain.clear();
+        this.listIdAdMain.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
     }
 
-    public List<String> getListIdAdFirst() {
-        return this.listIdAdFirst;
+    public List<String> getListIdAdSecondary() {
+        return this.listIdAdSecondary;
     }
 
-    public void setListIdAdFirst(List<String> listIdAd) {
-        this.listIdAdFirst.clear();
-        this.listIdAdFirst.addAll(listIdAd);
+    public void setListIdAdSecondary(List<String> listIdAd) {
+        this.listIdAdSecondary.clear();
+        this.listIdAdSecondary.addAll(listIdAd);
     }
 
-    public void setListIdAdFirst(String nameIdAd) {
-        this.listIdAd.clear();
-        this.listIdAdFirst.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
+    public void setListIdAdSecondary(String nameIdAd) {
+        this.listIdAdSecondary.clear();
+        this.listIdAdSecondary.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
+    }
+
+    public List<String> getListIdAdBackup() {
+        return this.listIdAdBackup;
+    }
+
+    public void setListIdAdBackup(List<String> listIdAd) {
+        this.listIdAdBackup.clear();
+        this.listIdAdBackup.addAll(listIdAd);
+    }
+
+    public void setListIdAdBackup(String nameIdAd) {
+        this.listIdAdBackup.clear();
+        this.listIdAdBackup.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
     }
 
     public NativeCallback getCallback() {

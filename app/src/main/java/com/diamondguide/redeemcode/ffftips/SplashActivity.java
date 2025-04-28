@@ -80,7 +80,7 @@ public class SplashActivity extends AppCompatActivity {
                 handleAsync();
             }
         });
-        RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(SplashActivity.this, () -> {
+        /*RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(SplashActivity.this, () -> {
             Admob.getInstance().setShowAllAds(RemoteConfigHelper.getInstance().get_config(SplashActivity.this, RemoteConfigHelper.show_all_ads));
             Admob.getInstance().setTimeInterval(RemoteConfigHelper.getInstance().get_config_long(SplashActivity.this, RemoteConfigHelper.interval_between_interstitial) * 1000);
             Admob.getInstance().setTimeIntervalFromStart(RemoteConfigHelper.getInstance().get_config_long(SplashActivity.this, RemoteConfigHelper.interval_interstitial_from_start) * 1000);
@@ -100,7 +100,17 @@ public class SplashActivity extends AppCompatActivity {
             } else {
                 handleAsync();
             }
-        });
+        });*/
+        UpdateApplicationManager.getInstance().setUseFlexibleUpdate();
+        appUpdateManager = UpdateApplicationManager.getInstance().checkVersionPlayStore(
+                SplashActivity.this,
+                true,
+                false,
+                "\uD83D\uDE80 New Update Available!",
+                "Upgrade now for a smoother experience, bug fixes for better performance. ⚡",
+                "Update Now",
+                "No"
+        );
     }
 
     private void handleAsync() {

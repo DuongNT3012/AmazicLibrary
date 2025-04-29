@@ -199,7 +199,7 @@ public class UpdateApplicationManager {
                         activityResultLauncher,
                         // Or pass 'AppUpdateType.FLEXIBLE' to newBuilder() for
                         // flexible updates.
-                        AppUpdateOptions.newBuilder(AppUpdateType.FLEXIBLE).build());
+                        AppUpdateOptions.newBuilder(updateType).build());
             } else {
                 Log.d(TAG, "Call init UpdateApplicationManager first!");
                 Toast.makeText(activity, "Call init UpdateApplicationManager first!", Toast.LENGTH_SHORT).show();

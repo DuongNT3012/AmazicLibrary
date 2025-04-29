@@ -126,7 +126,7 @@ public class NativeManager implements LifecycleEventObserver {
         Log.d(TAG, "loadMainNative:");
         if (myNativeAdMain != null) myNativeAdMain.destroy();
         Admob.getInstance().loadNativeAds(currentActivity,
-                builder.getListIdAdMain(),
+                builder.getListIdAdSecondary(),
                 new NativeCallback() {
                     @Override
                     public void onNativeAdLoaded(NativeAd nativeAd) {

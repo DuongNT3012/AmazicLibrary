@@ -553,6 +553,7 @@ public class Admob {
                         loadingAdsDialog.dismiss();
                     }
                     isFailToShowAdSplash = true;
+                    AppOpenManager.getInstance().setEnableResume(true);
                     isInterOrRewardedShowing = false;
                     if (handlerTimeoutSplash != null && runnable != null) {
                         handlerTimeoutSplash.removeCallbacks(runnable);

@@ -625,7 +625,7 @@ class AsyncSplash {
                 TechManager.getInstance().detectedTech(activity, false)
             }
             frAdsBanner?.visibility = View.VISIBLE
-            val bannerBuilder = BannerBuilder()
+            val bannerBuilder = BannerBuilder(frAdsBanner)
             bannerBuilder.setListId(listIdBannerSplash)
             bannerBuilder.callBack = object : BannerCallback() {
                 override fun onAdImpression() {
@@ -642,7 +642,7 @@ class AsyncSplash {
                     Log.d(TAG, "loadFailBannerSplash.")
                 }
             }
-            activity?.let { BannerManager(it, frAdsBanner, lifecycleOwner, bannerBuilder, adsKey) }
+            activity?.let { BannerManager(it, lifecycleOwner, bannerBuilder, adsKey) }
         } else {
             frAdsBanner?.visibility = View.GONE
         }

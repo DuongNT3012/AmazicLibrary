@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
+import com.amazic.library.ads.banner_ads.BannerBuilder;
+import com.amazic.library.ads.banner_ads.BannerManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
@@ -34,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
 
-        NativeBuilder nativeBuilder = new NativeBuilder(
+        /*NativeBuilder nativeBuilder = new NativeBuilder(
                 this, binding.frAdsNative,
                 com.amazic.mylibrary.R.layout.layout_shimmer_native,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
@@ -47,7 +49,15 @@ public class MainActivity extends AppCompatActivity {
         nativeBuilder.setListIdAdBackup(List.of("ca-app-pub-3940256099942544/1044960115"));
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb2");
         nativeManager.setIntervalReloadNative(4000);
-        nativeManager.setAlwaysReloadOnResume(true);
+        nativeManager.setAlwaysReloadOnResume(true);*/
+        BannerBuilder bannerBuilder = new BannerBuilder(this, binding.frAdsNative, true);
+        bannerBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("banner_all"));
+        bannerBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("banner_all"));
+        bannerBuilder.setListIdAdBackup(AdmobApi.getInstance().getListIDByName("banner_all"));
+        BannerManager bannerManager = new BannerManager(this, this, bannerBuilder, "banner_all");
+        bannerManager.setIntervalReloadBanner(4000);
+        bannerManager.setAlwaysReloadOnResume(true);
+
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
             InterManager.loadAndShowInterAds(this, "inter_all", "inter_all", new InterCallback() {

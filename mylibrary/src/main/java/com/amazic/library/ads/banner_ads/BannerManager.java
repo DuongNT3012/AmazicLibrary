@@ -238,7 +238,7 @@ public class BannerManager implements LifecycleEventObserver {
                 super.onAdImpression();
                 builder.getCallBack().onAdImpression();
                 Log.d(TAG, "onAdImpression: Secondary");
-                handleImpressionNativeSecondary();
+                handleImpressionBannerSecondary();
                 startReloadBanner();
             }
 
@@ -251,11 +251,14 @@ public class BannerManager implements LifecycleEventObserver {
         }, remoteKeySecondary);
     }
 
-    private void handleImpressionNativeSecondary() {
+    private void handleImpressionBannerSecondary() {
         if (isLoadedBannerMain) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 if (builder.getFrContainer() != null && builder.bannerAdViewSecondary != null) {
                     builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
+                    if (builder.bannerAdViewMain != null) {
+                        builder.getFrContainer().addView(builder.bannerAdViewMain);
+                    }
                 }
                 if (builder.getFrContainer() != null && builder.shimmerBanner != null) {
                     builder.getFrContainer().removeView(builder.shimmerBanner);

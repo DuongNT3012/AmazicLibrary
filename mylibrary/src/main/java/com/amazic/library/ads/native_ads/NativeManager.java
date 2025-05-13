@@ -29,6 +29,7 @@ public class NativeManager implements LifecycleEventObserver {
     private boolean isTimerRunning = false;
     private CountDownTimer countDownTimer;
     private final String remoteKey;
+    private String remoteKeySecondary = "native_all_2";
     private NativeAd myNativeAdMain;
     private NativeAd myNativeAdSecondary;
 
@@ -112,10 +113,22 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadNewAdFormat() {
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
+        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
             builder.shimmerFrameLayout.setVisibility(View.GONE);
-            builder.nativeAdViewMain.setVisibility(View.GONE);
-            if (builder.nativeAdViewSecondary != null) builder.nativeAdViewSecondary.setVisibility(View.GONE);
+            if (builder.nativeAdViewMain != null)
+                builder.nativeAdViewMain.setVisibility(View.GONE);
+            if (builder.nativeAdViewSecondary != null)
+                builder.nativeAdViewSecondary.setVisibility(View.GONE);
+            return;
+        }
+        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
+            if (builder.nativeAdViewMain != null)
+                builder.nativeAdViewMain.setVisibility(View.GONE);
+            return;
+        }
+        if (!Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
+            if (builder.nativeAdViewSecondary != null)
+                builder.nativeAdViewSecondary.setVisibility(View.GONE);
             return;
         }
         loadMainNative();
@@ -126,7 +139,7 @@ public class NativeManager implements LifecycleEventObserver {
         Log.d(TAG, "loadMainNative:");
         if (myNativeAdMain != null) myNativeAdMain.destroy();
         Admob.getInstance().loadNativeAds(currentActivity,
-                builder.getListIdAdSecondary(),
+                builder.getListIdAdMain(),
                 new NativeCallback() {
                     @Override
                     public void onNativeAdLoaded(NativeAd nativeAd) {
@@ -169,7 +182,7 @@ public class NativeManager implements LifecycleEventObserver {
         Log.d(TAG, "loadSecondaryNative:");
         if (myNativeAdSecondary != null) myNativeAdSecondary.destroy();
         Admob.getInstance().loadNativeAds(currentActivity,
-                builder.getListIdAdMain(),
+                builder.getListIdAdSecondary(),
                 new NativeCallback() {
                     @Override
                     public void onNativeAdLoaded(NativeAd nativeAd) {
@@ -206,14 +219,15 @@ public class NativeManager implements LifecycleEventObserver {
                         builder.getCallback().onAdClicked();
                     }
 
-                }, remoteKey);
+                }, remoteKeySecondary);
     }
 
     private void showNativeMain(NativeAd nativeAd) {
         myNativeAdMain = nativeAd;
         Admob.getInstance().populateNativeAdView(nativeAd, builder.nativeAdViewMain);
         builder.nativeAdViewMain.setVisibility(View.VISIBLE);
-        if (builder.nativeAdViewSecondary != null) builder.nativeAdViewSecondary.setVisibility(View.GONE);
+        if (builder.nativeAdViewSecondary != null)
+            builder.nativeAdViewSecondary.setVisibility(View.GONE);
         builder.shimmerFrameLayout.setVisibility(View.GONE);
     }
 
@@ -231,7 +245,8 @@ public class NativeManager implements LifecycleEventObserver {
     private void handleImpressionNativeSecondary() {
         if (myNativeAdMain != null) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                if (builder.nativeAdViewSecondary != null) builder.nativeAdViewSecondary.setVisibility(View.GONE);
+                if (builder.nativeAdViewSecondary != null)
+                    builder.nativeAdViewSecondary.setVisibility(View.GONE);
                 builder.nativeAdViewMain.setVisibility(View.VISIBLE);
                 builder.shimmerFrameLayout.setVisibility(View.GONE);
             }, 800);
@@ -308,5 +323,13 @@ public class NativeManager implements LifecycleEventObserver {
 
     public void setAlwaysReloadOnResume(boolean isAlwaysReloadOnResume) {
         this.isAlwaysReloadOnResume = isAlwaysReloadOnResume;
+    }
+
+    public String getRemoteKeySecondary() {
+        return remoteKeySecondary;
+    }
+
+    public void setRemoteKeySecondary(String remoteKeySecondary) {
+        this.remoteKeySecondary = remoteKeySecondary;
     }
 }

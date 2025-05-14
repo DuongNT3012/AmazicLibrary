@@ -7,6 +7,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
@@ -111,6 +113,15 @@ public class BannerManager implements LifecycleEventObserver {
                 break;
             case ON_DESTROY:
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
+                if (builder.getFrContainer() != null) {
+                    builder.getFrContainer().removeAllViews();
+                }
+                if (builder.bannerAdViewMain != null) {
+                    builder.bannerAdViewMain.destroy();
+                }
+                if (builder.bannerAdViewSecondary != null) {
+                    builder.bannerAdViewSecondary.destroy();
+                }
                 this.lifecycleOwner.getLifecycle().removeObserver(this);
                 break;
         }
@@ -252,18 +263,26 @@ public class BannerManager implements LifecycleEventObserver {
     }
 
     private void handleImpressionBannerSecondary() {
-        if (isLoadedBannerMain) {
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                if (builder.getFrContainer() != null && builder.bannerAdViewSecondary != null) {
-                    builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
-                    if (builder.bannerAdViewMain != null) {
-                        builder.getFrContainer().addView(builder.bannerAdViewMain);
+        try {
+            if (isLoadedBannerMain) {
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    if (builder.getFrContainer() != null && builder.bannerAdViewSecondary != null) {
+                        builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
+                        if (builder.bannerAdViewMain != null) {
+                            ViewParent parent = builder.bannerAdViewMain.getParent();
+                            if (parent instanceof ViewGroup) {
+                                ((ViewGroup) parent).removeView(builder.bannerAdViewMain);
+                            }
+                            builder.getFrContainer().addView(builder.bannerAdViewMain);
+                        }
                     }
-                }
-                if (builder.getFrContainer() != null && builder.shimmerBanner != null) {
-                    builder.getFrContainer().removeView(builder.shimmerBanner);
-                }
-            }, 1000);
+                    if (builder.getFrContainer() != null && builder.shimmerBanner != null) {
+                        builder.getFrContainer().removeView(builder.shimmerBanner);
+                    }
+                }, 1000);
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "handleImpressionBannerSecondary: " + e.getMessage());
         }
     }
 

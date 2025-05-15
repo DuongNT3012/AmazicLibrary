@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
@@ -27,12 +28,17 @@ import com.amazic.library.iap.IAPManager
 import com.amazic.library.iap.ProductDetailCustom
 import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.URL
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
+import kotlin.system.measureTimeMillis
 
 class AsyncSplash {
     private val TAG = "AsyncSplash"
@@ -93,6 +99,9 @@ class AsyncSplash {
 
     //Log event 26/04/2025
     private var timeSplashCheck = System.currentTimeMillis()
+
+    //check internet speed
+    private var urlCheckInternetSpeed = "http://207.148.116.90/app/poster/avatar/sale5.png"
 
     companion object {
         const val TECH_MANAGER = "TechManager"
@@ -172,6 +181,10 @@ class AsyncSplash {
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
         //this.isUseAppUpdateManager = false
+    }
+
+    fun setUrlCheckInternetSpeed(urlCheckInternetSpeed: String) {
+        this.urlCheckInternetSpeed = urlCheckInternetSpeed
     }
 
     fun setTimeSplashCheck() {
@@ -356,7 +369,11 @@ class AsyncSplash {
             return@launch
         }
         if (NetworkUtil.isNetworkActive(activity)) {
-            EventTrackingHelper.logEvent(activity, "splash_have_internet")
+            EventTrackingHelper.logEvent(activity, "splash_have_internet_original")
+            measureDownloadSpeed(urlCheckInternetSpeed) { speedMbps ->
+                Log.d(TAG, "measureDownloadSpeed log event: ${speedMbps.toInt()}")
+                EventTrackingHelper.logEventWithAParam(activity, "splash_have_internet", "internet_speed", speedMbps.toInt().toString())
+            }
             lifecycleCoroutineScope.launch {
                 val asyncAdmobApi = async { initAdmobApi(activity) }
                 val asyncRemoteConfig = async { initRemoteConfig(activity) }
@@ -428,6 +445,46 @@ class AsyncSplash {
             RemoteConfigHelper.getInstance().set_config(activity, it, false)
         }
     }
+
+    fun measureDownloadSpeed(
+        urlCheckInternetSpeed: String,
+        onResult: (speedMbps: Double) -> Unit
+    ) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val connection = URL(urlCheckInternetSpeed).openConnection()
+                connection.connect()
+
+                val inputStream = connection.getInputStream()
+                val buffer = ByteArray(1024 * 8) // 8KB buffer
+                var totalBytesRead = 0L
+
+                val timeTakenMillis = measureTimeMillis {
+                    while (true) {
+                        val bytesRead = inputStream.read(buffer)
+                        if (bytesRead == -1) break
+                        totalBytesRead += bytesRead
+                        if (totalBytesRead >= 1 * 1024 * 1024) break // Limit 1MB download
+                    }
+                    inputStream.close()
+                }
+
+                val speedBytesPerSec = totalBytesRead / (timeTakenMillis / 1000.0)
+                val speedMbps = (speedBytesPerSec * 8) / (1024 * 1024) // Byte/s → Mbps
+
+                withContext(Dispatchers.Main) {
+                    Log.d(TAG, "measureDownloadSpeed: $speedMbps")
+                    onResult(speedMbps)
+                }
+            } catch (e: Exception) {
+                Log.d(TAG, "measureDownloadSpeed: ${e.message}")
+                withContext(Dispatchers.Main) {
+                    onResult(0.0)
+                }
+            }
+        }
+    }
+
 
     private suspend fun initRemoteConfig(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
         if (isUseAppUpdateManager) {

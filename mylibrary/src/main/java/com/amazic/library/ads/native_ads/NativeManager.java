@@ -113,20 +113,10 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadNewAdFormat() {
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
+        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
             builder.shimmerFrameLayout.setVisibility(View.GONE);
             if (builder.nativeAdViewMain != null)
                 builder.nativeAdViewMain.setVisibility(View.GONE);
-            if (builder.nativeAdViewSecondary != null)
-                builder.nativeAdViewSecondary.setVisibility(View.GONE);
-            return;
-        }
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
-            if (builder.nativeAdViewMain != null)
-                builder.nativeAdViewMain.setVisibility(View.GONE);
-            return;
-        }
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
             if (builder.nativeAdViewSecondary != null)
                 builder.nativeAdViewSecondary.setVisibility(View.GONE);
             return;

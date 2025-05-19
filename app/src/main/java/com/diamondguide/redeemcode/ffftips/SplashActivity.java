@@ -149,17 +149,18 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
             //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
             ArrayList<String> listTurnOffRemote = new ArrayList<>();
+            listTurnOffRemote.add("native_wb");
             AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
             ArrayList<String> listIdBannerSplash = new ArrayList<>();
             listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
-            AsyncSplash.Companion.getInstance().setShowBannerSplash(false, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
+            AsyncSplash.Companion.getInstance().setShowBannerSplash(true, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
             AsyncSplash.Companion.getInstance().setOnPrepareLoadInterOpenSplashAds(new Function0<Unit>() {
                 @Override
                 public Unit invoke() {
-                    RemoteConfigHelper.getInstance().set_config(SplashActivity.this, "inter_splash", false);
-                    RemoteConfigHelper.getInstance().set_config(SplashActivity.this, "open_splash", false);
+                    //RemoteConfigHelper.getInstance().set_config(SplashActivity.this, "inter_splash", false);
+                    //RemoteConfigHelper.getInstance().set_config(SplashActivity.this, "open_splash", false);
                     return null;
                 }
             });

@@ -29,7 +29,7 @@ public class NativeManager implements LifecycleEventObserver {
     private boolean isTimerRunning = false;
     private CountDownTimer countDownTimer;
     private final String remoteKey;
-    private String remoteKeySecondary = "native_all_2";
+    private String remoteKeySecondary = "";
     private NativeAd myNativeAdMain;
     private NativeAd myNativeAdSecondary;
 
@@ -61,6 +61,7 @@ public class NativeManager implements LifecycleEventObserver {
         this.builder = builder;
         this.currentActivity = currentActivity;
         this.remoteKey = remoteKey;
+        this.remoteKeySecondary = remoteKey;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
     }
@@ -113,13 +114,24 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadNewAdFormat() {
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
-            builder.shimmerFrameLayout.setVisibility(View.GONE);
-            if (builder.nativeAdViewMain != null)
-                builder.nativeAdViewMain.setVisibility(View.GONE);
-            if (builder.nativeAdViewSecondary != null)
-                builder.nativeAdViewSecondary.setVisibility(View.GONE);
-            return;
+        if (remoteKeySecondary.isEmpty()) {
+            if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
+                builder.shimmerFrameLayout.setVisibility(View.GONE);
+                if (builder.nativeAdViewMain != null)
+                    builder.nativeAdViewMain.setVisibility(View.GONE);
+                if (builder.nativeAdViewSecondary != null)
+                    builder.nativeAdViewSecondary.setVisibility(View.GONE);
+                return;
+            }
+        } else {
+            if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
+                builder.shimmerFrameLayout.setVisibility(View.GONE);
+                if (builder.nativeAdViewMain != null)
+                    builder.nativeAdViewMain.setVisibility(View.GONE);
+                if (builder.nativeAdViewSecondary != null)
+                    builder.nativeAdViewSecondary.setVisibility(View.GONE);
+                return;
+            }
         }
         if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
             if (builder.nativeAdViewMain != null)

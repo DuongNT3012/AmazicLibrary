@@ -33,7 +33,7 @@ public class BannerManager implements LifecycleEventObserver {
     private int adWidth;
     private boolean isLoadBannerFragment = false;
     private final String remoteKey;
-    private String remoteKeySecondary = "banner_all_2";
+    private String remoteKeySecondary = "";
     private boolean isLoadedBannerMain = false;
     private boolean isLoadedBannerSecondary = false;
 
@@ -81,6 +81,7 @@ public class BannerManager implements LifecycleEventObserver {
         this.context = context;
         this.adWidth = adWidth;
         this.remoteKey = remoteKey;
+        this.remoteKeySecondary = remoteKey;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
     }
@@ -159,11 +160,20 @@ public class BannerManager implements LifecycleEventObserver {
     }
 
     private void loadNewAdFormat() {
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
-            if (builder.getFrContainer() != null) {
-                builder.getFrContainer().removeAllViews();
+        if (remoteKeySecondary.isEmpty()) {
+            if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
+                if (builder.getFrContainer() != null) {
+                    builder.getFrContainer().removeAllViews();
+                }
+                return;
             }
-            return;
+        } else {
+            if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
+                if (builder.getFrContainer() != null) {
+                    builder.getFrContainer().removeAllViews();
+                }
+                return;
+            }
         }
         loadMainBanner();
         loadSecondaryBanner();

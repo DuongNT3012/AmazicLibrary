@@ -159,7 +159,7 @@ public class BannerManager implements LifecycleEventObserver {
     }
 
     private void loadNewAdFormat() {
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
+        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
             if (builder.getFrContainer() != null) {
                 builder.getFrContainer().removeAllViews();
             }

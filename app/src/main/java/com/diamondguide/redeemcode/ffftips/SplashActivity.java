@@ -136,9 +136,10 @@ public class SplashActivity extends AppCompatActivity {
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
             AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
-            AsyncSplash.Companion.getInstance().setDebug(false); //use for TechManager, DetectTestAd
+            AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
+            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
             AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
-            AsyncSplash.Companion.getInstance().setAsyncSplashAds(true);
+            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
             AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
             //AsyncSplash.Companion.getInstance().setTimeOutCallApi(0);
@@ -158,7 +159,7 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setShowBannerSplash(true, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
             AsyncSplash.Companion.getInstance().setOnPrepareLoadInterOpenSplashAds(new Function0<Unit>() {
                 @Override
-                public Unit invoke() {
+                public Unit invoke() { //prepare load and show inter/open splash
                     //RemoteConfigHelper.getInstance().set_config(SplashActivity.this, "inter_splash", false);
                     //RemoteConfigHelper.getInstance().set_config(SplashActivity.this, "open_splash", false);
                     return null;

@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
-import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
@@ -103,6 +102,9 @@ class AsyncSplash {
     //check internet speed
     private var urlCheckInternetSpeed = "http://207.148.116.90/app/poster/avatar/sale5.png"
 
+    //Set loadAndShowIdInterAdSplashAsync 30/05/2025
+    private var loadAndShowIdInterAdSplashAsync = false
+
     companion object {
         const val TECH_MANAGER = "TechManager"
         const val DETECT_TEST_AD = "DetectTestAd"
@@ -180,7 +182,15 @@ class AsyncSplash {
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
-        //this.isUseAppUpdateManager = false
+        this.loadAndShowIdInterAdSplashAsync = false
+    }
+
+    fun getLoadAndShowIdInterAdSplashAsync(): Boolean {
+        return this.loadAndShowIdInterAdSplashAsync
+    }
+
+    fun setLoadAndShowIdInterAdSplashAsync() {
+        this.loadAndShowIdInterAdSplashAsync = true
     }
 
     fun setUrlCheckInternetSpeed(urlCheckInternetSpeed: String) {
@@ -199,8 +209,8 @@ class AsyncSplash {
         this.onPrepareLoadInterOpenSplashAds = onPrepareLoadInterOpenSplashAds
     }
 
-    fun setUseAppUpdateManager(isUseAppUpdateManager: Boolean) {
-        this.isUseAppUpdateManager = isUseAppUpdateManager
+    fun setUseAppUpdateManager() {
+        this.isUseAppUpdateManager = true
     }
 
     fun setKeyAdsInterSplash(keyAdsInterSplash: String) {
@@ -211,8 +221,8 @@ class AsyncSplash {
         this.keyAdsOpenSplash = keyAdsOpenSplash
     }
 
-    fun setAsyncSplashAds(isAsyncSplashAds: Boolean) { //Show splash ads without wait any thing
-        this.isAsyncSplashAds = isAsyncSplashAds
+    fun setAsyncSplashAds() { //Show splash ads without wait any thing
+        this.isAsyncSplashAds = true
     }
 
     fun setPreloadResumeAds(isPreloadResumeAds: Boolean) { //Set can preload resume ads or not (Note: set false when you need to load and show resume ads)
@@ -223,8 +233,8 @@ class AsyncSplash {
         return this.isPreloadResumeAds
     }
 
-    fun setUseIdAdsFromRemoteConfig(isUseIdAdsFromRemoteConfig: Boolean, remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
-        this.isUseIdAdsFromRemoteConfig = isUseIdAdsFromRemoteConfig
+    fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
+        this.isUseIdAdsFromRemoteConfig = true
         this.remoteKeyIdAdsServer = remoteKeyIdAdsServer
         this.timeOutCallApi = 0
     }
@@ -245,8 +255,8 @@ class AsyncSplash {
         this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
     }
 
-    fun setLoopAdsSplash(isLoopAdsSplash: Boolean) { //Load loop splash ads when load fail if time splash < 8s
-        this.isLoopAdsSplash = isLoopAdsSplash
+    fun setLoopAdsSplash() { //Load loop splash ads when load fail if time splash < 8s
+        this.isLoopAdsSplash = true
     }
 
     fun getShowAdsSplash(): Boolean {

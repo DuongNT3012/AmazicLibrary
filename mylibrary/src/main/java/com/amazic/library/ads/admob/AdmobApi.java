@@ -277,6 +277,10 @@ public class AdmobApi {
         Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
     }
 
+    public void loadAndShowIdInterAdSplashAsync(AppCompatActivity activity, String adsKey, InterCallback interCallback) {
+        Admob.getInstance().loadAndShowIdInterAdSplashAsync(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
+    }
+
     public void loadOpenAppAdSplashLoop(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback) {
         AppOpenManager.getInstance().loadAndShowAppOpenResumeSplashLoop(activity, AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
     }

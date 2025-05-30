@@ -85,6 +85,7 @@ public class Admob {
     private boolean isCustomAnimationDialog = false;
     private boolean isInterOrRewardedShowing = false;
     private boolean isShowAllAds = true;
+    private InterstitialAd mInterstitialAdSplashHigh;
     private InterstitialAd mInterstitialAdSplash;
     private boolean isFailToShowAdSplash = false;
     private long timeInterval = 0L;
@@ -137,6 +138,14 @@ public class Admob {
     public boolean checkCondition(Context context, String adsKey) {
         Log.d(TAG, "checkCondition: Network_" + NetworkUtil.isNetworkActive(context) + "_UMP_" + AdsConsentManager.getConsentResult(context) + "_showAllAds_" + isShowAllAds + "_IAP_" + IAPManager.getInstance().isPurchase() + "_RemoteConfig_" + RemoteConfigHelper.getInstance().get_config(context, adsKey));
         return NetworkUtil.isNetworkActive(context) && AdsConsentManager.getConsentResult(context) && isShowAllAds && !IAPManager.getInstance().isPurchase() && RemoteConfigHelper.getInstance().get_config(context, adsKey);
+    }
+
+    public int getTimeDelayWaitInterHigh() {
+        return timeDelayWaitInterHigh;
+    }
+
+    public void setTimeDelayWaitInterHigh(int timeDelayWaitInterHigh) {
+        this.timeDelayWaitInterHigh = timeDelayWaitInterHigh;
     }
 
     public boolean isCustomAnimationDialog() {
@@ -629,6 +638,240 @@ public class Admob {
         }
     }
 
+    public void showInterAdsSplashAsync(InterstitialAd interSplash, AppCompatActivity activity, InterCallback interCallback) {
+        countClickInterSplashAds = 0;
+        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onResume(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onResume(owner);
+                isSplashResume = true;
+                Log.d(TAG, "SPLASH: onSplashResume: " + true);
+            }
+
+            @Override
+            public void onStop(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onStop(owner);
+                isSplashResume = false;
+                Log.d(TAG, "SPLASH: onSplashResume: " + false);
+            }
+        });
+        if (interSplash == null) {
+            Log.d(TAG, "SPLASH: The interstitial ad wasn't ready yet.");
+            AppOpenManager.getInstance().setEnableResume(true);
+            interCallback.onNextAction();
+            return;
+        }
+        if (!isLoadInterSplashIdTimeout) {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                interSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
+                    @Override
+                    public void onAdClicked() {
+                        AppOpenManager.isLastActionClickAd = true;
+                        // Called when a click is recorded for an ad.
+                        Log.d(TAG, "SPLASH: Ad was clicked.");
+                        interCallback.onAdClicked();
+                        countClickInterSplashAds++;
+                        int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                        if (splashOpenTimes == 1) {
+                            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_click + "_" + countClickInterSplashAds);
+                        }
+                    }
+
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        //increase splash open
+                        SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                        //end increase splash open
+                        Log.d(TAG, "SPLASH: Ad dismissed fullscreen content.");
+                        interCallback.onAdDismissedFullScreenContent();
+                        AppOpenManager.getInstance().setEnableResume(true);
+                        if (!openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
+                        }
+                        isInterOrRewardedShowing = false;
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                        //increase splash open
+                        SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                        //end increase splash open
+                        Log.e(TAG, "SPLASH: Ad failed to show fullscreen content.");
+                        interCallback.onAdFailedToShowFullScreenContent();
+                        if (isSplashResume && !openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
+                        }
+                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            loadingAdsDialog.dismiss();
+                        }
+                        isFailToShowAdSplash = true;
+                        AppOpenManager.getInstance().setEnableResume(true);
+                        isInterOrRewardedShowing = false;
+                        if (handlerTimeoutSplash != null && runnable != null) {
+                            handlerTimeoutSplash.removeCallbacks(runnable);
+                        }
+                        //log event
+                        EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                        //end log event
+                    }
+
+                    @Override
+                    public void onAdImpression() {
+                        // Called when an impression is recorded for an ad.
+                        Log.d(TAG, "SPLASH: Ad recorded an impression.");
+                        interCallback.onAdImpression();
+                        //log event
+                        EventTrackingHelper.logEventWithAParam(activity, time_splash_loading_ad_show, time_splash_loading_show, String.valueOf((System.currentTimeMillis() - timeSplashLoadingAdShow) / 1000));
+                        EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                        int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                        if (splashOpenTimes <= 3) {
+                            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_impression + "_" + splashOpenTimes);
+                        }
+                        //end log event
+                    }
+
+                    @Override
+                    public void onAdShowedFullScreenContent() {
+                        // Called when ad is shown.
+                        Log.d(TAG, "SPLASH: Ad showed fullscreen content.");
+                        interCallback.onAdShowedFullScreenContent();
+                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            loadingAdsDialog.dismiss();
+                        }
+                        isInterOrRewardedShowing = true;
+                        isFailToShowAdSplash = false;
+                        if (handlerTimeoutSplash != null && runnable != null) {
+                            handlerTimeoutSplash.removeCallbacks(runnable);
+                        }
+                    }
+                });
+                boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+                Log.d(TAG, "SPLASH: ResumeState: " + isResumeState);
+                if (isResumeState) {
+                    loadingAdsDialog = new LoadingAdsDialog(activity);
+                    if (!loadingAdsDialog.isShowing() && !activity.isDestroyed()) {
+                        loadingAdsDialog.show();
+                    }
+                    isInterOrRewardedShowing = true;
+                    AppOpenManager.getInstance().setEnableResume(false);
+                    if (openActivityAfterShowInterAds) {
+                        Log.d(TAG, "SPLASH: showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
+                        interCallback.onNextAction();
+                    }
+                    interSplash.show(activity);
+                } else {
+                    Log.e(TAG, "SPLASH: Fail to show on background.");
+                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        loadingAdsDialog.dismiss();
+                    }
+                    isFailToShowAdSplash = true;
+                    if (handlerTimeoutSplash != null && runnable != null) {
+                        handlerTimeoutSplash.removeCallbacks(runnable);
+                    }
+                }
+            }, 250);
+        }
+    }
+
+    private boolean isShownInterSplashHigh = false;
+    private boolean isShownInterSplashNormal = false;
+    private int timeDelayWaitInterHigh = 2000;
+
+    //load all id inter splash once
+    public void loadAndShowIdInterAdSplashAsync(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
+        ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
+        //Set timeout ads splash x(s) if cannot load
+        runnable = () -> {
+            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (interCallback != null) {
+                isLoadInterSplashIdTimeout = true;
+                interCallback.onNextAction();
+            }
+            if (handlerTimeoutSplash != null) {
+                handlerTimeoutSplash = null;
+            }
+        };
+        if (handlerTimeoutSplash != null) {
+            handlerTimeoutSplash.postDelayed(runnable, timeOutCallAds);
+        }
+
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
+            Log.d(TAG, "Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase());
+            interCallback.onNextAction();
+            if (handlerTimeoutSplash != null && runnable != null) {
+                handlerTimeoutSplash.removeCallbacks(runnable);
+                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                handlerTimeoutSplash = null;
+            }
+            return;
+        }
+
+        //Log event
+        Bundle bundle = new Bundle();
+        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
+        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
+        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
+        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
+        bundle.putString(EventTrackingHelper.showallad, String.valueOf(getShowAllAds()));
+        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
+        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
+
+        //log event can request
+        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
+        //end log event can request
+        //time start load splash ads
+        timeSplashLoadingAdShow = System.currentTimeMillis();
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        for (int i = 0; i < listIdInterTemp.size(); i++) {
+            int index = i;
+            InterstitialAd.load(activity, listIdInterTemp.get(index), adRequest,
+                    new InterstitialAdLoadCallback() {
+                        @Override
+                        public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                            Log.i(TAG, "SPLASH: Ad was loaded inter splash.");
+                            interCallback.onAdLoaded(interstitialAd);
+                            if (index == 0) {
+                                mInterstitialAdSplashHigh = interstitialAd;
+                                if (!isShownInterSplashNormal) {
+                                    isShownInterSplashHigh = true;
+                                    showInterAdsSplashAsync(mInterstitialAdSplashHigh, activity, interCallback);
+                                }
+                            } else {
+                                mInterstitialAdSplash = interstitialAd;
+                                new Handler().postDelayed(() -> {
+                                    if (!isShownInterSplashHigh && !isShownInterSplashNormal) {
+                                        showInterAdsSplashAsync(mInterstitialAdSplash, activity, interCallback);
+                                        isShownInterSplashNormal = true;
+                                    }
+                                }, timeDelayWaitInterHigh);
+                            }
+
+                            if (handlerTimeoutSplash != null && runnable != null) {
+                                handlerTimeoutSplash.removeCallbacks(runnable);
+                                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                                handlerTimeoutSplash = null;
+                            }
+                            //Tracking revenue
+                            interstitialAd.setOnPaidEventListener(adValue -> {
+                                //Adjust
+                                AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            });
+                        }
+
+                        @Override
+                        public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                            // Handle the error
+                            Log.e(TAG, "SPLASH: Fail to load inter splash. " + loadAdError);
+                            interCallback.onAdFailedToLoad();
+                        }
+                    });
+        }
+    }
+
     public void loadAndShowInterAdSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
@@ -822,14 +1065,22 @@ public class Admob {
     public void onCheckShowSplashWhenFail(AppCompatActivity activity, InterCallback interCallback) {
         if (isFailToShowAdSplash) {
             Log.d(TAG, "SPLASH: onCheckShowSplashWhenFail.");
-            showInterAdsSplash(activity, interCallback);
+            if (!AsyncSplash.Companion.getInstance().getLoadAndShowIdInterAdSplashAsync()) {
+                showInterAdsSplash(activity, interCallback);
+            } else {
+                if (mInterstitialAdSplashHigh != null) {
+                    showInterAdsSplashAsync(mInterstitialAdSplashHigh, activity, interCallback);
+                } else {
+                    showInterAdsSplashAsync(mInterstitialAdSplash, activity, interCallback);
+                }
+            }
         }
     }
 
     //================================end inter ads================================
 
     //================================Start banner ads================================
-    public AdView loadBannerAdsBackupWithoutShow(Activity activity, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, String remoteKey) {
+    public AdView loadBannerAdsBackupWithoutShow(Activity activity, List<String> listIdBanner, BannerCallback bannerCallback, String remoteKey) {
         ArrayList<String> listIdBannerTemp = new ArrayList<>(listIdBanner);
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
@@ -876,7 +1127,7 @@ public class Admob {
                 if (!listIdBannerTemp.isEmpty()) {
                     listIdBannerTemp.remove(0);
                 }
-                loadBannerAdsBackupWithoutShow(activity, listIdBannerTemp, adContainerView, bannerCallback, remoteKey);
+                loadBannerAdsBackupWithoutShow(activity, listIdBannerTemp, bannerCallback, remoteKey);
             }
 
             @Override
@@ -940,7 +1191,7 @@ public class Admob {
         return adView;
     }
 
-    public AdView loadBannerAdsWithoutShow(Activity activity, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, String remoteKey) {
+    public AdView loadBannerAdsWithoutShow(Activity activity, List<String> listIdBanner, BannerCallback bannerCallback, String remoteKey) {
         ArrayList<String> listIdBannerTemp = new ArrayList<>(listIdBanner);
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
@@ -987,7 +1238,7 @@ public class Admob {
                 if (!listIdBannerTemp.isEmpty()) {
                     listIdBannerTemp.remove(0);
                 }
-                loadBannerAdsWithoutShow(activity, listIdBannerTemp, adContainerView, bannerCallback, remoteKey);
+                loadBannerAdsWithoutShow(activity, listIdBannerTemp, bannerCallback, remoteKey);
             }
 
             @Override

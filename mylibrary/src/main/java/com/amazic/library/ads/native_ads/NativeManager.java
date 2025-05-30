@@ -32,30 +32,11 @@ public class NativeManager implements LifecycleEventObserver {
     private String remoteKeySecondary = "";
     private NativeAd myNativeAdMain;
     private NativeAd myNativeAdSecondary;
-
-    public void setIntervalReloadNative(long intervalReloadNative) {
-        if (intervalReloadNative > 0) {
-            this.intervalReloadNative = intervalReloadNative;
-            countDownTimer = new CountDownTimer(this.intervalReloadNative, 1000) {
-                @Override
-                public void onTick(long l) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    isTimerRunning = false;
-                    loadNativeFloor(builder.maxRequestReload);
-                }
-            };
-        }
-    }
-
-    public void cancelAutoReloadNative() {
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-        }
-    }
+    private Handler handlerTimeoutCallNative = new Handler(Looper.getMainLooper());
+    private Runnable runnable;
+    private int timeOutCallAds = 10000;
+    private boolean canLoadMainNative = true;
+    private boolean canLoadSecondaryNative = true;
 
     public NativeManager(@NonNull Activity currentActivity, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey) {
         this.builder = builder;
@@ -113,6 +94,23 @@ public class NativeManager implements LifecycleEventObserver {
         } else loadOldAdFormat(maxRequest);
     }
 
+    private void handleTimeoutCallNative() {
+        //Set timeout call native x(s) if cannot load
+        runnable = () -> {
+            if (!canLoadMainNative || !canLoadSecondaryNative) {
+                canLoadMainNative = true;
+                canLoadSecondaryNative = true;
+                startReloadNative();
+            }
+            if (handlerTimeoutCallNative != null) {
+                handlerTimeoutCallNative = null;
+            }
+        };
+        if (handlerTimeoutCallNative != null) {
+            handlerTimeoutCallNative.postDelayed(runnable, timeOutCallAds);
+        }
+    }
+
     private void loadNewAdFormat() {
         if (remoteKeySecondary.isEmpty()) {
             if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
@@ -141,95 +139,104 @@ public class NativeManager implements LifecycleEventObserver {
             if (builder.nativeAdViewSecondary != null)
                 builder.nativeAdViewSecondary.setVisibility(View.GONE);
         }
+        handleTimeoutCallNative();
         loadMainNative();
         loadSecondaryNative();
     }
 
     private void loadMainNative() {
-        Log.d(TAG, "loadMainNative:");
-        if (myNativeAdMain != null) myNativeAdMain.destroy();
-        Admob.getInstance().loadNativeAds(currentActivity,
-                builder.getListIdAdMain(),
-                new NativeCallback() {
-                    @Override
-                    public void onNativeAdLoaded(NativeAd nativeAd) {
-                        super.onNativeAdLoaded(nativeAd);
-                        Log.d(TAG, "onNativeAdLoaded: Main");
-                        builder.getCallback().onNativeAdLoaded(nativeAd);
-                        showNativeMain(nativeAd);
-                    }
-
-                    @Override
-                    public void onAdImpression() {
-                        super.onAdImpression();
-                        Log.d(TAG, "onAdImpression: Main");
-                        builder.getCallback().onAdImpression();
-                        startReloadNative();
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        super.onAdClicked();
-                        builder.getCallback().onAdClicked();
-                        Log.d(TAG, "onAdClicked: Main");
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(LoadAdError loadAdError) {
-                        super.onAdFailedToLoad(loadAdError);
-                        Log.e(TAG, "onAdFailedToLoad: Main\n" + loadAdError.getMessage());
-                        builder.getCallback().onAdFailedToLoad(loadAdError);
-                        if (myNativeAdSecondary != null) {
-                            builder.shimmerFrameLayout.setVisibility(View.GONE);
+        if (canLoadMainNative) {
+            Log.d(TAG, "loadMainNative:");
+            if (myNativeAdMain != null) myNativeAdMain.destroy();
+            Admob.getInstance().loadNativeAds(currentActivity,
+                    builder.getListIdAdMain(),
+                    new NativeCallback() {
+                        @Override
+                        public void onNativeAdLoaded(NativeAd nativeAd) {
+                            super.onNativeAdLoaded(nativeAd);
+                            canLoadMainNative = true;
+                            Log.d(TAG, "onNativeAdLoaded: Main");
+                            builder.getCallback().onNativeAdLoaded(nativeAd);
+                            showNativeMain(nativeAd);
                         }
-                        loadNativeBackup(true);
-                    }
-                }, remoteKey);
+
+                        @Override
+                        public void onAdImpression() {
+                            super.onAdImpression();
+                            Log.d(TAG, "onAdImpression: Main");
+                            builder.getCallback().onAdImpression();
+                            startReloadNative();
+                        }
+
+                        @Override
+                        public void onAdClicked() {
+                            super.onAdClicked();
+                            builder.getCallback().onAdClicked();
+                            Log.d(TAG, "onAdClicked: Main");
+                        }
+
+                        @Override
+                        public void onAdFailedToLoad(LoadAdError loadAdError) {
+                            super.onAdFailedToLoad(loadAdError);
+                            canLoadMainNative = true;
+                            Log.e(TAG, "onAdFailedToLoad: Main\n" + loadAdError.getMessage());
+                            builder.getCallback().onAdFailedToLoad(loadAdError);
+                            if (myNativeAdSecondary != null) {
+                                builder.shimmerFrameLayout.setVisibility(View.GONE);
+                            }
+                            loadNativeBackup(true);
+                        }
+                    }, remoteKey);
+            canLoadMainNative = false;
+        }
     }
 
-
     private void loadSecondaryNative() {
-        Log.d(TAG, "loadSecondaryNative:");
-        if (myNativeAdSecondary != null) myNativeAdSecondary.destroy();
-        Admob.getInstance().loadNativeAds(currentActivity,
-                builder.getListIdAdSecondary(),
-                new NativeCallback() {
-                    @Override
-                    public void onNativeAdLoaded(NativeAd nativeAd) {
-                        super.onNativeAdLoaded(nativeAd);
-                        builder.getCallback().onNativeAdLoaded(nativeAd);
-                        Log.d(TAG, "onNativeAdLoaded: Secondary");
-                        showNativeSecondary(nativeAd);
-                    }
-
-                    @Override
-                    public void onAdImpression() {
-                        super.onAdImpression();
-                        Log.d(TAG, "onAdImpression: Secondary");
-                        builder.getCallback().onAdImpression();
-                        handleImpressionNativeSecondary();
-                        startReloadNative();
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(LoadAdError loadAdError) {
-                        super.onAdFailedToLoad(loadAdError);
-                        Log.d(TAG, "onAdFailedToLoad: Secondary\n" + loadAdError.getMessage());
-                        builder.getCallback().onAdFailedToLoad(loadAdError);
-                        if (myNativeAdMain != null) {
-                            builder.shimmerFrameLayout.setVisibility(View.GONE);
+        if (canLoadSecondaryNative) {
+            Log.d(TAG, "loadSecondaryNative:");
+            if (myNativeAdSecondary != null) myNativeAdSecondary.destroy();
+            Admob.getInstance().loadNativeAds(currentActivity,
+                    builder.getListIdAdSecondary(),
+                    new NativeCallback() {
+                        @Override
+                        public void onNativeAdLoaded(NativeAd nativeAd) {
+                            super.onNativeAdLoaded(nativeAd);
+                            canLoadSecondaryNative = true;
+                            builder.getCallback().onNativeAdLoaded(nativeAd);
+                            Log.d(TAG, "onNativeAdLoaded: Secondary");
+                            showNativeSecondary(nativeAd);
                         }
-                        loadNativeBackup(false);
-                    }
 
-                    @Override
-                    public void onAdClicked() {
-                        super.onAdClicked();
-                        Log.d(TAG, "onAdClicked: Secondary");
-                        builder.getCallback().onAdClicked();
-                    }
+                        @Override
+                        public void onAdImpression() {
+                            super.onAdImpression();
+                            Log.d(TAG, "onAdImpression: Secondary");
+                            builder.getCallback().onAdImpression();
+                            handleImpressionNativeSecondary();
+                            startReloadNative();
+                        }
 
-                }, remoteKeySecondary);
+                        @Override
+                        public void onAdFailedToLoad(LoadAdError loadAdError) {
+                            super.onAdFailedToLoad(loadAdError);
+                            canLoadSecondaryNative = true;
+                            Log.d(TAG, "onAdFailedToLoad: Secondary\n" + loadAdError.getMessage());
+                            builder.getCallback().onAdFailedToLoad(loadAdError);
+                            if (myNativeAdMain != null) {
+                                builder.shimmerFrameLayout.setVisibility(View.GONE);
+                            }
+                            loadNativeBackup(false);
+                        }
+
+                        @Override
+                        public void onAdClicked() {
+                            super.onAdClicked();
+                            Log.d(TAG, "onAdClicked: Secondary");
+                            builder.getCallback().onAdClicked();
+                        }
+                    }, remoteKeySecondary);
+            canLoadSecondaryNative = false;
+        }
     }
 
     private void showNativeMain(NativeAd nativeAd) {
@@ -314,6 +321,30 @@ public class NativeManager implements LifecycleEventObserver {
         }
     }
 
+    public void setIntervalReloadNative(long intervalReloadNative) {
+        if (intervalReloadNative > 0) {
+            this.intervalReloadNative = intervalReloadNative;
+            countDownTimer = new CountDownTimer(this.intervalReloadNative, 1000) {
+                @Override
+                public void onTick(long l) {
+
+                }
+
+                @Override
+                public void onFinish() {
+                    isTimerRunning = false;
+                    loadNativeFloor(builder.maxRequestReload);
+                }
+            };
+        }
+    }
+
+    public void cancelAutoReloadNative() {
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
     private void startReloadNative() {
         if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED && !isTimerRunning) {
             Log.d(TAG, "startReloadNative: ");
@@ -341,5 +372,13 @@ public class NativeManager implements LifecycleEventObserver {
 
     public void setRemoteKeySecondary(String remoteKeySecondary) {
         this.remoteKeySecondary = remoteKeySecondary;
+    }
+
+    public int getTimeOutCallAds() {
+        return timeOutCallAds;
+    }
+
+    public void setTimeOutCallAds(int timeOutCallAds) {
+        this.timeOutCallAds = timeOutCallAds;
     }
 }

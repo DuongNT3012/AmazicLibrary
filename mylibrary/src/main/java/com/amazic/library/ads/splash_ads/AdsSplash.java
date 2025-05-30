@@ -92,7 +92,11 @@ public class AdsSplash {
             if (this.isLoopAdsSplash) {
                 AdmobApi.getInstance().loadInterAdSplashLoop(activity, keyAdsInterSplash, interCallback);
             } else {
-                AdmobApi.getInstance().loadInterAdSplashFloor(activity, keyAdsInterSplash, interCallback);
+                if (!AsyncSplash.Companion.getInstance().getLoadAndShowIdInterAdSplashAsync()) {
+                    AdmobApi.getInstance().loadInterAdSplashFloor(activity, keyAdsInterSplash, interCallback);
+                } else {
+                    AdmobApi.getInstance().loadAndShowIdInterAdSplashAsync(activity, keyAdsInterSplash, interCallback);
+                }
             }
         } else {
             interCallback.onNextAction();

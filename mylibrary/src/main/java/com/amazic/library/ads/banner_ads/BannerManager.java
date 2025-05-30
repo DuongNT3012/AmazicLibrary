@@ -184,7 +184,7 @@ public class BannerManager implements LifecycleEventObserver {
         if (builder.bannerAdViewMain != null) {
             builder.bannerAdViewMain.destroy();
         }
-        builder.bannerAdViewMain = Admob.getInstance().loadBannerAdsWithoutShow(currentActivity, builder.getListIdAdMain(), builder.getFrContainer(), new BannerCallback() {
+        builder.bannerAdViewMain = Admob.getInstance().loadBannerAdsWithoutShow(currentActivity, builder.getListIdAdMain(), new BannerCallback() {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
@@ -230,7 +230,7 @@ public class BannerManager implements LifecycleEventObserver {
         if (builder.bannerAdViewSecondary != null) {
             builder.bannerAdViewSecondary.destroy();
         }
-        builder.bannerAdViewSecondary = Admob.getInstance().loadBannerAdsWithoutShow(currentActivity, builder.getListIdAdSecondary(), builder.getFrContainer(), new BannerCallback() {
+        builder.bannerAdViewSecondary = Admob.getInstance().loadBannerAdsWithoutShow(currentActivity, builder.getListIdAdSecondary(), new BannerCallback() {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();
@@ -300,7 +300,7 @@ public class BannerManager implements LifecycleEventObserver {
         if (builder.bannerAdViewMain != null) {
             builder.bannerAdViewMain.destroy();
         }
-        builder.bannerAdViewMain = Admob.getInstance().loadBannerAdsBackupWithoutShow(currentActivity, builder.getListIdAdBackup(), builder.getFrContainer(), new BannerCallback() {
+        builder.bannerAdViewMain = Admob.getInstance().loadBannerAdsBackupWithoutShow(currentActivity, builder.getListIdAdBackup(), new BannerCallback() {
             @Override
             public void onAdLoaded() {
                 super.onAdLoaded();

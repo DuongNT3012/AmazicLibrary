@@ -776,6 +776,7 @@ public class Admob {
     private boolean isShownInterSplashHigh = false;
     private boolean isShownInterSplashNormal = false;
     private int timeDelayWaitInterHigh = 2000;
+    private boolean isHandledLoadAdsSplashFail = false;
 
     //load all id inter splash once
     public void loadAndShowIdInterAdSplashAsync(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
@@ -866,7 +867,18 @@ public class Admob {
                         public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                             // Handle the error
                             Log.e(TAG, "SPLASH: Fail to load inter splash. " + loadAdError);
-                            interCallback.onAdFailedToLoad();
+                            if (!isLoadInterSplashIdTimeout) {
+                                if (listIdInterTemp.size() <= 1) {
+                                    interCallback.onAdFailedToLoad();
+                                    interCallback.onNextAction();
+                                } else {
+                                    if (index != 0 && !isHandledLoadAdsSplashFail) {
+                                        interCallback.onAdFailedToLoad();
+                                        interCallback.onNextAction();
+                                        isHandledLoadAdsSplashFail = true;
+                                    }
+                                }
+                            }
                         }
                     });
         }

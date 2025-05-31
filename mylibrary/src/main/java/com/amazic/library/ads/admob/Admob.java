@@ -161,6 +161,14 @@ public class Admob {
         this.isCustomAnimationDialog = customAnimationDialog;
     }
 
+    public InterstitialAd getInterstitialAdSplashHigh() {
+        return mInterstitialAdSplashHigh;
+    }
+
+    public void setInterstitialAdSplashHigh(InterstitialAd mInterstitialAdSplashHigh) {
+        this.mInterstitialAdSplashHigh = mInterstitialAdSplashHigh;
+    }
+
     public InterstitialAd getInterstitialAdSplash() {
         return mInterstitialAdSplash;
     }

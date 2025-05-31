@@ -36,7 +36,7 @@ public class InterManager {
         }
     }
 
-    public static void showInterAds(Activity activity, String adsKey, String remoteKey, InterCallback interCallback, boolean isReloadInterAfterShow) {
+    public static void showInterAds(Activity activity, String adsKey, String remoteKey, InterCallback interCallback, boolean isShowLoading, boolean isReloadInterAfterShow) {
         Admob.getInstance().showInterAds(activity, listInter.get(adsKey), new InterCallback() {
             @Override
             public void onNextAction() {
@@ -91,6 +91,6 @@ public class InterManager {
                 super.onAdShowedFullScreenContent();
                 interCallback.onAdShowedFullScreenContent();
             }
-        }, remoteKey);
+        }, isShowLoading, remoteKey);
     }
 }

@@ -420,7 +420,7 @@ public class Admob {
                 });
     }
 
-    public void showInterAds(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, String remoteKey) {
+    public void showInterAds(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, boolean isShowLoading, String remoteKey) {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
@@ -442,9 +442,11 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
-        loadingAdsDialog = new LoadingAdsDialog(activity);
-        if (!loadingAdsDialog.isShowing()) {
-            loadingAdsDialog.show();
+        if (isShowLoading) {
+            loadingAdsDialog = new LoadingAdsDialog(activity);
+            if (!loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.show();
+            }
         }
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
@@ -478,7 +480,7 @@ public class Admob {
                     if (!openActivityAfterShowInterAds) {
                         interCallback.onNextAction();
                     }
-                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                    if (isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         loadingAdsDialog.dismiss();
                     }
                     isInterOrRewardedShowing = false;
@@ -497,7 +499,7 @@ public class Admob {
                     // Called when ad is shown.
                     Log.d(TAG, "INTER: Ad showed fullscreen content. " + remoteKey);
                     interCallback.onAdShowedFullScreenContent();
-                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                    if (isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         loadingAdsDialog.dismiss();
                     }
                     isInterOrRewardedShowing = true;
@@ -806,7 +808,7 @@ public class Admob {
 
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase()) {
-            Log.d(TAG, "Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase());
+            Log.d(TAG, "Check condition loadAndShowIdInterAdSplashAsync " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" + IAPManager.getInstance().isPurchase());
             interCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
                 handlerTimeoutSplash.removeCallbacks(runnable);
@@ -841,7 +843,7 @@ public class Admob {
                     new InterstitialAdLoadCallback() {
                         @Override
                         public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                            Log.i(TAG, "SPLASH: Ad was loaded inter splash.");
+                            Log.i(TAG, "SPLASH ID ASYNC: Ad was loaded inter splash.");
                             interCallback.onAdLoaded(interstitialAd);
                             if (index == 0) {
                                 mInterstitialAdSplashHigh = interstitialAd;
@@ -874,7 +876,7 @@ public class Admob {
                         @Override
                         public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                             // Handle the error
-                            Log.e(TAG, "SPLASH: Fail to load inter splash. " + loadAdError);
+                            Log.e(TAG, "SPLASH ID ASYNC: Fail to load inter splash. " + loadAdError);
                             if (!isLoadInterSplashIdTimeout) {
                                 if (listIdInterTemp.size() <= 1) {
                                     interCallback.onAdFailedToLoad();

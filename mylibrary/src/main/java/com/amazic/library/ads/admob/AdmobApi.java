@@ -115,7 +115,7 @@ public class AdmobApi {
 
     public List<String> getListIDByName(String nameAds) {
         List<String> list = new ArrayList<>();
-        if (listAds.get(nameAds.toLowerCase().trim()) != null)
+        if (listAds.get(nameAds.trim()) != null)
             list.addAll(Objects.requireNonNull(listAds.get(nameAds)));
         return list;
     }
@@ -198,7 +198,7 @@ public class AdmobApi {
                         listIDAds = new ArrayList<>();
                     }
                     listIDAds.add(ads.getAds_id());
-                    listAds.put(ads.getName().toLowerCase().trim(), listIDAds);
+                    listAds.put(ads.getName().trim(), listIDAds);
                 }
             }
             Log.d(TAG, "convertJsonIdAdsDefaultToList: " + listAds.size());
@@ -231,8 +231,8 @@ public class AdmobApi {
                                 listIDAds = new ArrayList<>();
                             }
                             listIDAds.add(ads.getAds_id());
-                            listAds.put(ads.getName().toLowerCase().trim(), listIDAds);
-                            Log.d(TAG, ads.getName().toLowerCase().trim() + "_" + ads.getAds_id());
+                            listAds.put(ads.getName().trim(), listIDAds);
+                            Log.d(TAG, ads.getName().trim() + "_" + ads.getAds_id());
                         }
                         isSetId = true;
                         Log.d(TAG, "isSetId = true2, listAds size = " + listAds.size());

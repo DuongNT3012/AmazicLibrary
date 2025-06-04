@@ -839,17 +839,19 @@ public class Admob {
         AdRequest adRequest = new AdRequest.Builder().build();
         for (int i = 0; i < listIdInterTemp.size(); i++) {
             int index = i;
+            Log.d(TAG, "SPLASH ID ASYNC: Start load inter splash. " + listIdInterTemp.get(index));
             InterstitialAd.load(activity, listIdInterTemp.get(index), adRequest,
                     new InterstitialAdLoadCallback() {
                         @Override
                         public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                            Log.i(TAG, "SPLASH ID ASYNC: Ad was loaded inter splash.");
+                            Log.i(TAG, "SPLASH ID ASYNC: Ad was loaded inter splash. " + listIdInterTemp.get(index));
                             interCallback.onAdLoaded(interstitialAd);
                             if (index == 0) {
                                 mInterstitialAdSplashHigh = interstitialAd;
                                 if (!isShownInterSplashNormal) {
                                     isShownInterSplashHigh = true;
                                     showInterAdsSplashAsync(mInterstitialAdSplashHigh, activity, interCallback);
+                                    Log.d(TAG, "SPLASH ID ASYNC: Show inter splash high. " + listIdInterTemp.get(index));
                                 }
                             } else {
                                 mInterstitialAdSplash = interstitialAd;
@@ -857,6 +859,7 @@ public class Admob {
                                     if (!isShownInterSplashHigh && !isShownInterSplashNormal) {
                                         showInterAdsSplashAsync(mInterstitialAdSplash, activity, interCallback);
                                         isShownInterSplashNormal = true;
+                                        Log.d(TAG, "SPLASH ID ASYNC: Show inter splash. " + listIdInterTemp.get(index));
                                     }
                                 }, timeDelayWaitInterHigh);
                             }

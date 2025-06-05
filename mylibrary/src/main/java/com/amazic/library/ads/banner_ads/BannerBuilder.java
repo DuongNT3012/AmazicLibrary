@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.FrameLayout;
 
-import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.mylibrary.R;
 import com.google.android.gms.ads.AdView;
@@ -15,11 +14,11 @@ import java.util.List;
 
 public class BannerBuilder {
     private BannerCallback callBack = new BannerCallback();
-    private final List<String> listId = new ArrayList<>();
     private FrameLayout frContainer;
     public boolean useNewAdLoading = false;
     public AdView bannerAdViewMain;
     public AdView bannerAdViewSecondary;
+    public AdView bannerAdViewBackup;
     public List<String> listIdAdMain = new ArrayList<>();
     public List<String> listIdAdSecondary = new ArrayList<>();
     public List<String> listIdAdBackup = new ArrayList<>();
@@ -39,34 +38,13 @@ public class BannerBuilder {
         }
     }
 
-    public BannerBuilder setListId(List<String> listId) {
-        this.listId.clear();
-        this.listId.addAll(listId);
-        return this;
-    }
-
     public BannerBuilder setCallBack(BannerCallback callBack) {
         this.callBack = callBack;
         return this;
     }
 
-    public BannerBuilder isIdApi() {
-        this.listId.clear();
-        this.listId.addAll(AdmobApi.getInstance().getListIDBannerAll());
-        return this;
-    }
-
-    public void setListIdAd(String nameIdAd) {
-        this.listId.clear();
-        this.listId.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
-    }
-
     public BannerCallback getCallBack() {
         return callBack;
-    }
-
-    public List<String> getListId() {
-        return listId;
     }
 
     public List<String> getListIdAdMain() {

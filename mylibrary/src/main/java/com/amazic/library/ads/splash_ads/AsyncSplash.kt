@@ -693,7 +693,7 @@ class AsyncSplash {
             }
             frAdsBanner?.visibility = View.VISIBLE
             val bannerBuilder = BannerBuilder(frAdsBanner)
-            bannerBuilder.setListId(listIdBannerSplash)
+            bannerBuilder.setListIdAdMain(listIdBannerSplash)
             bannerBuilder.callBack = object : BannerCallback() {
                 override fun onAdImpression() {
                     super.onAdImpression()

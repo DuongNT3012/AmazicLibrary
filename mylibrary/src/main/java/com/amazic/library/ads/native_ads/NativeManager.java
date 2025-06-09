@@ -35,7 +35,7 @@ public class NativeManager implements LifecycleEventObserver {
     private NativeAd myNativeAdSecondary;
     private Handler handlerTimeoutCallNative = new Handler(Looper.getMainLooper());
     private Runnable runnable;
-    private int timeOutCallAds = 10000;
+    private int timeOutCallAds = 12000;
     private boolean canLoadMainNative = true;
     private boolean canLoadSecondaryNative = true;
 

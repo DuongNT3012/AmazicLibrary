@@ -12,6 +12,8 @@ import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.mylibrary.R;
 import com.amazic.mylibrary.databinding.DialogLoadingAdsResumeBinding;
 
+import java.util.Random;
+
 public class LoadingAdsResumeDialog extends Dialog {
     private DialogLoadingAdsResumeBinding binding;
 
@@ -19,7 +21,10 @@ public class LoadingAdsResumeDialog extends Dialog {
         super(context, R.style.AppTheme);
         binding = DialogLoadingAdsResumeBinding.inflate(LayoutInflater.from(context));
         if (AppOpenManager.getInstance().isCustomAnimationDialog()) {
-            setUseAnimationView(AppOpenManager.getInstance().animationDialogRaw);
+            Random random = new Random();
+            int randomIndex = random.nextInt(AppOpenManager.getInstance().listAnimationDialogRaw.size());
+            int randomElement = AppOpenManager.getInstance().listAnimationDialogRaw.get(randomIndex);
+            setUseAnimationView(randomElement);
         } else {
             setUseProgressBar();
         }

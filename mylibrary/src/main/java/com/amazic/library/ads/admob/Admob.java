@@ -81,7 +81,7 @@ public class Admob {
     private static Admob INSTANCE;
     private static final String TAG = "Admob";
     public LoadingAdsDialog loadingAdsDialog;
-    public int animationDialogRaw = R.raw.custom_loading;
+    public ArrayList<Integer> listAnimationDialogRaw = new ArrayList<>();
     private boolean isCustomAnimationDialog = false;
     private boolean isInterOrRewardedShowing = false;
     private boolean isShowAllAds = true;
@@ -152,9 +152,10 @@ public class Admob {
         return isCustomAnimationDialog;
     }
 
-    public void setCustomAnimationDialog(boolean customAnimationDialog, int animationDialogRaw) {
+    public void setCustomAnimationDialog(boolean customAnimationDialog, ArrayList<Integer> listAnimationDialogRaw) {
         this.isCustomAnimationDialog = customAnimationDialog;
-        this.animationDialogRaw = animationDialogRaw;
+        this.listAnimationDialogRaw.clear();
+        this.listAnimationDialogRaw.addAll(listAnimationDialogRaw);
     }
 
     public void setCustomAnimationDialog(boolean customAnimationDialog) {

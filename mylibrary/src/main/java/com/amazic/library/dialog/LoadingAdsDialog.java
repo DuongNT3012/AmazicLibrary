@@ -12,6 +12,8 @@ import com.amazic.library.ads.admob.Admob;
 import com.amazic.mylibrary.R;
 import com.amazic.mylibrary.databinding.DialogLoadingAdsBinding;
 
+import java.util.Random;
+
 public class LoadingAdsDialog extends Dialog {
     private DialogLoadingAdsBinding binding;
 
@@ -19,7 +21,10 @@ public class LoadingAdsDialog extends Dialog {
         super(context, R.style.AppTheme);
         binding = DialogLoadingAdsBinding.inflate(LayoutInflater.from(context));
         if (Admob.getInstance().isCustomAnimationDialog()) {
-            setUseAnimationView(Admob.getInstance().animationDialogRaw);
+            Random random = new Random();
+            int randomIndex = random.nextInt(Admob.getInstance().listAnimationDialogRaw.size());
+            int randomElement = Admob.getInstance().listAnimationDialogRaw.get(randomIndex);
+            setUseAnimationView(randomElement);
         } else {
             setUseProgressBar();
         }

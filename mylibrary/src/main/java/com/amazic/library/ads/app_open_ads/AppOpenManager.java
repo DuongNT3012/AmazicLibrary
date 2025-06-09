@@ -53,7 +53,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private Activity currentActivity;
     private Application application;
     private LoadingAdsResumeDialog loadingAdsResumeDialog;
-    public int animationDialogRaw = R.raw.custom_loading;
+    public ArrayList<Integer> listAnimationDialogRaw = new ArrayList<>();
     private boolean isCustomAnimationDialog = false;
     private List<String> listIdOpenResumeAd = new ArrayList<>();
     private boolean isFailToShowAdSplash = false;
@@ -122,9 +122,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         return isCustomAnimationDialog;
     }
 
-    public void setCustomAnimationDialog(boolean customAnimationDialog, int animationDialogRaw) {
+    public void setCustomAnimationDialog(boolean customAnimationDialog, ArrayList<Integer> listAnimationDialogRaw) {
         this.isCustomAnimationDialog = customAnimationDialog;
-        this.animationDialogRaw = animationDialogRaw;
+        this.listAnimationDialogRaw = listAnimationDialogRaw;
     }
 
     public void setCustomAnimationDialog(boolean customAnimationDialog) {

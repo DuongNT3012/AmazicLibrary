@@ -29,7 +29,6 @@ import com.amazic.library.dialog.LoadingAdsResumeDialog;
 import com.amazic.library.iap.IAPManager;
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
-import com.amazic.mylibrary.R;
 import com.google.android.gms.ads.AdActivity;
 import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
@@ -122,13 +121,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         return isCustomAnimationDialog;
     }
 
-    public void setCustomAnimationDialog(boolean customAnimationDialog, ArrayList<Integer> listAnimationDialogRaw) {
-        this.isCustomAnimationDialog = customAnimationDialog;
+    public void setCustomAnimationDialog(ArrayList<Integer> listAnimationDialogRaw) {
+        this.isCustomAnimationDialog = true;
         this.listAnimationDialogRaw = listAnimationDialogRaw;
-    }
-
-    public void setCustomAnimationDialog(boolean customAnimationDialog) {
-        this.isCustomAnimationDialog = customAnimationDialog;
     }
 
     public AppOpenAd getAppOpenAdSplash() {

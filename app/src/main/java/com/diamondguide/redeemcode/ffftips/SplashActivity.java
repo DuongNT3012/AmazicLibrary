@@ -174,11 +174,10 @@ public class SplashActivity extends AppCompatActivity {
             }, new Function0<Unit>() { //async splash done
                 @Override
                 public Unit invoke() {
-                    ArrayList<Integer> listAnim = new ArrayList<>();
+                    /*ArrayList<Integer> listAnim = new ArrayList<>();
                     listAnim.add(R.raw.custom_loading);
-                    listAnim.add(R.raw.hand_animation);
-                    Admob.getInstance().setCustomAnimationDialog(true, listAnim);
-                    AppOpenManager.getInstance().setCustomAnimationDialog(true, listAnim);
+                    Admob.getInstance().setCustomAnimationDialog(listAnim);
+                    AppOpenManager.getInstance().setCustomAnimationDialog(listAnim);*/
                     return null;
                 }
             });

@@ -27,6 +27,7 @@ import com.amazic.library.iap.IAPManager
 import com.amazic.library.iap.ProductDetailCustom
 import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
+import com.amazic.mylibrary.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -436,6 +437,22 @@ class AsyncSplash {
                             }
                         }
                         lifecycleCoroutineScope.launch {
+                            //set list random animation
+                            val listAnim = arrayListOf(
+                                R.raw.ads_1,
+                                R.raw.ads_2,
+                                R.raw.ads_3,
+                                R.raw.ads_4,
+                                R.raw.ads_5,
+                                R.raw.ads_6,
+                                R.raw.ads_7,
+                                R.raw.ads_8,
+                                R.raw.ads_9,
+                                R.raw.ads_10,
+                            )
+                            Admob.getInstance().setCustomAnimationDialog(listAnim)
+                            AppOpenManager.getInstance().setCustomAnimationDialog(listAnim)
+                            //end
                             onAsyncSplashDone.invoke()
                         }
                     }

@@ -156,7 +156,7 @@ public class SplashActivity extends AppCompatActivity {
             listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
-            AsyncSplash.Companion.getInstance().setShowBannerSplash(true, binding.bannerContainerView, listIdBannerSplash, "banner_splash");
+            AsyncSplash.Companion.getInstance().setShowBannerSplash(binding.bannerContainerView, listIdBannerSplash, "banner_splash");
             AsyncSplash.Companion.getInstance().setOnPrepareLoadInterOpenSplashAds(new Function0<Unit>() {
                 @Override
                 public Unit invoke() { //prepare load and show inter/open splash

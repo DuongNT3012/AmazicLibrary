@@ -31,6 +31,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
     private boolean isLoadBannerFragment = false;
     public AdView adView;
     private String remoteKey;
+    private boolean isAutoReload = true;
 
     public void setIntervalReloadBanner(long intervalReloadBanner) {
         if (intervalReloadBanner > 0) {
@@ -53,13 +54,21 @@ public class CollapseBannerManager implements LifecycleEventObserver {
         }
     }
 
-    public void cancelAutoReloadCollapseBanner(){
+    public void destroyCollapseBanner() {
+        if (adView != null) {
+            adView.destroy();
+        }
+    }
+
+    public void cancelAutoReloadCollapseBanner() {
+        isAutoReload = false;
         if (countDownTimer != null) {
             countDownTimer.cancel();
         }
     }
 
-    public void resumeAutoReloadCollapseBanner(){
+    public void resumeAutoReloadCollapseBanner() {
+        isAutoReload = true;
         if (countDownTimer != null) {
             countDownTimer.start();
         }
@@ -98,17 +107,19 @@ public class CollapseBannerManager implements LifecycleEventObserver {
                 }
                 break;
             case ON_RESUME:
-                if (countDownTimer != null && isStop) {
-                    countDownTimer.start();
-                }
-                String valueLog = isStop + " && " + (isReloadAds || isAlwaysReloadOnResume);
-                Log.d(TAG, "onStateChanged: resume\n" + valueLog);
-                if (isStop && (isReloadAds || isAlwaysReloadOnResume)) {
-                    isReloadAds = false;
-                    if (isLoadBannerFragment) {
-                        loadCollapseBannerFragment(frContainer);
-                    } else {
-                        loadCollapseBanner(frContainer);
+                if (isAutoReload) {
+                    if (countDownTimer != null && isStop) {
+                        countDownTimer.start();
+                    }
+                    String valueLog = isStop + " && " + (isReloadAds || isAlwaysReloadOnResume);
+                    Log.d(TAG, "onStateChanged: resume\n" + valueLog);
+                    if (isStop && (isReloadAds || isAlwaysReloadOnResume)) {
+                        isReloadAds = false;
+                        if (isLoadBannerFragment) {
+                            loadCollapseBannerFragment(frContainer);
+                        } else {
+                            loadCollapseBanner(frContainer);
+                        }
                     }
                 }
                 isStop = false;

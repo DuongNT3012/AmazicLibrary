@@ -54,7 +54,7 @@ class AsyncSplash {
     private var isNoInternetAction = false
     private var initWelcomeBack = "Normal"
     private var welcomeBackClass: Class<*>? = null
-    private var isShowBannerSplash = true
+    private var isShowBannerSplash = false
     private var frAdsBannerSplash: FrameLayout? = null
     private var listIdBannerSplash: MutableList<String> = arrayListOf("ca-app-pub-3940256099942544/6300978111")
     private var adsKey: String = ""
@@ -164,7 +164,7 @@ class AsyncSplash {
         this.isNoInternetAction = false
         this.initWelcomeBack = "Normal"
         this.welcomeBackClass = null
-        this.isShowBannerSplash = true
+        this.isShowBannerSplash = false
         this.listIdBannerSplash = arrayListOf("ca-app-pub-3940256099942544/6300978111")
         this.listTurnOffRemoteKeys = mutableListOf()
         this.isDebug = false
@@ -318,8 +318,8 @@ class AsyncSplash {
         return this.initWelcomeBack
     }
 
-    fun setShowBannerSplash(isShowBannerSplash: Boolean, frAdsBannerSplash: FrameLayout, listIdBannerSplash: MutableList<String>, adsKey: String) {
-        this.isShowBannerSplash = isShowBannerSplash
+    fun setShowBannerSplash(frAdsBannerSplash: FrameLayout, listIdBannerSplash: MutableList<String>, adsKey: String) {
+        this.isShowBannerSplash = true
         this.frAdsBannerSplash = frAdsBannerSplash
         this.listIdBannerSplash.clear()
         this.listIdBannerSplash.addAll(listIdBannerSplash)
@@ -702,8 +702,8 @@ class AsyncSplash {
         listIdBannerSplash: MutableList<String>,
         adsKey: String
     ) {
-        Log.d(TAG, "loadBannerSplash.")
         if (isShowBannerSplash) {
+            Log.d(TAG, "loadBannerSplash.")
             //Reset TechManager to false
             if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
                 TechManager.getInstance().detectedTech(activity, false)

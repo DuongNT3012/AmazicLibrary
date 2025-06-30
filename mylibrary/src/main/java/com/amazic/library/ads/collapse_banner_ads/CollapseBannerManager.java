@@ -29,7 +29,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
     private int adWidth;
     private FrameLayout frContainer;
     private boolean isLoadBannerFragment = false;
-    private AdView adView;
+    public AdView adView;
     private String remoteKey;
 
     public void setIntervalReloadBanner(long intervalReloadBanner) {

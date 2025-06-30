@@ -1897,7 +1897,7 @@ public class Admob {
     }
 
     //================================Start native ads================================
-    public void loadNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey) {
+    public void loadNativeAds(Context activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
@@ -1967,7 +1967,7 @@ public class Admob {
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    public void loadNativeAdsBackup(Activity activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey) {
+    public void loadNativeAdsBackup(Context activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
@@ -2038,7 +2038,7 @@ public class Admob {
         adLoader.loadAd(new AdRequest.Builder().build());
     }
 
-    public void loadMultipleNativeAds(Activity activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey, int maxRequest) {
+    public void loadMultipleNativeAds(Context activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey, int maxRequest) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
@@ -2108,7 +2108,7 @@ public class Admob {
         adLoader.loadAds(new AdRequest.Builder().build(), maxRequest);
     }
 
-    public void loadMultipleNativeAd(Activity activity, String idNative, NativeCallback nativeCallback, String remoteKey, int maxRequest) {
+    public void loadMultipleNativeAd(Context activity, String idNative, NativeCallback nativeCallback, String remoteKey, int maxRequest) {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || IAPManager.getInstance().isPurchase() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "NATIVE: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + IAPManager.getInstance().isPurchase() + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));

@@ -22,9 +22,9 @@ import com.amazic.library.ads.callback.ApiCallback
 import com.amazic.library.ads.callback.AppOpenCallback
 import com.amazic.library.ads.callback.BannerCallback
 import com.amazic.library.ads.callback.InterCallback
-import com.amazic.library.iap.BillingCallback
+/*import com.amazic.library.iap.BillingCallback
 import com.amazic.library.iap.IAPManager
-import com.amazic.library.iap.ProductDetailCustom
+import com.amazic.library.iap.ProductDetailCustom*/ //comment for billing
 import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
 import com.amazic.mylibrary.R
@@ -64,7 +64,7 @@ class AsyncSplash {
     private var appOpenCallback: AppOpenCallback? = null
     private var isDebug = false
     private var isUseBilling = false
-    private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf()
+    //private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf() //comment for billing
     private var timeOutSplash = 12000L
     private var isLoopAdsSplash = false
     private var useTechManagerOrDetectTestAd = DETECT_TEST_AD
@@ -169,7 +169,7 @@ class AsyncSplash {
         this.listTurnOffRemoteKeys = mutableListOf()
         this.isDebug = false
         this.isUseBilling = false
-        this.listProductDetailCustoms = arrayListOf()
+        //this.listProductDetailCustoms = arrayListOf() //comment for billing
         this.timeOutSplash = 12000L
         this.isLoopAdsSplash = false
         this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
@@ -280,11 +280,11 @@ class AsyncSplash {
         this.timeOutSplash = timeOutSplash
     }
 
-    fun setUseBilling(listProductDetailCustoms: ArrayList<ProductDetailCustom>) { //If need use IAP
+    /*fun setUseBilling(listProductDetailCustoms: ArrayList<ProductDetailCustom>) { //If need use IAP
         this.isUseBilling = true
         this.listProductDetailCustoms.clear()
         this.listProductDetailCustoms.addAll(listProductDetailCustoms)
-    }
+    }*/ //comment for billing
 
     fun setDebug(isDebug: Boolean) { //Use for TechManager or DetectTestAd
         this.isDebug = isDebug
@@ -664,7 +664,7 @@ class AsyncSplash {
     }
 
     private suspend fun initBilling() = suspendCoroutine<Unit> { continuation ->
-        if (isUseBilling) {
+        /*if (isUseBilling) {
             //check if app use billing -> initBilling
             IAPManager.getInstance().initBilling(activity, listProductDetailCustoms, object : BillingCallback() {
                 private var isResumed = false
@@ -688,11 +688,11 @@ class AsyncSplash {
                     }
                 }
             })
-        } else {
+        } else {*/ //comment for billing
             continuation.resume(Unit)
             initBilling = true
             Log.d(TAG, "Not use billing.")
-        }
+        //} //comment for billing
     }
 
     private fun loadBannerSplash(

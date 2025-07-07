@@ -19,7 +19,14 @@ public class LoadingAdsResumeDialog extends Dialog {
 
     public LoadingAdsResumeDialog(@NonNull Context context) {
         super(context, R.style.AppTheme);
-        binding = DialogLoadingAdsResumeBinding.inflate(LayoutInflater.from(context));
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        binding = DialogLoadingAdsResumeBinding.inflate(LayoutInflater.from(getContext()));
+        setContentView(binding.getRoot());
+        setCancelable(false);
         if (AppOpenManager.getInstance().isCustomAnimationDialog()) {
             Random random = new Random();
             int randomIndex = random.nextInt(AppOpenManager.getInstance().listAnimationDialogRaw.size());
@@ -28,13 +35,6 @@ public class LoadingAdsResumeDialog extends Dialog {
         } else {
             setUseProgressBar();
         }
-    }
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(binding.getRoot());
-        setCancelable(false);
     }
 
     public void setUseAnimationView(int resId) {

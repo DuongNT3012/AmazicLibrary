@@ -16,6 +16,8 @@ import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
+import com.amazic.library.ads.collapse_banner_ads.CollapseBannerBuilder;
+import com.amazic.library.ads.collapse_banner_ads.CollapseBannerManager;
 import com.amazic.library.ads.inter_ads.InterManager;
 import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
@@ -35,28 +37,34 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-
-        /*NativeBuilder nativeBuilder = new NativeBuilder(
+        NativeBuilder nativeBuilder = new NativeBuilder(
                 this, binding.frAdsNative,
                 com.amazic.mylibrary.R.layout.layout_shimmer_native,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
                 com.amazic.mylibrary.R.layout.layout_native_adview,
-                false);
-        nativeBuilder.maxRequest = 10;
-        nativeBuilder.maxRequestReload = 10;
+                true);
+        //nativeBuilder.maxRequest = 10;
+        //nativeBuilder.maxRequestReload = 10;
         nativeBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("native_wb"));
         nativeBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("native_wb"));
         nativeBuilder.setListIdAdBackup(List.of("ca-app-pub-3940256099942544/1044960115"));
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb");
         nativeManager.setIntervalReloadNative(4000);
-        nativeManager.setAlwaysReloadOnResume(true);*/
-        BannerBuilder bannerBuilder = new BannerBuilder(this, binding.frAdsNative, true);
+        nativeManager.setAlwaysReloadOnResume(true);
+
+        /*BannerBuilder bannerBuilder = new BannerBuilder(this, binding.adViewContainer, true);
         bannerBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("banner_all"));
         bannerBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("banner_all"));
         bannerBuilder.setListIdAdBackup(AdmobApi.getInstance().getListIDByName("banner_all"));
         BannerManager bannerManager = new BannerManager(this, this, bannerBuilder, "banner_all");
         bannerManager.setIntervalReloadBanner(4000);
-        bannerManager.setAlwaysReloadOnResume(true);
+        bannerManager.setAlwaysReloadOnResume(true);*/
+
+        CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder();
+        collapseBannerBuilder.setListId(AdmobApi.getInstance().getListIDByName("collapse_banner"));
+        CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder, "collapse_banner");
+        collapseBannerManager.setIntervalReloadBanner(4000);
+        collapseBannerManager.setAlwaysReloadOnResume(true);
 
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
@@ -106,5 +114,11 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //AppOpenManager.getInstance().disableAppResumeWithActivity(getClass());
     }
 }

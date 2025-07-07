@@ -70,7 +70,7 @@ public class BannerManager implements LifecycleEventObserver {
                 break;
             case ON_RESUME:
                 if (countDownTimer != null && isStop) {
-                    countDownTimer.start();
+                    startReloadBanner();
                 }
                 String valueLog = isStop + " && " + (isReloadAds || isAlwaysReloadOnResume);
                 Log.d(TAG, "onStateChanged: resume\n" + valueLog);

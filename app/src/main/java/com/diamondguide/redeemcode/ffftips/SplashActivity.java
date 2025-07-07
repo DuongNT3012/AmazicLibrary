@@ -16,8 +16,8 @@ import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
-import com.amazic.library.iap.IAPManager;
-import com.amazic.library.iap.ProductDetailCustom;
+/*import com.amazic.library.iap.IAPManager;
+import com.amazic.library.iap.ProductDetailCustom;*/
 import com.amazic.library.update_app.UpdateApplicationManager;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivitySplashBinding;
 import com.google.android.play.core.appupdate.AppUpdateManager;
@@ -143,9 +143,9 @@ public class SplashActivity extends AppCompatActivity {
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
             AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
             //AsyncSplash.Companion.getInstance().setTimeOutCallApi(0);
-            ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
-            listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
-            AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
+//            ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
+//            listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
+//            AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
             //AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
             AsyncSplash.Companion.getInstance().setInitWelcomeBackAboveResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
             //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below

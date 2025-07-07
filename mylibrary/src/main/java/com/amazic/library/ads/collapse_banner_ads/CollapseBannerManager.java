@@ -8,17 +8,20 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 
 import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.ads.admob.admob_interface.IOnAdsFailToLoad;
+import com.amazic.library.ads.admob.admob_interface.IOnAdsImpression;
 import com.google.android.gms.ads.AdView;
 
 public class CollapseBannerManager implements LifecycleEventObserver {
     private static final String TAG = "CollapseBannerManager";
     private final CollapseBannerBuilder builder;
-    private Activity currentActivity;
+    private AppCompatActivity currentActivity;
     private final LifecycleOwner lifecycleOwner;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;
@@ -54,27 +57,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
         }
     }
 
-    public void destroyCollapseBanner() {
-        if (adView != null) {
-            adView.destroy();
-        }
-    }
-
-    public void cancelAutoReloadCollapseBanner() {
-        isAutoReload = false;
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-        }
-    }
-
-    public void resumeAutoReloadCollapseBanner() {
-        isAutoReload = true;
-        if (countDownTimer != null) {
-            countDownTimer.start();
-        }
-    }
-
-    public CollapseBannerManager(@NonNull Activity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, CollapseBannerBuilder builder, String remoteKey) {
+    public CollapseBannerManager(@NonNull AppCompatActivity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, CollapseBannerBuilder builder, String remoteKey) {
         this.isLoadBannerFragment = false;
         this.builder = builder;
         this.currentActivity = currentActivity;
@@ -109,7 +92,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
             case ON_RESUME:
                 if (isAutoReload) {
                     if (countDownTimer != null && isStop) {
-                        countDownTimer.start();
+                        startReloadCollapse();
                     }
                     String valueLog = isStop + " && " + (isReloadAds || isAlwaysReloadOnResume);
                     Log.d(TAG, "onStateChanged: resume\n" + valueLog);
@@ -144,14 +127,27 @@ public class CollapseBannerManager implements LifecycleEventObserver {
             if (adView != null) {
                 adView.destroy();
             }
-            adView = Admob.getInstance().loadCollapseBanner(currentActivity, builder.getListId(), frContainer, builder.getBannerGravity(), builder.getCallBack(), () -> {
-                if (countDownTimer != null) {
-                    countDownTimer.cancel();
-                    countDownTimer.start();
-                }
-            }, builder.getCollapseTypeClose(), builder.getValueCountDownOrCountClick(), remoteKey);
+            adView = Admob.getInstance().loadCollapseBanner(currentActivity, builder.getListId(), frContainer, builder.getBannerGravity(), builder.getCallBack()
+                    , new IOnAdsImpression() {
+                        @Override
+                        public void onAdsImpression() {
+                            startReloadCollapse();
+                        }
+                    }, new IOnAdsFailToLoad() {
+                        @Override
+                        public void onAdsFailToLoad() {
+                            startReloadCollapse();
+                        }
+                    }, builder.getCollapseTypeClose(), builder.getValueCountDownOrCountClick(), remoteKey);
         } else {
             frContainer.setVisibility(View.GONE);
+        }
+    }
+
+    private void startReloadCollapse() {
+        if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
+            countDownTimer.cancel();
+            countDownTimer.start();
         }
     }
 
@@ -161,17 +157,42 @@ public class CollapseBannerManager implements LifecycleEventObserver {
             if (adView != null) {
                 adView.destroy();
             }
-            adView = Admob.getInstance().loadCollapseBanner(context, adWidth, builder.getListId(), frContainer, builder.getBannerGravity(), builder.getCallBack(), () -> {
-                if (countDownTimer != null) {
-                    countDownTimer.cancel();
-                    countDownTimer.start();
-                }
-            }, builder.getCollapseTypeClose(), builder.getValueCountDownOrCountClick(), remoteKey);
+            adView = Admob.getInstance().loadCollapseBanner(context, adWidth, builder.getListId(), frContainer, builder.getBannerGravity(), builder.getCallBack()
+                    , new IOnAdsImpression() {
+                        @Override
+                        public void onAdsImpression() {
+                            startReloadCollapse();
+                        }
+                    }, new IOnAdsFailToLoad() {
+                        @Override
+                        public void onAdsFailToLoad() {
+                            startReloadCollapse();
+                        }
+                    }, builder.getCollapseTypeClose(), builder.getValueCountDownOrCountClick(), remoteKey);
         } else {
             frContainer.setVisibility(View.GONE);
         }
     }
 
+    public void destroyCollapseBanner() {
+        if (adView != null) {
+            adView.destroy();
+        }
+    }
+
+    public void cancelAutoReloadCollapseBanner() {
+        isAutoReload = false;
+        if (countDownTimer != null) {
+            countDownTimer.cancel();
+        }
+    }
+
+    public void resumeAutoReloadCollapseBanner() {
+        isAutoReload = true;
+        if (countDownTimer != null) {
+            countDownTimer.start();
+        }
+    }
 
     public void setReloadAds() {
         isReloadAds = true;

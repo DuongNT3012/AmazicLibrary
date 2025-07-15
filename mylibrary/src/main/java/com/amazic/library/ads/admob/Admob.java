@@ -375,6 +375,7 @@ public class Admob {
             if (openActivityAfterShowInterAds) {
                 interCallback.onNextAction();
             }
+            mInterstitialAd.setImmersiveMode(true);
             mInterstitialAd.show(activity);
         }, 250);
     }
@@ -506,6 +507,7 @@ public class Admob {
             if (openActivityAfterShowInterAds) {
                 interCallback.onNextAction();
             }
+            mInterstitialAd.setImmersiveMode(true);
             mInterstitialAd.show(activity);
         }, 250);
     }
@@ -630,6 +632,7 @@ public class Admob {
                         Log.d(TAG, "SPLASH: showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
                         interCallback.onNextAction();
                     }
+                    mInterstitialAdSplash.setImmersiveMode(true);
                     mInterstitialAdSplash.show(activity);
                 } else {
                     Log.e(TAG, "SPLASH: Fail to show on background.");
@@ -765,6 +768,7 @@ public class Admob {
                         Log.d(TAG, "SPLASH: showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
                         interCallback.onNextAction();
                     }
+                    interSplash.setImmersiveMode(true);
                     interSplash.show(activity);
                 } else {
                     Log.e(TAG, "SPLASH: Fail to show on background.");

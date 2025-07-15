@@ -121,6 +121,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         return isCustomAnimationDialog;
     }
 
+    public void setCustomAnimationDialog(boolean customAnimationDialog) {
+        this.isCustomAnimationDialog = customAnimationDialog;
+    }
     public void setCustomAnimationDialog(ArrayList<Integer> listAnimationDialogRaw) {
         this.isCustomAnimationDialog = true;
         this.listAnimationDialogRaw = listAnimationDialogRaw;

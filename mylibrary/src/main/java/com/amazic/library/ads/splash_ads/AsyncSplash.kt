@@ -302,16 +302,19 @@ class AsyncSplash {
 
     fun setInitResumeAdsNormal() {
         this.initWelcomeBack = "Normal"
+        this.isPreloadResumeAds = true
     }
 
     fun setInitWelcomeBackBelowResumeAds(welcomeBackClass: Class<*>) {
         this.initWelcomeBack = "Below"
         this.welcomeBackClass = welcomeBackClass
+        this.isPreloadResumeAds = true
     }
 
     fun setInitWelcomeBackAboveResumeAds(welcomeBackClass: Class<*>) {
         this.initWelcomeBack = "Above"
         this.welcomeBackClass = welcomeBackClass
+        this.isPreloadResumeAds = false
     }
 
     fun getInitResumeAdsType(): String {

@@ -152,6 +152,10 @@ public class Admob {
         return isCustomAnimationDialog;
     }
 
+    public void setCustomAnimationDialog(boolean customAnimationDialog) {
+        this.isCustomAnimationDialog = customAnimationDialog;
+    }
+
     public void setCustomAnimationDialog(ArrayList<Integer> listAnimationDialogRaw) {
         this.isCustomAnimationDialog = true;
         this.listAnimationDialogRaw.clear();

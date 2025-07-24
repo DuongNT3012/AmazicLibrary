@@ -64,6 +64,7 @@ class AsyncSplash {
     private var appOpenCallback: AppOpenCallback? = null
     private var isDebug = false
     private var isUseBilling = false
+
     //private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf() //comment for billing
     private var timeOutSplash = 12000L
     private var isLoopAdsSplash = false
@@ -533,7 +534,7 @@ class AsyncSplash {
                 Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")
                 Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)
                 Admob.getInstance().setTimeInterval(
-                    RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_between_interstitial) * 1000
+                    RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_between_interstitial) * 1000, true
                 )
                 Admob.getInstance().setTimeIntervalFromStart(
                     RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_interstitial_from_start) * 1000
@@ -692,9 +693,9 @@ class AsyncSplash {
                 }
             })
         } else {*/ //comment for billing
-            continuation.resume(Unit)
-            initBilling = true
-            Log.d(TAG, "Not use billing.")
+        continuation.resume(Unit)
+        initBilling = true
+        Log.d(TAG, "Not use billing.")
         //} //comment for billing
     }
 

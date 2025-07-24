@@ -47,7 +47,6 @@ import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.collapse_banner_ads.CollapseBannerHelper;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.dialog.LoadingAdsDialog;
-//import com.amazic.library.iap.IAPManager; //comment for billing
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
 import com.amazic.mylibrary.R;
@@ -211,8 +210,10 @@ public class Admob {
         return this.timeStart;
     }
 
-    public void setTimeInterval(long timeInterval) {
-        this.lastTimeDismissInter = 0L;
+    public void setTimeInterval(long timeInterval, boolean resetLastTimeDismissInter) {
+        if (resetLastTimeDismissInter) {
+            this.lastTimeDismissInter = 0L;
+        }
         this.timeInterval = timeInterval;
     }
 

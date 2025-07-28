@@ -132,7 +132,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private void handleAsyncSplashJustOnce() {
         if (!isHandleAsyncSplash) {
-            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
+            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "https://abd", "", jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
             AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
@@ -165,7 +165,8 @@ public class SplashActivity extends AppCompatActivity {
                     return null;
                 }
             });
-            AsyncSplash.Companion.getInstance().handleAsync(this, this, LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
+            AsyncSplash.Companion.getInstance().handleAsync(this, this,
+                    LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
                 @Override
                 public Unit invoke() { //no internet
                     interCallback.onNextAction();

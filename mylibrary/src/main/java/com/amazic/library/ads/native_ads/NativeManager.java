@@ -91,6 +91,8 @@ public class NativeManager implements LifecycleEventObserver {
 
     private void loadNativeFloor(int maxRequest) {
         Log.d(TAG, "loadNativeFloor: " + builder.useNewAdLoading);
+        isFailedMain = false;
+        isFailedSecondary = false;
         if (builder.useNewAdLoading) {
             loadNewAdFormat();
         } else loadOldAdFormat(maxRequest);
@@ -133,6 +135,9 @@ public class NativeManager implements LifecycleEventObserver {
                 return;
             }
         }
+
+        if (myNativeAdMain == null && myNativeAdSecondary == null)
+            builder.shimmerFrameLayout.setVisibility(View.VISIBLE);
         if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
             if (builder.nativeAdViewMain != null) builder.nativeAdViewMain.setVisibility(View.GONE);
         }
@@ -146,8 +151,9 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadMainNative() {
+        Log.d(TAG, "loadMainNative: " + canLoadMainNative);
         if (canLoadMainNative) {
-            Log.d(TAG, "loadMainNative:");
+            canLoadMainNative = false;
             if (myNativeAdMain != null) myNativeAdMain.destroy();
             Admob.getInstance().loadNativeAds(currentActivity, builder.getListIdAdMain(), new NativeCallback() {
                 @Override
@@ -173,7 +179,6 @@ public class NativeManager implements LifecycleEventObserver {
                     builder.getCallback().onAdClicked();
                     Log.d(TAG, "onAdClicked: Main");
                 }
-
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
                     super.onAdFailedToLoad(loadAdError);
@@ -186,13 +191,13 @@ public class NativeManager implements LifecycleEventObserver {
                     loadNativeBackup(true);
                 }
             }, remoteKey);
-            canLoadMainNative = false;
         }
     }
 
     private void loadSecondaryNative() {
+        Log.d(TAG, "loadSecondaryNative: " + canLoadSecondaryNative);
         if (canLoadSecondaryNative) {
-            Log.d(TAG, "loadSecondaryNative:");
+            canLoadSecondaryNative = false;
             if (myNativeAdSecondary != null) myNativeAdSecondary.destroy();
             Admob.getInstance().loadNativeAds(currentActivity, builder.getListIdAdSecondary(), new NativeCallback() {
                 @Override
@@ -217,7 +222,7 @@ public class NativeManager implements LifecycleEventObserver {
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
                     super.onAdFailedToLoad(loadAdError);
                     canLoadSecondaryNative = true;
-                    Log.d(TAG, "onAdFailedToLoad: Secondary\n" + loadAdError.getMessage());
+                    Log.e(TAG, "onAdFailedToLoad: Secondary\n" + loadAdError.getMessage());
                     builder.getCallback().onAdFailedToLoad(loadAdError);
                     if (myNativeAdMain != null) {
                         builder.shimmerFrameLayout.setVisibility(View.GONE);
@@ -232,7 +237,6 @@ public class NativeManager implements LifecycleEventObserver {
                     builder.getCallback().onAdClicked();
                 }
             }, remoteKeySecondary);
-            canLoadSecondaryNative = false;
         }
     }
 
@@ -267,6 +271,9 @@ public class NativeManager implements LifecycleEventObserver {
         }
     }
 
+    private boolean isFailedMain = false;
+    private boolean isFailedSecondary = false;
+
     private void loadNativeBackup(boolean isMainNative) {
         Admob.getInstance().loadNativeAdsBackup(currentActivity, builder.getListIdAdBackup(), new NativeCallback() {
             @Override
@@ -290,6 +297,15 @@ public class NativeManager implements LifecycleEventObserver {
             @Override
             public void onAdFailedToLoad(LoadAdError loadAdError) {
                 super.onAdFailedToLoad(loadAdError);
+                Log.e(TAG, "onAdFailedToLoad: Backup ");
+                if (isMainNative) {
+                    isFailedMain = true;
+                } else {
+                    isFailedSecondary = true;
+                }
+                if (isFailedMain && isFailedSecondary && builder.shimmerFrameLayout != null) {
+                    builder.shimmerFrameLayout.setVisibility(View.GONE);
+                }
                 startReloadNative();
             }
         }, remoteKey);
@@ -332,8 +348,11 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void startReloadNative() {
+        Log.d(TAG, "startReloadNative: " + (countDownTimer != null)
+                + " && " + (this.lifecycleOwner.getLifecycle().getCurrentState() )
+                + " && " + !isTimerRunning);
         if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED && !isTimerRunning) {
-            Log.d(TAG, "startReloadNative: ");
+            Log.d(TAG, "startReloadNative: ok");
             isTimerRunning = true;
             countDownTimer.cancel();
             countDownTimer.start();

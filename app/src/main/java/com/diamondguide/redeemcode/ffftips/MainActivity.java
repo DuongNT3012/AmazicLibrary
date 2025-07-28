@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
@@ -79,13 +81,18 @@ public class MainActivity extends AppCompatActivity {
                 true);
         //nativeBuilder.maxRequest = 10;
         //nativeBuilder.maxRequestReload = 10;
-        nativeBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("native_wb"));
-        nativeBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("native_wb"));
-        nativeBuilder.setListIdAdBackup(List.of("ca-app-pub-3940256099942544/1044960115"));
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb");
-        nativeManager.setIntervalReloadNative(4000);
+        nativeManager.setIntervalReloadNative(5000);
         nativeManager.setAlwaysReloadOnResume(true);
-
+        nativeBuilder.setListIdAdMain(List.of("ca-app-pub-3940256099942544/1043960115"));
+        nativeBuilder.setListIdAdSecondary(List.of("ca-app-pub-3940256099942544/2044960115"));
+        nativeBuilder.setListIdAdBackup(List.of("ca-app-pub-3940256099942544/1045960115"));
+        new Handler().postDelayed(() -> {
+            Log.d("NativeManager", "update id");
+            nativeBuilder.setListIdAdMain(List.of("ca-app-pub-3940256099942544/1044960115"));
+            nativeBuilder.setListIdAdSecondary(List.of("ca-app-pub-3940256099942544/1044960115"));
+            nativeBuilder.setListIdAdBackup(List.of("ca-app-pub-3940256099942544/1044960115"));
+        }, 20000);
         /*BannerBuilder bannerBuilder = new BannerBuilder(this, binding.adViewContainer, true);
         bannerBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("banner_all"));
         bannerBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("banner_all"));

@@ -1,6 +1,6 @@
 package com.amazic.library.ads.native_ads;
 
-import android.app.Activity;
+import android.content.Context;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
@@ -20,7 +20,7 @@ import com.google.android.gms.ads.nativead.NativeAd;
 public class NativeManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
     private final NativeBuilder builder;
-    private final Activity currentActivity;
+    private final Context context;
     private final LifecycleOwner lifecycleOwner;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;
@@ -39,12 +39,32 @@ public class NativeManager implements LifecycleEventObserver {
     private boolean canLoadMainNative = true;
     private boolean canLoadSecondaryNative = true;
 
-    public NativeManager(@NonNull Activity currentActivity, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey) {
+    public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey) {
         this.builder = builder;
-        this.currentActivity = currentActivity;
+        this.context = context;
         this.remoteKey = remoteKey;
         this.remoteKeySecondary = remoteKey;
         this.remoteKeyBackup = remoteKey;
+        this.lifecycleOwner = lifecycleOwner;
+        this.lifecycleOwner.getLifecycle().addObserver(this);
+    }
+
+    public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey, String remoteKeySecondary) {
+        this.builder = builder;
+        this.context = context;
+        this.remoteKey = remoteKey;
+        this.remoteKeySecondary = remoteKeySecondary;
+        this.remoteKeyBackup = remoteKey;
+        this.lifecycleOwner = lifecycleOwner;
+        this.lifecycleOwner.getLifecycle().addObserver(this);
+    }
+
+    public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey, String remoteKeySecondary, String remoteKeyBackup) {
+        this.builder = builder;
+        this.context = context;
+        this.remoteKey = remoteKey;
+        this.remoteKeySecondary = remoteKeySecondary;
+        this.remoteKeyBackup = remoteKeyBackup;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
     }
@@ -117,7 +137,7 @@ public class NativeManager implements LifecycleEventObserver {
 
     private void loadNewAdFormat() {
         if (remoteKeySecondary.isEmpty()) {
-            if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
+            if (!Admob.getInstance().checkCondition(context, remoteKey)) {
                 builder.shimmerFrameLayout.setVisibility(View.GONE);
                 if (builder.nativeAdViewMain != null)
                     builder.nativeAdViewMain.setVisibility(View.GONE);
@@ -126,7 +146,7 @@ public class NativeManager implements LifecycleEventObserver {
                 return;
             }
         } else {
-            if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
+            if (!Admob.getInstance().checkCondition(context, remoteKey) && !Admob.getInstance().checkCondition(context, remoteKeySecondary)) {
                 builder.shimmerFrameLayout.setVisibility(View.GONE);
                 if (builder.nativeAdViewMain != null)
                     builder.nativeAdViewMain.setVisibility(View.GONE);
@@ -138,10 +158,10 @@ public class NativeManager implements LifecycleEventObserver {
 
         if (myNativeAdMain == null && myNativeAdSecondary == null)
             builder.shimmerFrameLayout.setVisibility(View.VISIBLE);
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
+        if (!Admob.getInstance().checkCondition(context, remoteKey)) {
             if (builder.nativeAdViewMain != null) builder.nativeAdViewMain.setVisibility(View.GONE);
         }
-        if (!Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
+        if (!Admob.getInstance().checkCondition(context, remoteKeySecondary)) {
             if (builder.nativeAdViewSecondary != null)
                 builder.nativeAdViewSecondary.setVisibility(View.GONE);
         }
@@ -155,7 +175,7 @@ public class NativeManager implements LifecycleEventObserver {
         if (canLoadMainNative) {
             canLoadMainNative = false;
             if (myNativeAdMain != null) myNativeAdMain.destroy();
-            Admob.getInstance().loadNativeAds(currentActivity, builder.getListIdAdMain(), new NativeCallback() {
+            Admob.getInstance().loadNativeAds(context, builder.getListIdAdMain(), new NativeCallback() {
                 @Override
                 public void onNativeAdLoaded(NativeAd nativeAd) {
                     super.onNativeAdLoaded(nativeAd);
@@ -199,7 +219,7 @@ public class NativeManager implements LifecycleEventObserver {
         if (canLoadSecondaryNative) {
             canLoadSecondaryNative = false;
             if (myNativeAdSecondary != null) myNativeAdSecondary.destroy();
-            Admob.getInstance().loadNativeAds(currentActivity, builder.getListIdAdSecondary(), new NativeCallback() {
+            Admob.getInstance().loadNativeAds(context, builder.getListIdAdSecondary(), new NativeCallback() {
                 @Override
                 public void onNativeAdLoaded(NativeAd nativeAd) {
                     super.onNativeAdLoaded(nativeAd);
@@ -275,7 +295,7 @@ public class NativeManager implements LifecycleEventObserver {
     private boolean isFailedSecondary = false;
 
     private void loadNativeBackup(boolean isMainNative) {
-        Admob.getInstance().loadNativeAdsBackup(currentActivity, builder.getListIdAdBackup(), new NativeCallback() {
+        Admob.getInstance().loadNativeAdsBackup(context, builder.getListIdAdBackup(), new NativeCallback() {
             @Override
             public void onNativeAdLoaded(NativeAd nativeAd) {
                 super.onNativeAdLoaded(nativeAd);
@@ -316,7 +336,7 @@ public class NativeManager implements LifecycleEventObserver {
             myNativeAdMain.destroy();
         }
         if (!builder.getListIdAdMain().isEmpty()) {
-            myNativeAdMain = Admob.getInstance().loadMultipleNativeAds1Id(currentActivity, builder.getListIdAdMain().get(0), builder.getFlAd(), builder.getLayoutNativeAdmob(), builder.getLayoutNativeMeta(), builder.getLayoutShimmerNative(), true, builder.getCallback(), this::startReloadNative, () -> {
+            myNativeAdMain = Admob.getInstance().loadMultipleNativeAds1Id(context, builder.getListIdAdMain().get(0), builder.getFlAd(), builder.getLayoutNativeAdmob(), builder.getLayoutNativeMeta(), builder.getLayoutShimmerNative(), true, builder.getCallback(), this::startReloadNative, () -> {
                 startReloadNative();
                 loadNativeBackup(true);
             }, remoteKey, maxRequest);
@@ -369,22 +389,6 @@ public class NativeManager implements LifecycleEventObserver {
 
     public void setAlwaysReloadOnResume(boolean isAlwaysReloadOnResume) {
         this.isAlwaysReloadOnResume = isAlwaysReloadOnResume;
-    }
-
-    public String getRemoteKeyBackup() {
-        return remoteKeyBackup;
-    }
-
-    public void setRemoteKeyBackup(String remoteKeyBackup) {
-        this.remoteKeyBackup = remoteKeyBackup;
-    }
-
-    public String getRemoteKeySecondary() {
-        return remoteKeySecondary;
-    }
-
-    public void setRemoteKeySecondary(String remoteKeySecondary) {
-        this.remoteKeySecondary = remoteKeySecondary;
     }
 
     public int getTimeOutCallAds() {

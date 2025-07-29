@@ -250,6 +250,7 @@ public class Admob {
             if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 loadingAdsDialog.dismiss();
             }
+            isInterOrRewardedShowing = false;
             interCallback.onNextAction();
             return;
         }
@@ -267,6 +268,7 @@ public class Admob {
         if (!loadingAdsDialog.isShowing()) {
             loadingAdsDialog.show();
         }
+        isInterOrRewardedShowing = true;
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         AdRequest adRequest = new AdRequest.Builder().build();
         InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,

@@ -93,17 +93,20 @@ public class Admob {
     private long timeStart = 0L;
     private String tokenEventAdjust = "";
     private Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
+    private Handler handlerTimeoutInter = new Handler(Looper.getMainLooper());
     private Runnable runnable;
     private boolean isSplashResume = true;
     private boolean openActivityAfterShowInterAds = true;
     private boolean isDetectTestAdByView = false;
     private int countClickInterSplashAds = 0;
     private NativeAd myNativeAd = null;
-    private int timeOutCallAds = 12000;
+    private int timeOutCallSplashAds = 12000;
+    private int timeOutCallInterAds = 12000;
     //Log event 26/04/2025
     private long timeSplashLoadingAdShow = 0;
     //fix event time_splash_loading_show
     private boolean isLoadInterSplashIdTimeout = false;
+    private boolean isLoadInterAdsIdTimeout = false;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -177,12 +180,20 @@ public class Admob {
         this.mInterstitialAdSplash = mInterstitialAdSplash;
     }
 
-    public int getTimeOutCallAds() {
-        return timeOutCallAds;
+    public int getTimeOutCallInterAds() {
+        return timeOutCallInterAds;
     }
 
-    public void setTimeOutCallAds(int timeOutCallAds) {
-        this.timeOutCallAds = timeOutCallAds;
+    public void setTimeOutCallInterAds(int timeOutCallInterAds) {
+        this.timeOutCallInterAds = timeOutCallInterAds;
+    }
+
+    public int getTimeOutCallSplashAds() {
+        return timeOutCallSplashAds;
+    }
+
+    public void setTimeOutCallSplashAds(int timeOutCallSplashAds) {
+        this.timeOutCallSplashAds = timeOutCallSplashAds;
     }
 
     public boolean isDetectTestAdByView() {
@@ -241,9 +252,38 @@ public class Admob {
         return isShowAllAds;
     }
 
+    public void removeHandlerInterAds(){
+        if (handlerTimeoutInter != null && runnable != null) {
+            handlerTimeoutInter.removeCallbacks(runnable);
+            handlerTimeoutInter.removeCallbacksAndMessages(null);
+            handlerTimeoutInter = null;
+        }
+    }
+
+    public void removeHandlerSplashAds(){
+        if (handlerTimeoutSplash != null && runnable != null) {
+            handlerTimeoutSplash.removeCallbacks(runnable);
+            handlerTimeoutSplash.removeCallbacksAndMessages(null);
+            handlerTimeoutSplash = null;
+        }
+    }
+
     //================================Start inter ads================================
     public void loadInterAdsLoadAndShow(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
+        //Set timeout inter ads x(s) if cannot load
+        runnable = () -> {
+            Log.d(TAG, "loadInterAdsLoadAndShow: inter_ads_id_timeout: " + remoteKey);
+            EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_ads_id_timeout, "remoteKey", remoteKey);
+            if (interCallback != null) {
+                isLoadInterAdsIdTimeout = true;
+                interCallback.onNextAction();
+            }
+            removeHandlerInterAds();
+        };
+        if (handlerTimeoutInter != null) {
+            handlerTimeoutInter.postDelayed(runnable, timeOutCallInterAds);
+        }
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdInterTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
@@ -252,6 +292,7 @@ public class Admob {
             }
             isInterOrRewardedShowing = false;
             interCallback.onNextAction();
+            removeHandlerInterAds();
             return;
         }
         if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
@@ -285,6 +326,7 @@ public class Admob {
                             //Adjust
                             AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
                         });
+                        removeHandlerInterAds();
                     }
 
                     @Override
@@ -321,70 +363,74 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
-                @Override
-                public void onAdClicked() {
-                    AppOpenManager.isLastActionClickAd = true;
-                    // Called when a click is recorded for an ad.
-                    Log.d(TAG, "INTER: Ad was clicked. " + remoteKey);
-                    EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                    interCallback.onAdClicked();
-                }
-
-                @Override
-                public void onAdDismissedFullScreenContent() {
-                    // Called when ad is dismissed.
-                    // Set the ad reference to null so you don't show the ad a second time.
-                    Log.d(TAG, "INTER: Ad dismissed fullscreen content. " + remoteKey);
-                    interCallback.onAdDismissedFullScreenContent();
-                    if (!openActivityAfterShowInterAds) {
-                        interCallback.onNextAction();
+        if (!isLoadInterAdsIdTimeout) {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                    @Override
+                    public void onAdClicked() {
+                        AppOpenManager.isLastActionClickAd = true;
+                        // Called when a click is recorded for an ad.
+                        Log.d(TAG, "INTER: Ad was clicked. " + remoteKey);
+                        EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                        interCallback.onAdClicked();
                     }
-                    isInterOrRewardedShowing = false;
-                    lastTimeDismissInter = System.currentTimeMillis();
-                }
 
-                @Override
-                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
-                    // Called when ad fails to show.
-                    Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + remoteKey);
-                    interCallback.onAdFailedToShowFullScreenContent();
-                    if (!openActivityAfterShowInterAds) {
-                        interCallback.onNextAction();
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        // Called when ad is dismissed.
+                        // Set the ad reference to null so you don't show the ad a second time.
+                        Log.d(TAG, "INTER: Ad dismissed fullscreen content. " + remoteKey);
+                        interCallback.onAdDismissedFullScreenContent();
+                        if (!openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
+                        }
+                        isInterOrRewardedShowing = false;
+                        lastTimeDismissInter = System.currentTimeMillis();
                     }
-                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                        loadingAdsDialog.dismiss();
-                    }
-                    isInterOrRewardedShowing = false;
-                }
 
-                @Override
-                public void onAdImpression() {
-                    // Called when an impression is recorded for an ad.
-                    Log.d(TAG, "INTER: Ad recorded an impression. " + remoteKey);
-                    EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                    interCallback.onAdImpression();
-                }
-
-                @Override
-                public void onAdShowedFullScreenContent() {
-                    // Called when ad is shown.
-                    Log.d(TAG, "INTER: Ad showed fullscreen content. " + remoteKey);
-                    interCallback.onAdShowedFullScreenContent();
-                    if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                        loadingAdsDialog.dismiss();
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                        // Called when ad fails to show.
+                        Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + remoteKey);
+                        interCallback.onAdFailedToShowFullScreenContent();
+                        if (!openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
+                        }
+                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            loadingAdsDialog.dismiss();
+                        }
+                        isInterOrRewardedShowing = false;
+                        removeHandlerInterAds();
                     }
-                    isInterOrRewardedShowing = true;
+
+                    @Override
+                    public void onAdImpression() {
+                        // Called when an impression is recorded for an ad.
+                        Log.d(TAG, "INTER: Ad recorded an impression. " + remoteKey);
+                        EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                        interCallback.onAdImpression();
+                    }
+
+                    @Override
+                    public void onAdShowedFullScreenContent() {
+                        // Called when ad is shown.
+                        Log.d(TAG, "INTER: Ad showed fullscreen content. " + remoteKey);
+                        interCallback.onAdShowedFullScreenContent();
+                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            loadingAdsDialog.dismiss();
+                        }
+                        isInterOrRewardedShowing = true;
+                        removeHandlerInterAds();
+                    }
+                });
+                isInterOrRewardedShowing = true;
+                if (openActivityAfterShowInterAds) {
+                    interCallback.onNextAction();
                 }
-            });
-            isInterOrRewardedShowing = true;
-            if (openActivityAfterShowInterAds) {
-                interCallback.onNextAction();
-            }
-            mInterstitialAd.setImmersiveMode(true);
-            mInterstitialAd.show(activity);
-        }, 250);
+                mInterstitialAd.setImmersiveMode(true);
+                mInterstitialAd.show(activity);
+            }, 250);
+        }
     }
 
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
@@ -588,9 +634,7 @@ public class Admob {
                         isFailToShowAdSplash = true;
                         AppOpenManager.getInstance().setEnableResume(true);
                         isInterOrRewardedShowing = false;
-                        if (handlerTimeoutSplash != null && runnable != null) {
-                            handlerTimeoutSplash.removeCallbacks(runnable);
-                        }
+                        removeHandlerSplashAds();
                         //log event
                         EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
                         //end log event
@@ -621,9 +665,7 @@ public class Admob {
                         }
                         isInterOrRewardedShowing = true;
                         isFailToShowAdSplash = false;
-                        if (handlerTimeoutSplash != null && runnable != null) {
-                            handlerTimeoutSplash.removeCallbacks(runnable);
-                        }
+                        removeHandlerSplashAds();
                     }
                 });
                 boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
@@ -724,9 +766,7 @@ public class Admob {
                         isFailToShowAdSplash = true;
                         AppOpenManager.getInstance().setEnableResume(true);
                         isInterOrRewardedShowing = false;
-                        if (handlerTimeoutSplash != null && runnable != null) {
-                            handlerTimeoutSplash.removeCallbacks(runnable);
-                        }
+                        removeHandlerSplashAds();
                         //log event
                         EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
                         //end log event
@@ -757,9 +797,7 @@ public class Admob {
                         }
                         isInterOrRewardedShowing = true;
                         isFailToShowAdSplash = false;
-                        if (handlerTimeoutSplash != null && runnable != null) {
-                            handlerTimeoutSplash.removeCallbacks(runnable);
-                        }
+                        removeHandlerSplashAds();
                     }
                 });
                 boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
@@ -806,23 +844,17 @@ public class Admob {
                 isLoadInterSplashIdTimeout = true;
                 interCallback.onNextAction();
             }
-            if (handlerTimeoutSplash != null) {
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, timeOutCallAds);
+            handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
         }
 
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
             Log.d(TAG, "Check condition loadAndShowIdInterAdSplashAsync " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" /*+ IAPManager.getInstance().isPurchase()*/);
             interCallback.onNextAction();
-            if (handlerTimeoutSplash != null && runnable != null) {
-                handlerTimeoutSplash.removeCallbacks(runnable);
-                handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
             return;
         }
 
@@ -871,12 +903,7 @@ public class Admob {
                                     }
                                 }, timeDelayWaitInterHigh);
                             }
-
-                            if (handlerTimeoutSplash != null && runnable != null) {
-                                handlerTimeoutSplash.removeCallbacks(runnable);
-                                handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                                handlerTimeoutSplash = null;
-                            }
+                            removeHandlerSplashAds();
                             //Tracking revenue
                             interstitialAd.setOnPaidEventListener(adValue -> {
                                 //Adjust
@@ -914,23 +941,17 @@ public class Admob {
                 isLoadInterSplashIdTimeout = true;
                 interCallback.onNextAction();
             }
-            if (handlerTimeoutSplash != null) {
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, timeOutCallAds);
+            handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
         }
 
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
             Log.d(TAG, "Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" /*+ IAPManager.getInstance().isPurchase()*/);
             interCallback.onNextAction();
-            if (handlerTimeoutSplash != null && runnable != null) {
-                handlerTimeoutSplash.removeCallbacks(runnable);
-                handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
             return;
         }
 
@@ -963,12 +984,7 @@ public class Admob {
                         interCallback.onAdLoaded(interstitialAd);
                         mInterstitialAdSplash = interstitialAd;
                         showInterAdsSplash(activity, interCallback);
-
-                        if (handlerTimeoutSplash != null && runnable != null) {
-                            handlerTimeoutSplash.removeCallbacks(runnable);
-                            handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                            handlerTimeoutSplash = null;
-                        }
+                        removeHandlerSplashAds();
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
@@ -998,22 +1014,16 @@ public class Admob {
                 isLoadInterSplashIdTimeout = true;
                 interCallback.onNextAction();
             }
-            if (handlerTimeoutSplash != null) {
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, timeOutCallAds);
+            handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
         }
         // Check list id size
         if (listIdInter.isEmpty()) {
             Log.d(TAG, "SPLASH: loadAndShowInterAdSplashLoop: listIdInter is empty.");
             interCallback.onNextAction();
-            if (handlerTimeoutSplash != null && runnable != null) {
-                handlerTimeoutSplash.removeCallbacks(runnable);
-                handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
             return;
         }
         String idInterSplash = listIdInter.get(0);
@@ -1023,11 +1033,7 @@ public class Admob {
             Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout_8s);
             interCallback.onNextAction();
-            if (handlerTimeoutSplash != null && runnable != null) {
-                handlerTimeoutSplash.removeCallbacks(runnable);
-                handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
             return;
         }
 
@@ -1035,11 +1041,7 @@ public class Admob {
         if (!NetworkUtil.isNetworkActive(activity) || idInterSplash.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
             Log.d(TAG, "SPLASH: Check condition loadAndShowInterAdSplash. Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + idInterSplash.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" /*+ IAPManager.getInstance().isPurchase()*/);
             interCallback.onNextAction();
-            if (handlerTimeoutSplash != null && runnable != null) {
-                handlerTimeoutSplash.removeCallbacks(runnable);
-                handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                handlerTimeoutSplash = null;
-            }
+            removeHandlerSplashAds();
             return;
         }
 
@@ -1072,12 +1074,7 @@ public class Admob {
                         interCallback.onAdLoaded(interstitialAd);
                         mInterstitialAdSplash = interstitialAd;
                         showInterAdsSplash(activity, interCallback);
-
-                        if (handlerTimeoutSplash != null && runnable != null) {
-                            handlerTimeoutSplash.removeCallbacks(runnable);
-                            handlerTimeoutSplash.removeCallbacksAndMessages(null);
-                            handlerTimeoutSplash = null;
-                        }
+                        removeHandlerSplashAds();
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust

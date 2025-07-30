@@ -878,7 +878,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, Admob.getInstance().getTimeOutCallAds());
+            handlerTimeoutSplash.postDelayed(runnable, Admob.getInstance().getTimeOutCallSplashAds());
         }
 
         // Check condition
@@ -971,7 +971,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
         };
         if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, Admob.getInstance().getTimeOutCallAds());
+            handlerTimeoutSplash.postDelayed(runnable, Admob.getInstance().getTimeOutCallSplashAds());
         }
         // Check list id size
         if (listIdOpenResume.isEmpty()) {

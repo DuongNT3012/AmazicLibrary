@@ -555,16 +555,23 @@ class AsyncSplash {
     private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCoroutine { continuation ->
         val adsConsentManager = AdsConsentManager(activity)
         var isResumed = false
-        adsConsentManager.requestUMP {
-            if (!isResumed) {
-                isResumed = true
-                if (it) {
-                    Admob.getInstance().initAdmob(activity) {}
-                    activity?.let { it1 -> AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass) }
+        GeoChecker.isDeviceInEurope(activity) { isInEurope ->
+            if (isInEurope) {
+                adsConsentManager.requestUMP {
+                    if (!isResumed) {
+                        isResumed = true
+                        if (it) {
+                            Admob.getInstance().initAdmob(activity) {}
+                            activity?.let { it1 -> AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass) }
+                        }
+                        continuation.resume(Unit)
+                        initAdsConsentManager = true
+                        Log.d(TAG, "initAdsConsentManager.")
+                    }
                 }
+            } else {
+                isResumed = true
                 continuation.resume(Unit)
-                initAdsConsentManager = true
-                Log.d(TAG, "initAdsConsentManager.")
             }
         }
     }

@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import retrofit2.Call;
@@ -175,35 +176,31 @@ public class AdmobApi {
     public void convertJsonIdAdsDefaultToList(String jsonIdAds) {
         listAds.clear();
         try {
-            ArrayList<AdsModel> listAdsModel = new ArrayList<>();
             JSONArray jsonArray = new JSONArray(jsonIdAds);
 
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
 
-                int id = jsonObject.getInt("id");
-                String app_id = jsonObject.getString("app_id");
-                String name = jsonObject.getString("name");
+                String name = jsonObject.getString("name").trim();
                 String ads_id = jsonObject.getString("ads_id");
 
-                AdsModel adsModel = new AdsModel(id, app_id, name, ads_id);
-                listAdsModel.add(adsModel);
-
-                for (AdsModel ads : listAdsModel) {
-                    List<String> listIDAds = null;
-                    if (listAds.containsKey(ads.getName())) {
-                        listIDAds = listAds.get(ads.getName());
-                    }
-                    if (listIDAds == null) {
-                        listIDAds = new ArrayList<>();
-                    }
-                    listIDAds.add(ads.getAds_id());
-                    listAds.put(ads.getName().trim(), listIDAds);
+                // check if 'name' exists
+                List<String> listIDAds = listAds.get(name);
+                if (listIDAds == null) {
+                    listIDAds = new ArrayList<>();
+                    listAds.put(name, listIDAds);
                 }
+
+                // add ads_id
+                listIDAds.add(ads_id);
             }
             Log.d(TAG, "convertJsonIdAdsDefaultToList: " + listAds.size());
+
+            for (Map.Entry<String, List<String>> entry : listAds.entrySet()) {
+                Log.d(TAG, "Key: " + entry.getKey() + ", Value: " + entry.getValue());
+            }
         } catch (Exception e) {
-            Log.d(TAG, "convertJsonIdAdsDefaultToList: Exception: Invalid json");
+            Log.d(TAG, "convertJsonIdAdsDefaultToList: Exception: " + e.getMessage());
         }
     }
 

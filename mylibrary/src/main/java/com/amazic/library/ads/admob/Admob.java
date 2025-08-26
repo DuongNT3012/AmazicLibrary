@@ -299,11 +299,13 @@ public class Admob {
         if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
             Log.d(TAG, "INTER: Not show interstitial because the time interval. " + remoteKey);
             interCallback.onNextAction();
+            removeHandlerInterAds();
             return;
         }
         if (System.currentTimeMillis() - timeStart < timeIntervalFromStart) {
             Log.d(TAG, "INTER: Not show interstitial because the time interval from start. " + remoteKey);
             interCallback.onNextAction();
+            removeHandlerInterAds();
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);

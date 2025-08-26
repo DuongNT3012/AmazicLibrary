@@ -256,7 +256,7 @@ public class Admob {
         if (handlerTimeoutInter != null && runnable != null) {
             handlerTimeoutInter.removeCallbacks(runnable);
             handlerTimeoutInter.removeCallbacksAndMessages(null);
-            handlerTimeoutInter = null;
+            //handlerTimeoutInter = null;
         }
     }
 
@@ -264,7 +264,7 @@ public class Admob {
         if (handlerTimeoutSplash != null && runnable != null) {
             handlerTimeoutSplash.removeCallbacks(runnable);
             handlerTimeoutSplash.removeCallbacksAndMessages(null);
-            handlerTimeoutSplash = null;
+            //handlerTimeoutSplash = null;
         }
     }
 

@@ -92,8 +92,8 @@ public class Admob {
     private long timeIntervalFromStart = 0L;
     private long timeStart = 0L;
     private String tokenEventAdjust = "";
-    private Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
-    private Handler handlerTimeoutInter = new Handler(Looper.getMainLooper());
+    private final Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
+    private final Handler handlerTimeoutInter = new Handler(Looper.getMainLooper());
     private Runnable runnable;
     private boolean isSplashResume = true;
     private boolean openActivityAfterShowInterAds = true;
@@ -107,6 +107,10 @@ public class Admob {
     //fix event time_splash_loading_show
     private boolean isLoadInterSplashIdTimeout = false;
     private boolean isLoadInterAdsIdTimeout = false;
+    public int timeHttpInter = -1;
+    public int timeHttpNative = -1;
+    public int timeHttpBanner = -1;
+    public int timeHttpOpen = -1;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -252,7 +256,7 @@ public class Admob {
         return isShowAllAds;
     }
 
-    public void removeHandlerInterAds(){
+    public void removeHandlerInterAds() {
         if (handlerTimeoutInter != null && runnable != null) {
             handlerTimeoutInter.removeCallbacks(runnable);
             handlerTimeoutInter.removeCallbacksAndMessages(null);
@@ -260,7 +264,7 @@ public class Admob {
         }
     }
 
-    public void removeHandlerSplashAds(){
+    public void removeHandlerSplashAds() {
         if (handlerTimeoutSplash != null && runnable != null) {
             handlerTimeoutSplash.removeCallbacks(runnable);
             handlerTimeoutSplash.removeCallbacksAndMessages(null);
@@ -314,7 +318,9 @@ public class Admob {
         }
         isInterOrRewardedShowing = true;
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpInter != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpInter);
+        AdRequest adRequest = adRequestBuilder.build();
         InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
@@ -445,7 +451,9 @@ public class Admob {
             return;
         }
         EventTrackingHelper.logEvent(context, remoteKey + "_true");
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpInter != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpInter);
+        AdRequest adRequest = adRequestBuilder.build();
         InterstitialAd.load(context, listIdInterTemp.get(0), adRequest,
                 new InterstitialAdLoadCallback() {
                     @Override
@@ -1133,7 +1141,9 @@ public class Admob {
 
         // [START load_ad]
         // Start loading the ad in the background.
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpBanner != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpBanner);
+        AdRequest adRequest = adRequestBuilder.build();
         adView.loadAd(adRequest);
         adView.setAdListener(new AdListener() {
             @Override
@@ -1244,7 +1254,9 @@ public class Admob {
 
         // [START load_ad]
         // Start loading the ad in the background.
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpBanner != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpBanner);
+        AdRequest adRequest = adRequestBuilder.build();
         adView.loadAd(adRequest);
         adView.setAdListener(new AdListener() {
             @Override
@@ -1363,7 +1375,9 @@ public class Admob {
 
         // [START load_ad]
         // Start loading the ad in the background.
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpBanner != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpBanner);
+        AdRequest adRequest = adRequestBuilder.build();
         adView.loadAd(adRequest);
         adView.setAdListener(new AdListener() {
             @Override
@@ -1504,7 +1518,9 @@ public class Admob {
 
         // [START load_ad]
         // Start loading the ad in the background.
-        AdRequest adRequest = new AdRequest.Builder().build();
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpBanner != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpBanner);
+        AdRequest adRequest = adRequestBuilder.build();
         adView.loadAd(adRequest);
         adView.setAdListener(new AdListener() {
             @Override
@@ -1989,7 +2005,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAd(new AdRequest.Builder().build());
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAd(adRequest);
     }
 
     public void loadNativeAdsBackup(Context activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey) {
@@ -2060,7 +2079,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAd(new AdRequest.Builder().build());
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAd(adRequest);
     }
 
     public void loadMultipleNativeAds(Context activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey, int maxRequest) {
@@ -2130,7 +2152,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAds(new AdRequest.Builder().build(), maxRequest);
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAds(adRequest, maxRequest);
     }
 
     public void loadMultipleNativeAd(Context activity, String idNative, NativeCallback nativeCallback, String remoteKey, int maxRequest) {
@@ -2195,7 +2220,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAds(new AdRequest.Builder().build(), maxRequest);
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAds(adRequest, maxRequest);
     }
 
     public NativeAd loadNativeAds(Context context, List<String> listIdNative, FrameLayout adContainerView, int layoutNative, int layoutNativeMeta, int layoutShimmerNative, boolean setShowNativeAfterLoaded, NativeCallback nativeCallback, IOnAdsImpression iOnAdsImpression, String remoteKey) {
@@ -2295,7 +2323,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAd(new AdRequest.Builder().build());
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAd(adRequest);
 
         return myNativeAd;
     }
@@ -2402,7 +2433,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAds(new AdRequest.Builder().build(), maxRequest);
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAds(adRequest, maxRequest);
 
         return myNativeAd;
     }
@@ -2501,7 +2535,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAds(new AdRequest.Builder().build(), maxRequest);
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAds(adRequest, maxRequest);
 
         return myNativeAd;
     }
@@ -2599,7 +2636,10 @@ public class Admob {
             }
         }).build();
 
-        adLoader.loadAd(new AdRequest.Builder().build());
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpNative != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpNative);
+        AdRequest adRequest = adRequestBuilder.build();
+        adLoader.loadAd(adRequest);
     }
 
     public void populateNativeAdView(NativeAd nativeAd, NativeAdView adView) {

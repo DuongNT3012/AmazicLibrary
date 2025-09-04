@@ -670,6 +670,7 @@ public class Admob {
                     public void onAdShowedFullScreenContent() {
                         // Called when ad is shown.
                         Log.d(TAG, "SPLASH: Ad showed fullscreen content.");
+                        mInterstitialAdSplash = null;
                         interCallback.onAdShowedFullScreenContent();
                         if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                             loadingAdsDialog.dismiss();
@@ -700,7 +701,7 @@ public class Admob {
                         loadingAdsDialog.dismiss();
                     }
                     isFailToShowAdSplash = true;
-                    if (handlerTimeoutSplash != null && runnable != null) {
+                    if (runnable != null) {
                         handlerTimeoutSplash.removeCallbacks(runnable);
                     }
                 }
@@ -857,9 +858,7 @@ public class Admob {
             }
             removeHandlerSplashAds();
         };
-        if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
-        }
+        handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
@@ -1196,6 +1195,7 @@ public class Admob {
                         && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
+                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
 
@@ -1309,6 +1309,7 @@ public class Admob {
                         && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
+                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
 
@@ -1437,6 +1438,7 @@ public class Admob {
                         && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
+                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
 
@@ -1579,6 +1581,7 @@ public class Admob {
                         && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
+                    EventTrackingHelper.logEvent(context, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(context));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(context, isTestAd);
 

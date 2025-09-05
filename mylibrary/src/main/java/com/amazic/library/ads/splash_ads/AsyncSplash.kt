@@ -92,6 +92,7 @@ class AsyncSplash {
     //Use for inter and open splash 1, 2, 3...
     private var keyAdsInterSplash = "inter_splash"
     private var keyAdsOpenSplash = "open_splash"
+    private var keyAdsOpenResume = ""
 
     //
     private var isUseAppUpdateManager = false
@@ -184,6 +185,7 @@ class AsyncSplash {
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
+        this.keyAdsOpenResume = ""
         this.loadAndShowIdInterAdSplashAsync = false
     }
 
@@ -221,6 +223,14 @@ class AsyncSplash {
 
     fun setKeyAdsOpenSplash(keyAdsOpenSplash: String) {
         this.keyAdsOpenSplash = keyAdsOpenSplash
+    }
+
+    fun setKeyAdsOpenResume(keyAdsOpenResume: String) {
+        this.keyAdsOpenResume = keyAdsOpenResume
+    }
+
+    fun getKeyAdsOpenResume(): String {
+        return this.keyAdsOpenResume
     }
 
     fun setAsyncSplashAds() { //Show splash ads without wait any thing
@@ -616,24 +626,36 @@ class AsyncSplash {
     private fun initWelcomeBack(activity: AppCompatActivity?) {
         when (initWelcomeBack) {
             "Normal" -> {
-                if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
+                val listIdResume = mutableListOf<String>()
+                if (keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                } else {
+                    listIdResume.addAll(AdmobApi.getInstance().listIDAppOpenResume)
+                    keyAdsOpenResume = "open_resume"
+                }
+                if (listIdResume.isNotEmpty()) {
                     if (isPreloadResumeAds) {
-                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                     }
-                    AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
+                    AppOpenManager.getInstance().init(activity, listIdResume)
                     activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
                 }
             }
 
             "Below" -> {
-                if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
+                val listIdResume = mutableListOf<String>()
+                if (keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                } else {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb))
+                    keyAdsOpenResume = "resume_wb"
+                }
+                if (listIdResume.isNotEmpty()) {
                     if (isPreloadResumeAds) {
-                        AppOpenManager.getInstance()
-                            .loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                     }
                     welcomeBackClass?.let {
-                        AppOpenManager.getInstance()
-                            .initWelcomeBackBelowAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
+                        AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(activity, listIdResume, it)
                         AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
                     }
                     activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
@@ -641,14 +663,19 @@ class AsyncSplash {
             }
 
             "Above" -> {
-                if (AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb).isNotEmpty()) {
+                val listIdResume = mutableListOf<String>()
+                if (keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                } else {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb))
+                    keyAdsOpenResume = "resume_wb"
+                }
+                if (listIdResume.isNotEmpty()) {
                     if (isPreloadResumeAds) {
-                        AppOpenManager.getInstance()
-                            .loadAdNotCheckRemote(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), "resume_wb")
+                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                     }
                     welcomeBackClass?.let {
-                        AppOpenManager.getInstance()
-                            .initWelcomeBackAboveAdsResume(activity, AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb), it)
+                        AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(activity, listIdResume, it)
                         AppOpenManager.getInstance().disableAppResumeWithActivity(it) //disable resume welcome back
                     }
                     activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
@@ -656,11 +683,18 @@ class AsyncSplash {
             }
 
             else -> {
-                if (AdmobApi.getInstance().listIDAppOpenResume.isNotEmpty()) {
+                val listIdResume = mutableListOf<String>()
+                if (keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                } else {
+                    listIdResume.addAll(AdmobApi.getInstance().listIDAppOpenResume)
+                    keyAdsOpenResume = "open_resume"
+                }
+                if (listIdResume.isNotEmpty()) {
                     if (isPreloadResumeAds) {
-                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, AdmobApi.getInstance().listIDAppOpenResume, "open_resume")
+                        AppOpenManager.getInstance().loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                     }
-                    AppOpenManager.getInstance().init(activity, AdmobApi.getInstance().listIDAppOpenResume)
+                    AppOpenManager.getInstance().init(activity, listIdResume)
                     activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) } //disable resume splash
                 }
             }

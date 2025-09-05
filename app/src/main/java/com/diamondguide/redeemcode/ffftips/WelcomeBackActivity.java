@@ -45,7 +45,7 @@ public class WelcomeBackActivity extends AppCompatActivity {
                 }
             }, "resume_wb");*/
             //load and show
-            AppOpenManager.getInstance().loadAndShowResumeAds(this, AdmobApi.getInstance().getListIDByName("resume_wb"), new AppOpenCallback() {
+            /*AppOpenManager.getInstance().loadAndShowResumeAds(this, AdmobApi.getInstance().getListIDByName(A), new AppOpenCallback() {
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     super.onAdDismissedFullScreenContent();
@@ -63,7 +63,8 @@ public class WelcomeBackActivity extends AppCompatActivity {
                     super.onAdFailedToLoad();
                     finish();
                 }
-            }, "resume_wb");
+            }, "resume_wb");*/
+            finish();
         });
     }
 }

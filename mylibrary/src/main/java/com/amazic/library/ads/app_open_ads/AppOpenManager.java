@@ -26,7 +26,6 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.dialog.LoadingAdsResumeDialog;
-//import com.amazic.library.iap.IAPManager;
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
 import com.google.android.gms.ads.AdActivity;
@@ -54,7 +53,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private LoadingAdsResumeDialog loadingAdsResumeDialog;
     public ArrayList<Integer> listAnimationDialogRaw = new ArrayList<>();
     private boolean isCustomAnimationDialog = false;
-    private List<String> listIdOpenResumeAd = new ArrayList<>();
+    private final List<String> listIdOpenResumeAd = new ArrayList<>();
     private boolean isFailToShowAdSplash = false;
     private final ArrayList<Class> disabledAppOpenList = new ArrayList<>();
     private boolean isShowWelcomeBelowAdsResume = false;
@@ -124,6 +123,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void setCustomAnimationDialog(boolean customAnimationDialog) {
         this.isCustomAnimationDialog = customAnimationDialog;
     }
+
     public void setCustomAnimationDialog(ArrayList<Integer> listAnimationDialogRaw) {
         this.isCustomAnimationDialog = true;
         this.listAnimationDialogRaw = listAnimationDialogRaw;
@@ -168,7 +168,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     }
 
     private boolean isAdSplashAvailable() {
-        Log.d(TAG, "SPLASH: isAdAvailable: appOpenAd = " + appOpenAdSplash);
+        Log.d(TAG, "SPLASH: isAdSplashAvailable: appOpenAd = " + appOpenAdSplash);
         return appOpenAdSplash != null;
     }
 
@@ -1088,12 +1088,16 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
         currentActivity = activity;
-        Log.d(TAG, "onActivityStarted: " + currentActivity);
-        if (AsyncSplash.Companion.getInstance().getInitResumeAdsType().equals("Normal")) {
-            remoteKey = "open_resume";
+        if (AsyncSplash.Companion.getInstance().getKeyAdsOpenResume().isEmpty()) {
+            if (AsyncSplash.Companion.getInstance().getInitResumeAdsType().equals("Normal")) {
+                remoteKey = "open_resume";
+            } else {
+                remoteKey = "resume_wb";
+            }
         } else {
-            remoteKey = "resume_wb";
+            remoteKey = AsyncSplash.Companion.getInstance().getKeyAdsOpenResume();
         }
+        Log.d(TAG, "onActivityStarted: " + currentActivity + "-RemoteKey: " + remoteKey);
     }
 
     @Override
@@ -1124,7 +1128,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
-        Log.d(TAG, "onStart: " + currentActivity);
+        Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
         if (AsyncSplash.Companion.getInstance().getPreloadResumeAds()) {
             showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, remoteKey);
         } else {

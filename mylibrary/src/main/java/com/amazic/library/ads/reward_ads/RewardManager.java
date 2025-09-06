@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class RewardManager {
     private static final String TAG = "RewardManager";
-    private static final Map<String, RewardedAd> listReward = new HashMap<>();
+    public static final Map<String, RewardedAd> listReward = new HashMap<>();
     public static void loadRewardAds(Activity activity, String adsKey, String remoteKey) {
         if (listReward.get(adsKey) == null) {
             Admob.getInstance().loadRewardAds(activity, AdmobApi.getInstance().getListIDByName(adsKey), new RewardedCallback() {

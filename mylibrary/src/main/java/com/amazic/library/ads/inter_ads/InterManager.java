@@ -15,7 +15,7 @@ import java.util.Map;
 
 public class InterManager {
     private static final String TAG = "InterManager";
-    private static final Map<String, InterstitialAd> listInter = new HashMap<>();
+    public static final Map<String, InterstitialAd> listInter = new HashMap<>();
 
     public static void loadAndShowInterAds(Activity activity, String adsKey, String remoteKey, InterCallback interCallback) {
         Admob.getInstance().loadInterAdsLoadAndShow(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, remoteKey);

@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class RewardInterManager {
     private static final String TAG = "RewardInterManager";
-    private static final Map<String, RewardedInterstitialAd> listRewardInter = new HashMap<>();
+    public static final Map<String, RewardedInterstitialAd> listRewardInter = new HashMap<>();
 
     public static void loadRewardInterAds(Activity activity, String adsKey, String remoteKey) {
         if (listRewardInter.get(adsKey) == null) {

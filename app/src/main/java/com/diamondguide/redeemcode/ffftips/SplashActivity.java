@@ -142,6 +142,9 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
             AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
+            //AsyncSplash.Companion.getInstance().setTimeOutCallApi(5000);
+            //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig("id_ads");
+            //AsyncSplash.Companion.getInstance().setTimeOutCallIdRemoteConfig(5000);
 //            ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
 //            listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
 //            AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP

@@ -2,6 +2,8 @@ package com.amazic.library.ads.splash_ads
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
@@ -69,8 +71,6 @@ class AsyncSplash {
     private var timeOutSplash = 12000L
     private var isLoopAdsSplash = false
     private var useTechManagerOrDetectTestAd = DETECT_TEST_AD
-    private var isUsingServerID = true
-    private var nameRemoteID = ""
 
     //1.use for log event time out 12s
     private var initRemoteConfig = false
@@ -108,6 +108,10 @@ class AsyncSplash {
     //Set loadAndShowIdInterAdSplashAsync 30/05/2025
     private var loadAndShowIdInterAdSplashAsync = false
 
+    //Set timeout call id remote config
+    private var timeOutCallIdRemoteConfig = 4000L
+    private var isSetId = false
+
     companion object {
         const val TECH_MANAGER = "TechManager"
         const val DETECT_TEST_AD = "DetectTestAd"
@@ -135,22 +139,6 @@ class AsyncSplash {
         this.jsonIdAdsDefault = jsonIdAdsDefault
         this.linkServer = linkServer
         this.appId = appId
-        this.appOpenCallback = appOpenCallback
-        this.interCallback = interCallback
-    }
-
-    fun init(
-        activity: AppCompatActivity,
-        appOpenCallback: AppOpenCallback,
-        interCallback: InterCallback,
-        adjustKey: String,
-        nameRemoteID: String
-    ) {
-        isUsingServerID = false
-        resetVarToDefault()
-        this.activity = activity
-        this.adjustKey = adjustKey
-        this.nameRemoteID = nameRemoteID
         this.appOpenCallback = appOpenCallback
         this.interCallback = interCallback
     }
@@ -187,6 +175,11 @@ class AsyncSplash {
         this.keyAdsOpenSplash = "open_splash"
         this.keyAdsOpenResume = ""
         this.loadAndShowIdInterAdSplashAsync = false
+        this.timeOutCallIdRemoteConfig = 4000L
+    }
+
+    fun setTimeOutCallIdRemoteConfig(timeOutCallIdRemoteConfig: Long) {
+        this.timeOutCallIdRemoteConfig = timeOutCallIdRemoteConfig
     }
 
     fun getLoadAndShowIdInterAdSplashAsync(): Boolean {
@@ -526,20 +519,33 @@ class AsyncSplash {
         }
     }
 
-
-    private suspend fun initRemoteConfig(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
+    private suspend fun initRemoteConfig(
+        activity: AppCompatActivity?
+    ) = suspendCoroutine<Unit> { continuation ->
         if (isUseAppUpdateManager) {
             continuation.resume(Unit)
         } else {
+            EventTrackingHelper.logEvent(activity, "initRemoteConfig")
+            Handler(Looper.getMainLooper()).postDelayed({
+                if (isUseIdAdsFromRemoteConfig && !isSetId) {
+                    AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
+                    AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
+                    isSetId = true
+                    Log.d(TAG, "Timeout Remote Config: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
+                    EventTrackingHelper.logEvent(activity, "timeout_call_id_remote_config")
+                }
+            }, timeOutCallIdRemoteConfig)
             var isResumed = false
             RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
-                if (isUseIdAdsFromRemoteConfig) {
+                if (isUseIdAdsFromRemoteConfig && !isSetId) {
                     val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.id_ads)
                     if (jsonIdAdsFromRemoteConfig.contains("app_id")) { //get id ads from remote config successfully
                         AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
                         AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
+                        isSetId = true
+                        Log.d(TAG, "Id ads size = ${AdmobApi.getInstance().listAdsSize}")
+                        EventTrackingHelper.logEvent(activity, "set_id_remote_config")
                     }
-                    Log.d(TAG, "Id ads size = ${AdmobApi.getInstance().listAdsSize}")
                 }
                 Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")
                 Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)
@@ -549,9 +555,6 @@ class AsyncSplash {
                 Admob.getInstance().setTimeIntervalFromStart(
                     RemoteConfigHelper.getInstance().get_config_long(activity, RemoteConfigHelper.interval_interstitial_from_start) * 1000
                 )
-                if (!isUsingServerID)
-                    AdmobApi.getInstance()
-                        .convertJsonIdAdsDefaultToList(RemoteConfigHelper.getInstance().get_config_string(activity, nameRemoteID))
                 if (!isResumed) {
                     isResumed = true
                     continuation.resume(Unit)
@@ -602,7 +605,7 @@ class AsyncSplash {
     }
 
     private suspend fun initAdmobApi(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
-        if (isUsingServerID) {
+        if (!isUseIdAdsFromRemoteConfig) {
             AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
             AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
             AdmobApi.getInstance().init(activity, linkServer, appId, object : ApiCallback() {

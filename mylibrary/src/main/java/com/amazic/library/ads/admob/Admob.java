@@ -286,13 +286,11 @@ public class Admob {
             }
             removeHandlerInterAds();
         };
-        if (handlerTimeoutInter != null) {
-            handlerTimeoutInter.postDelayed(runnable, timeOutCallInterAds);
-        }
+        handlerTimeoutInter.postDelayed(runnable, timeOutCallInterAds);
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdInterTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+            if (!activity.isFinishing() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 loadingAdsDialog.dismiss();
             }
             isInterOrRewardedShowing = false;
@@ -313,7 +311,7 @@ public class Admob {
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
-        if (!loadingAdsDialog.isShowing()) {
+        if (!activity.isFinishing() && !loadingAdsDialog.isShowing()) {
             loadingAdsDialog.show();
         }
         isInterOrRewardedShowing = true;
@@ -346,7 +344,7 @@ public class Admob {
                         if (!listIdInterTemp.isEmpty()) {
                             listIdInterTemp.remove(0);
                         }
-                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        if (!activity.isFinishing() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                             loadingAdsDialog.dismiss();
                         }
                         loadInterAdsLoadAndShow(activity, listIdInterTemp, interCallback, remoteKey);
@@ -358,7 +356,7 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+            if (!activity.isFinishing() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 loadingAdsDialog.dismiss();
             }
             interCallback.onNextAction();
@@ -366,7 +364,7 @@ public class Admob {
         }
         if (mInterstitialAd == null) {
             Log.d(TAG, "INTER: The interstitial ad wasn't ready yet. " + remoteKey);
-            if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+            if (!activity.isFinishing() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 loadingAdsDialog.dismiss();
             }
             interCallback.onNextAction();
@@ -402,11 +400,11 @@ public class Admob {
                         // Called when ad fails to show.
                         Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + remoteKey);
                         interCallback.onAdFailedToShowFullScreenContent();
+                        if (!activity.isFinishing() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            loadingAdsDialog.dismiss();
+                        }
                         if (!openActivityAfterShowInterAds) {
                             interCallback.onNextAction();
-                        }
-                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
                         }
                         isInterOrRewardedShowing = false;
                         removeHandlerInterAds();
@@ -425,7 +423,7 @@ public class Admob {
                         // Called when ad is shown.
                         Log.d(TAG, "INTER: Ad showed fullscreen content. " + remoteKey);
                         interCallback.onAdShowedFullScreenContent();
-                        if (loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        if (!activity.isFinishing() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                             loadingAdsDialog.dismiss();
                         }
                         isInterOrRewardedShowing = true;

@@ -27,7 +27,7 @@ public class RemoteConfigHelper {
     }
 
     public interface IOnFetchDone {
-        void onFetchDone();
+        void onFetchDone(boolean isSuccess);
     }
 
     public void fetchAllKeysAndTypes(Context context, IOnFetchDone iOnFetchDone) {
@@ -40,6 +40,7 @@ public class RemoteConfigHelper {
         FirebaseRemoteConfig.getInstance().setDefaultsAsync(R.xml.remote_config_defaults);
 
         FirebaseRemoteConfig.getInstance().fetchAndActivate().addOnCompleteListener(task -> {
+            boolean isSuccess = false;
             if (task.isSuccessful()) {
                 Map<String, FirebaseRemoteConfigValue> allValues = firebaseRemoteConfig.getAll();
                 listRemoteStringName.clear();
@@ -76,10 +77,11 @@ public class RemoteConfigHelper {
                         set_config_long(context, key, getRemoteConfigLong(key));
                     }
                 }
+                isSuccess = true;
             } else {
                 Log.d(TAG, "Failed to fetch Remote Config values.");
             }
-            iOnFetchDone.onFetchDone();
+            iOnFetchDone.onFetchDone(isSuccess);
         });
     }
 

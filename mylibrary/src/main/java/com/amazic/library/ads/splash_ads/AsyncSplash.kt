@@ -176,6 +176,7 @@ class AsyncSplash {
         this.keyAdsOpenResume = ""
         this.loadAndShowIdInterAdSplashAsync = false
         this.timeOutCallIdRemoteConfig = 4000L
+        this.isSetId = false
     }
 
     fun setTimeOutCallIdRemoteConfig(timeOutCallIdRemoteConfig: Long) {
@@ -526,6 +527,7 @@ class AsyncSplash {
             continuation.resume(Unit)
         } else {
             EventTrackingHelper.logEvent(activity, "initRemoteConfig")
+            //Handle remote config id ads timeout
             Handler(Looper.getMainLooper()).postDelayed({
                 if (isUseIdAdsFromRemoteConfig && !isSetId) {
                     AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
@@ -536,17 +538,25 @@ class AsyncSplash {
                 }
             }, timeOutCallIdRemoteConfig)
             var isResumed = false
-            RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
+            RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
+                //Handle remote config id ads
                 if (isUseIdAdsFromRemoteConfig && !isSetId) {
                     val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.id_ads)
-                    if (jsonIdAdsFromRemoteConfig.contains("app_id")) { //get id ads from remote config successfully
+                    if (jsonIdAdsFromRemoteConfig.contains("app_id") && isSuccess) { //get id ads from remote config successfully
                         AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
                         AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
                         isSetId = true
-                        Log.d(TAG, "Id ads size = ${AdmobApi.getInstance().listAdsSize}")
+                        Log.d(TAG, "Set id ads from remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
                         EventTrackingHelper.logEvent(activity, "set_id_remote_config")
+                    } else {
+                        AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
+                        AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
+                        isSetId = true
+                        Log.d(TAG, "Set id ads default case fail remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
+                        EventTrackingHelper.logEvent(activity, "set_id_default_case_fail_remote")
                     }
                 }
+                //Handle General
                 Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")
                 Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)
                 Admob.getInstance().setTimeInterval(

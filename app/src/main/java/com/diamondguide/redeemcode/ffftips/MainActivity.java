@@ -119,9 +119,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
-        RewardManager.loadRewardAds(this, "rewarded", "rewarded");
+        //RewardManager.loadRewardAds(this, "rewarded", "rewarded");
         binding.tvShowReward.setOnClickListener(view -> {
-            RewardManager.showRewardAds(this, "rewarded", "rewarded", new RewardedCallback() {
+            /*RewardManager.showRewardAds(this, "rewarded", "rewarded", new RewardedCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();
@@ -134,7 +134,14 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }, true);
                 }
-            }, true);
+            }, true);*/
+            RewardManager.loadAndShowRewardAds(this, "rewarded", new RewardedCallback() {
+                @Override
+                public void onNextAction() {
+                    super.onNextAction();
+                    Toast.makeText(MainActivity.this, "Show Reward Ads On next action.", Toast.LENGTH_SHORT).show();
+                }
+            }, "rewarded");
         });
         RewardInterManager.loadRewardInterAds(this, "rewarded_inter", "rewarded_inter");
         binding.tvShowRewardInter.setOnClickListener(view -> {

@@ -370,7 +370,7 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
-        if (!isLoadInterAdsIdTimeout) {
+        if (!isLoadInterAdsIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
                     @Override
@@ -597,7 +597,7 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
-        if (!isLoadInterSplashIdTimeout) {
+        if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
                     @Override
@@ -730,7 +730,7 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
-        if (!isLoadInterSplashIdTimeout) {
+        if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 interSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
                     @Override
@@ -957,9 +957,7 @@ public class Admob {
             }
             removeHandlerSplashAds();
         };
-        if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
-        }
+        handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
@@ -1033,9 +1031,7 @@ public class Admob {
             }
             removeHandlerSplashAds();
         };
-        if (handlerTimeoutSplash != null) {
-            handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
-        }
+        handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
         // Check list id size
         if (listIdInter.isEmpty()) {
             Log.d(TAG, "SPLASH: loadAndShowInterAdSplashLoop: listIdInter is empty.");

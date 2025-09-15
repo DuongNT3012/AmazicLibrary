@@ -280,6 +280,9 @@ public class Admob {
         runnable = () -> {
             Log.d(TAG, "loadInterAdsLoadAndShow: inter_ads_id_timeout: " + remoteKey);
             EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_ads_id_timeout, "remoteKey", remoteKey);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.dismiss();
+            }
             if (interCallback != null) {
                 isLoadInterAdsIdTimeout = true;
                 interCallback.onNextAction();
@@ -290,9 +293,6 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdInterTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                loadingAdsDialog.dismiss();
-            }
             isInterOrRewardedShowing = false;
             interCallback.onNextAction();
             removeHandlerInterAds();
@@ -850,6 +850,9 @@ public class Admob {
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.dismiss();
+            }
             if (interCallback != null) {
                 isLoadInterSplashIdTimeout = true;
                 interCallback.onNextAction();
@@ -945,6 +948,9 @@ public class Admob {
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.dismiss();
+            }
             if (interCallback != null) {
                 isLoadInterSplashIdTimeout = true;
                 interCallback.onNextAction();
@@ -1018,6 +1024,9 @@ public class Admob {
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.dismiss();
+            }
             if (interCallback != null) {
                 isLoadInterSplashIdTimeout = true;
                 interCallback.onNextAction();

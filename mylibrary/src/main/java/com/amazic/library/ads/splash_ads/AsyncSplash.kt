@@ -535,6 +535,7 @@ class AsyncSplash {
                     isSetId = true
                     Log.d(TAG, "Timeout Remote Config: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
                     EventTrackingHelper.logEvent(activity, "timeout_call_id_remote_config")
+                    initWelcomeBack(activity)//17.09.2025
                 }
             }, timeOutCallIdRemoteConfig)
             var isResumed = false
@@ -555,6 +556,7 @@ class AsyncSplash {
                         Log.d(TAG, "Set id ads default case fail remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
                         EventTrackingHelper.logEvent(activity, "set_id_default_case_fail_remote")
                     }
+                    initWelcomeBack(activity)//17.09.2025
                 }
                 //Handle General
                 Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")

@@ -112,6 +112,10 @@ class AsyncSplash {
     private var timeOutCallIdRemoteConfig = 4000L
     private var isSetId = false
 
+    //Set key interval inter
+    private var keyIntervalBetweenInterstitial = "interval_between_interstitial"
+    private var keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
+
     companion object {
         const val TECH_MANAGER = "TechManager"
         const val DETECT_TEST_AD = "DetectTestAd"
@@ -177,6 +181,16 @@ class AsyncSplash {
         this.loadAndShowIdInterAdSplashAsync = false
         this.timeOutCallIdRemoteConfig = 4000L
         this.isSetId = false
+        this.keyIntervalBetweenInterstitial = "interval_between_interstitial"
+        this.keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
+    }
+
+    fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
+        this.keyIntervalBetweenInterstitial = keyIntervalBetweenInterstitial
+    }
+
+    fun setKeyIntervalInterstitialFromStart(keyIntervalInterstitialFromStart: String) {
+        this.keyIntervalInterstitialFromStart = keyIntervalInterstitialFromStart
     }
 
     fun setTimeOutCallIdRemoteConfig(timeOutCallIdRemoteConfig: Long) {

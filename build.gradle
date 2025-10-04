@@ -12,8 +12,8 @@ plugins {
 
 ext {
     minSdkVersion = 21
-    compileSdkVersion = 34
-    targetSdkVersion = 34
+    compileSdkVersion = 35
+    targetSdkVersion = 35
 
     appcompat = "androidx.appcompat:appcompat:1.6.1"
 

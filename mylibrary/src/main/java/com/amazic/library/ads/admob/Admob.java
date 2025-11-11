@@ -272,6 +272,14 @@ public class Admob {
         }
     }
 
+    private void dismissLoadingDialog() {
+        try {
+            loadingAdsDialog.dismiss();
+        } catch (Exception e) {
+            Log.e(TAG, "dismissLoadingDialog: " + e.getMessage());
+        }
+    }
+
     //================================Start inter ads================================
     public void loadInterAdsLoadAndShow(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
@@ -281,7 +289,7 @@ public class Admob {
             Log.d(TAG, "loadInterAdsLoadAndShow: inter_ads_id_timeout: " + remoteKey);
             EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_ads_id_timeout, "remoteKey", remoteKey);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                loadingAdsDialog.dismiss();
+                dismissLoadingDialog();
             }
             if (interCallback != null) {
                 isLoadInterAdsIdTimeout = true;
@@ -328,7 +336,7 @@ public class Admob {
                         interCallback.onAdLoaded(interstitialAd);
                         Log.i(TAG, "INTER: onAdLoaded. " + remoteKey);
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         showInterAdsLoadAndShow(activity, interstitialAd, interCallback, remoteKey);
                         //Tracking revenue
@@ -348,7 +356,7 @@ public class Admob {
                             listIdInterTemp.remove(0);
                         }
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         loadInterAdsLoadAndShow(activity, listIdInterTemp, interCallback, remoteKey);
                     }
@@ -530,7 +538,7 @@ public class Admob {
                         interCallback.onNextAction();
                     }
                     if (!activity.isFinishing() && !activity.isDestroyed() && isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                        loadingAdsDialog.dismiss();
+                        dismissLoadingDialog();
                     }
                     isInterOrRewardedShowing = false;
                 }
@@ -549,7 +557,7 @@ public class Admob {
                     Log.d(TAG, "INTER: Ad showed fullscreen content. " + remoteKey);
                     interCallback.onAdShowedFullScreenContent();
                     if (!activity.isFinishing() && !activity.isDestroyed() && isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                        loadingAdsDialog.dismiss();
+                        dismissLoadingDialog();
                     }
                     isInterOrRewardedShowing = true;
                 }
@@ -627,7 +635,7 @@ public class Admob {
                             interCallback.onNextAction();
                         }
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         isFailToShowAdSplash = true;
                         AppOpenManager.getInstance().setEnableResume(true);
@@ -660,7 +668,7 @@ public class Admob {
                         mInterstitialAdSplash = null;
                         interCallback.onAdShowedFullScreenContent();
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         isInterOrRewardedShowing = true;
                         isFailToShowAdSplash = false;
@@ -685,7 +693,7 @@ public class Admob {
                 } else {
                     Log.e(TAG, "SPLASH: Fail to show on background.");
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                        loadingAdsDialog.dismiss();
+                        dismissLoadingDialog();
                     }
                     isFailToShowAdSplash = true;
                     if (runnable != null) {
@@ -760,7 +768,7 @@ public class Admob {
                             interCallback.onNextAction();
                         }
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         isFailToShowAdSplash = true;
                         AppOpenManager.getInstance().setEnableResume(true);
@@ -792,7 +800,7 @@ public class Admob {
                         Log.d(TAG, "SPLASH: Ad showed fullscreen content.");
                         interCallback.onAdShowedFullScreenContent();
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         isInterOrRewardedShowing = true;
                         isFailToShowAdSplash = false;
@@ -817,7 +825,7 @@ public class Admob {
                 } else {
                     Log.e(TAG, "SPLASH: Fail to show on background.");
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                        loadingAdsDialog.dismiss();
+                        dismissLoadingDialog();
                     }
                     isFailToShowAdSplash = true;
                     if (handlerTimeoutSplash != null && runnable != null) {
@@ -840,7 +848,7 @@ public class Admob {
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                loadingAdsDialog.dismiss();
+                dismissLoadingDialog();
             }
             if (interCallback != null) {
                 isLoadInterSplashIdTimeout = true;
@@ -938,7 +946,7 @@ public class Admob {
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                loadingAdsDialog.dismiss();
+                dismissLoadingDialog();
             }
             if (interCallback != null) {
                 isLoadInterSplashIdTimeout = true;
@@ -1012,7 +1020,7 @@ public class Admob {
         runnable = () -> {
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                loadingAdsDialog.dismiss();
+                dismissLoadingDialog();
             }
             if (interCallback != null) {
                 isLoadInterSplashIdTimeout = true;
@@ -2876,7 +2884,7 @@ public class Admob {
                 rewardedCallback.onAdFailedToShowFullScreenContent();
                 rewardedCallback.onNextAction();
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                    loadingAdsDialog.dismiss();
+                    dismissLoadingDialog();
                 }
             }
 
@@ -2892,7 +2900,7 @@ public class Admob {
                 Log.d(TAG, "REWARD: onAdShowedFullScreenContent. " + remoteKey);
                 rewardedCallback.onAdShowedFullScreenContent();
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                    loadingAdsDialog.dismiss();
+                    dismissLoadingDialog();
                 }
                 isInterOrRewardedShowing = true;
             }
@@ -2934,7 +2942,7 @@ public class Admob {
                             listIdRewardedTemp.remove(0);
                         }
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         loadRewardAds(activity, listIdRewardedTemp, rewardedCallback, remoteKey);
                     }
@@ -2950,7 +2958,7 @@ public class Admob {
                             AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
                         });
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                            loadingAdsDialog.dismiss();
+                            dismissLoadingDialog();
                         }
                         showRewardLoadAndShow(activity, ad, rewardedCallback, remoteKey);
                     }
@@ -2994,7 +3002,7 @@ public class Admob {
                 rewardedCallback.onAdFailedToShowFullScreenContent();
                 rewardedCallback.onNextAction();
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                    loadingAdsDialog.dismiss();
+                    dismissLoadingDialog();
                 }
             }
 
@@ -3010,7 +3018,7 @@ public class Admob {
                 Log.d(TAG, "REWARD: onAdShowedFullScreenContent. " + remoteKey);
                 rewardedCallback.onAdShowedFullScreenContent();
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                    loadingAdsDialog.dismiss();
+                    dismissLoadingDialog();
                 }
                 isInterOrRewardedShowing = true;
             }
@@ -3105,7 +3113,7 @@ public class Admob {
                 rewardedInterCallback.onAdFailedToShowFullScreenContent();
                 rewardedInterCallback.onNextAction();
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                    loadingAdsDialog.dismiss();
+                    dismissLoadingDialog();
                 }
             }
 
@@ -3121,7 +3129,7 @@ public class Admob {
                 Log.d(TAG, "REWARD INTER: onAdShowedFullScreenContent. " + remoteKey);
                 rewardedInterCallback.onAdShowedFullScreenContent();
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
-                    loadingAdsDialog.dismiss();
+                    dismissLoadingDialog();
                 }
                 isInterOrRewardedShowing = true;
             }

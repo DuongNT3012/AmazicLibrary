@@ -1740,6 +1740,125 @@ public class Admob {
         return adView;
     }
 
+    public AdView loadCollapseBanner(Activity activity, Lifecycle getLifecycle, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, IOnAdsFailToLoad iOnAdsFailToLoad, String collapseTypeClose, long valueCountDownOrCountClick, String remoteKey) {
+        ArrayList<String> listIdCollapseBannerTemp = new ArrayList<>(listIdCollapseBanner);
+        if (adContainerView != null) {
+            adContainerView.removeAllViews();
+        }
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdCollapseBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+            Log.d(TAG, "COLLAPSE BANNER: Check condition. RemoteKey:" + remoteKey + "_Network: " + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdCollapseBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            bannerCallback.onAdFailedToLoad();
+            return null;
+        }
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, remoteKey + "_true");
+        //end log event can request ads
+
+        //Show loading shimmer
+        View shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
+        if (adContainerView != null) {
+            adContainerView.addView(shimmerBanner);
+        }
+        AdView adView = new AdView(activity);
+        adView.setAdUnitId(listIdCollapseBannerTemp.get(0));
+
+        AdSize adSize = getAdSize(activity);
+        adView.setAdSize(adSize);
+        // Create an extra parameter that aligns the bottom of the expanded ad to
+        // the bottom of the bannerView.
+        Bundle extras = new Bundle();
+        if (isGravityBottom) {
+            extras.putString("collapsible", "bottom");
+        } else {
+            extras.putString("collapsible", "top");
+        }
+
+        AdRequest adRequest = new AdRequest.Builder()
+                .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+                .build();
+        adView.loadAd(adRequest);
+        adView.setAdListener(new AdListener() {
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
+                Log.d(TAG, "COLLAPSE BANNER: onAdClicked. " + remoteKey);
+                EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                bannerCallback.onAdClicked();
+            }
+
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                Log.d(TAG, "COLLAPSE BANNER: onAdClosed. " + remoteKey);
+                bannerCallback.onAdClosed();
+            }
+
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                super.onAdFailedToLoad(loadAdError);
+                Log.e(TAG, "COLLAPSE BANNER: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
+                bannerCallback.onAdFailedToLoad();
+                iOnAdsFailToLoad.onAdsFailToLoad();
+                if (!listIdCollapseBannerTemp.isEmpty()) {
+                    listIdCollapseBannerTemp.remove(0);
+                }
+                loadCollapseBanner(activity, getLifecycle, listIdCollapseBannerTemp, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, iOnAdsFailToLoad, collapseTypeClose, valueCountDownOrCountClick, remoteKey);
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                Log.d(TAG, "COLLAPSE BANNER: onAdImpression. " + remoteKey);
+                EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                bannerCallback.onAdImpression();
+                iOnAdsImpression.onAdsImpression();
+            }
+
+            @Override
+            public void onAdLoaded() {
+                super.onAdLoaded();
+                Log.i(TAG, "COLLAPSE BANNER: onAdLoaded. " + remoteKey);
+                bannerCallback.onAdLoaded();
+                // Replace ad container with new ad view.
+                if (adContainerView != null) {
+                    getLifecycle.addObserver(new DefaultLifecycleObserver() {
+                        @Override
+                        public void onResume(@NonNull LifecycleOwner owner) {
+                            DefaultLifecycleObserver.super.onResume(owner);
+                            adContainerView.removeAllViews();
+                            adContainerView.addView(adView);
+                        }
+                    });
+                }
+                //Tracking revenue
+                adView.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    if (adView.getResponseInfo() != null) {
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+                });
+            }
+
+            @Override
+            public void onAdOpened() {
+                super.onAdOpened();
+                Log.d(TAG, "COLLAPSE BANNER: onAdOpened. " + remoteKey);
+                bannerCallback.onAdOpened();
+                applyTechForCollapseBanner(collapseTypeClose, valueCountDownOrCountClick);
+            }
+
+            @Override
+            public void onAdSwipeGestureClicked() {
+                super.onAdSwipeGestureClicked();
+                Log.d(TAG, "COLLAPSE BANNER: onAdSwipeGestureClicked. " + remoteKey);
+                bannerCallback.onAdSwipeGestureClicked();
+            }
+        });
+        return adView;
+    }
+
     public AdView loadCollapseBanner(Context context, int adWidth, List<String> listIdCollapseBanner, FrameLayout adContainerView, boolean isGravityBottom, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, IOnAdsFailToLoad iOnAdsFailToLoad, String collapseTypeClose, long valueCountDownOrCountClick, String remoteKey) {
         ArrayList<String> listIdCollapseBannerTemp = new ArrayList<>(listIdCollapseBanner);
         if (adContainerView != null) {

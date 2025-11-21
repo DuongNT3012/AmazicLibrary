@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
@@ -21,7 +20,7 @@ import com.google.android.gms.ads.AdView;
 public class CollapseBannerManager implements LifecycleEventObserver {
     private static final String TAG = "CollapseBannerManager";
     private final CollapseBannerBuilder builder;
-    private AppCompatActivity currentActivity;
+    private Activity currentActivity;
     private final LifecycleOwner lifecycleOwner;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;
@@ -57,7 +56,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
         }
     }
 
-    public CollapseBannerManager(@NonNull AppCompatActivity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, CollapseBannerBuilder builder, String remoteKey) {
+    public CollapseBannerManager(@NonNull Activity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, CollapseBannerBuilder builder, String remoteKey) {
         this.isLoadBannerFragment = false;
         this.builder = builder;
         this.currentActivity = currentActivity;
@@ -127,7 +126,7 @@ public class CollapseBannerManager implements LifecycleEventObserver {
             if (adView != null) {
                 adView.destroy();
             }
-            adView = Admob.getInstance().loadCollapseBanner(currentActivity, builder.getListId(), frContainer, builder.getBannerGravity(), builder.getCallBack()
+            adView = Admob.getInstance().loadCollapseBanner(currentActivity, lifecycleOwner.getLifecycle(), builder.getListId(), frContainer, builder.getBannerGravity(), builder.getCallBack()
                     , new IOnAdsImpression() {
                         @Override
                         public void onAdsImpression() {

@@ -112,6 +112,15 @@ public class Admob {
     public int timeHttpBanner = -1;
     public int timeHttpOpen = -1;
 
+    //update request check time delay show ads splash
+    private final Handler handlerDelayAdsSplash = new Handler(Looper.getMainLooper());
+    private Runnable timerDelayRunnable;
+    private boolean isTimerDelayFinished = false;
+    private boolean isAdLoadAdsSplashFinished = false;
+    private long startTime;
+    private int timeDelayAdsSplash = 7000;
+    //end
+
     public static Admob getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new Admob();
@@ -198,6 +207,14 @@ public class Admob {
 
     public void setTimeOutCallSplashAds(int timeOutCallSplashAds) {
         this.timeOutCallSplashAds = timeOutCallSplashAds;
+    }
+
+    public int getTimeDelayAdsSplash(){
+        return timeDelayAdsSplash;
+    }
+
+    public void setTimeDelayAdsSplash(int timeDelay){
+        this.timeDelayAdsSplash = timeDelay;
     }
 
     public boolean isDetectTestAdByView() {
@@ -1012,6 +1029,118 @@ public class Admob {
                         loadAndShowInterAdSplash(activity, listIdInterTemp, interCallback);
                     }
                 });
+    }
+
+    public void loadAndShowInterAdSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
+        Log.d(TAG, "Bắt đầu tiến trình Load And Show Inter Delay ads...");
+        startTime = System.currentTimeMillis();
+        ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
+        //Set timeout ads splash x(s) if cannot load
+        runnable = () -> {
+            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                dismissLoadingDialog();
+            }
+            if (interCallback != null) {
+                isLoadInterSplashIdTimeout = true;
+                interCallback.onNextAction();
+            }
+            removeHandlerSplashAds();
+        };
+        handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
+
+        //delay ads splash
+        timerDelayRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "Đã đủ 7 giây đếm ngược.");
+                isTimerDelayFinished = true;
+                checkConditionAdsSplash(activity, interCallback);
+            }
+        };
+        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
+        //end
+
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
+            Log.d(TAG, "Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" /*+ IAPManager.getInstance().isPurchase()*/);
+            interCallback.onNextAction();
+            removeHandlerSplashAds();
+            return;
+        }
+
+        //Log event
+        Bundle bundle = new Bundle();
+        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
+        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
+        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
+        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
+        bundle.putString(EventTrackingHelper.showallad, String.valueOf(getShowAllAds()));
+        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
+        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
+
+        //log event can request
+        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
+        //end log event can request
+        //time start load splash ads
+        timeSplashLoadingAdShow = System.currentTimeMillis();
+
+        AdRequest adRequest = new AdRequest.Builder().build();
+        InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        Log.i(TAG, "SPLASH: Ad was loaded inter splash.");
+                        interCallback.onAdLoaded(interstitialAd);
+                        mInterstitialAdSplash = interstitialAd;
+                        isAdLoadAdsSplashFinished = true;
+                        checkConditionAdsSplash(activity, interCallback);
+                        removeHandlerSplashAds();
+                        //Tracking revenue
+                        interstitialAd.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.e(TAG, "SPLASH: Fail to load inter splash. " + loadAdError);
+                        interCallback.onAdFailedToLoad();
+                        if (!listIdInterTemp.isEmpty()) {
+                            listIdInterTemp.remove(0);
+                        }
+                        loadAndShowInterAdSplash(activity, listIdInterTemp, interCallback);
+                    }
+                });
+    }
+
+    private void checkConditionAdsSplash(AppCompatActivity activity, InterCallback interCallback) {
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            Log.d(TAG, "removeHandlerDelayAdsSplash");
+            removeHandlerDelayAdsSplash();
+            return;
+        }
+        if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
+            String timeFormatted = String.format("%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
+            Log.d(TAG, "===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây");
+
+            showInterAdsSplash(activity, interCallback);
+            removeHandlerDelayAdsSplash();
+        }
+
+    }
+
+    public void removeHandlerDelayAdsSplash() {
+        if (handlerDelayAdsSplash != null && timerDelayRunnable != null) {
+            handlerDelayAdsSplash.removeCallbacks(timerDelayRunnable);
+            handlerDelayAdsSplash.removeCallbacksAndMessages(null);
+        }
     }
 
     public void loadAndShowInterAdSplashLoop(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {

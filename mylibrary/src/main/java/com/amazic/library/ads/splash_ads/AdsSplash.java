@@ -90,11 +90,15 @@ public class AdsSplash {
             }
         } else if (getState() == STATE.INTER) {
             if (this.isLoopAdsSplash) {
+                Log.d(TAG, "Show Ads 1");
                 AdmobApi.getInstance().loadInterAdSplashLoop(activity, keyAdsInterSplash, interCallback);
             } else {
                 if (!AsyncSplash.Companion.getInstance().getLoadAndShowIdInterAdSplashAsync()) {
-                    AdmobApi.getInstance().loadInterAdSplashFloor(activity, keyAdsInterSplash, interCallback);
+                    Log.d(TAG, "Show Ads 2");
+//                    AdmobApi.getInstance().loadInterAdSplashFloor(activity, keyAdsInterSplash, interCallback);
+                    AdmobApi.getInstance().loadInterAdSplashFloorDelayAds(activity, keyAdsInterSplash, interCallback);
                 } else {
+                    Log.d(TAG, "Show Ads 3");
                     AdmobApi.getInstance().loadAndShowIdInterAdSplashAsync(activity, keyAdsInterSplash, interCallback);
                 }
             }

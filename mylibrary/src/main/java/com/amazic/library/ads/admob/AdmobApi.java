@@ -273,6 +273,9 @@ public class AdmobApi {
     public void loadInterAdSplashFloor(AppCompatActivity activity, String adsKey, InterCallback interCallback) {
         Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
     }
+    public void loadInterAdSplashFloorDelayAds(AppCompatActivity activity, String adsKey, InterCallback interCallback) {
+        Admob.getInstance().loadAndShowInterAdSplashDelay(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
+    }
 
     public void loadAndShowIdInterAdSplashAsync(AppCompatActivity activity, String adsKey, InterCallback interCallback) {
         Admob.getInstance().loadAndShowIdInterAdSplashAsync(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);

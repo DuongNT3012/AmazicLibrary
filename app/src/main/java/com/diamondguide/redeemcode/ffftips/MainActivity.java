@@ -134,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
 //                            finish();
                         }
                     },
-                    true,
                     "native_after_inter",
                     "native_after_inter"
             );

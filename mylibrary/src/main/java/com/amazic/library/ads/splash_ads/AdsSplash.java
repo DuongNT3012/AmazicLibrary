@@ -4,6 +4,7 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
@@ -80,7 +81,7 @@ public class AdsSplash {
         return state;
     }
 
-    public void showAdsSplashApi(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback) {
+    public void showAdsSplashApi(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback,String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "state show: " + getState());
         if (getState() == STATE.OPEN) {
             if (this.isLoopAdsSplash) {
@@ -96,7 +97,7 @@ public class AdsSplash {
                 if (!AsyncSplash.Companion.getInstance().getLoadAndShowIdInterAdSplashAsync()) {
                     Log.d(TAG, "Show Ads 2");
 //                    AdmobApi.getInstance().loadInterAdSplashFloor(activity, keyAdsInterSplash, interCallback);
-                    AdmobApi.getInstance().loadInterAdSplashFloorDelayAds(activity, keyAdsInterSplash, interCallback);
+                    AdmobApi.getInstance().loadInterAdSplashFloorDelayAds(activity, keyAdsInterSplash, interCallback, adsKeyNative, remoteKeyNative);
                 } else {
                     Log.d(TAG, "Show Ads 3");
                     AdmobApi.getInstance().loadAndShowIdInterAdSplashAsync(activity, keyAdsInterSplash, interCallback);

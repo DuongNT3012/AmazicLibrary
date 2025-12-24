@@ -24,9 +24,9 @@ public class InterManager {
         Admob.getInstance().loadInterAdsLoadAndShow(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, remoteKey);
     }
 
-    public static void loadAndShowInterAdsWithNativeAfterInter(Activity activity, String adsKeyInter, String remoteKeyInter, InterCallback interCallback, boolean isShowNativeAfterInter, String adsKeyNative, String remoteKeyNative) {
+    public static void loadAndShowInterAdsWithNativeAfterInter(Activity activity, String adsKeyInter, String remoteKeyInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative);
-        Admob.getInstance().loadInterAdsLoadAndShowWithNativeAfterInter(activity, AdmobApi.getInstance().getListIDByName(adsKeyInter), interCallback, remoteKeyInter, isShowNativeAfterInter);
+        Admob.getInstance().loadInterAdsLoadAndShowWithNativeAfterInter(activity, AdmobApi.getInstance().getListIDByName(adsKeyInter), interCallback, remoteKeyInter, remoteKeyNative);
     }
 
     public static void loadInterAds(Context context, String adsKey, String remoteKey) {

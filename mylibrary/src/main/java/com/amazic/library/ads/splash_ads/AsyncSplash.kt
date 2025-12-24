@@ -94,6 +94,9 @@ class AsyncSplash {
     private var keyAdsOpenSplash = "open_splash"
     private var keyAdsOpenResume = ""
 
+    //key native after inter
+    private var keyNativeAfterInter = "native_after_inter"
+
     //
     private var isUseAppUpdateManager = false
     private var remoteKeyIdAdsServer = "id_ads"
@@ -183,6 +186,7 @@ class AsyncSplash {
         this.isSetId = false
         this.keyIntervalBetweenInterstitial = "interval_between_interstitial"
         this.keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
+        this.keyNativeAfterInter = "native_after_inter"
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
@@ -239,6 +243,10 @@ class AsyncSplash {
 
     fun getKeyAdsOpenResume(): String {
         return this.keyAdsOpenResume
+    }
+
+    fun setKeyNativeAfterInter(key: String){
+        this.keyNativeAfterInter = key
     }
 
     fun setAsyncSplashAds() { //Show splash ads without wait any thing
@@ -802,7 +810,7 @@ class AsyncSplash {
     private fun showAdsSplash(activity: AppCompatActivity?, appOpenCallback: AppOpenCallback?, interCallback: InterCallback?) {
         Log.d(TAG, "showAdsSplash check $isTimeout $isNoInternetAction")
         if (!isTimeout && !isNoInternetAction) {
-            adsSplash?.showAdsSplashApi(activity, appOpenCallback, interCallback)
+            adsSplash?.showAdsSplashApi(activity, appOpenCallback, interCallback, keyNativeAfterInter, keyNativeAfterInter)
             Log.d(TAG, "showAdsSplash.")
             isShowAdsSplash = true
         }

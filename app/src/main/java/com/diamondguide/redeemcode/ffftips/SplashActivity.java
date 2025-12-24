@@ -15,6 +15,7 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
+import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 /*import com.amazic.library.iap.IAPManager;
 import com.amazic.library.iap.ProductDetailCustom;*/
@@ -172,21 +173,22 @@ public class SplashActivity extends AppCompatActivity {
             });
             AsyncSplash.Companion.getInstance().handleAsync(this, this,
                     LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
-                @Override
-                public Unit invoke() { //no internet
-                    interCallback.onNextAction();
-                    return null;
-                }
-            }, new Function0<Unit>() { //async splash done
-                @Override
-                public Unit invoke() {
+                        @Override
+                        public Unit invoke() { //no internet
+                            interCallback.onNextAction();
+                            return null;
+                        }
+                    }, new Function0<Unit>() { //async splash done
+                        @Override
+                        public Unit invoke() {
                     /*ArrayList<Integer> listAnim = new ArrayList<>();
                     listAnim.add(R.raw.custom_loading);
                     Admob.getInstance().setCustomAnimationDialog(listAnim);
                     AppOpenManager.getInstance().setCustomAnimationDialog(listAnim);*/
-                    return null;
-                }
-            });
+                            NativeAfterInterManager.preloadNativeAfterInter(SplashActivity.this, "native_after_inter", "native_after_inter");
+                            return null;
+                        }
+                    });
             isHandleAsyncSplash = true;
         }
     }

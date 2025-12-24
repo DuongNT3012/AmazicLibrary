@@ -119,6 +119,26 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
+
+        binding.tvShowInterNativeAfter.setOnClickListener(view -> {
+            InterManager.loadAndShowInterAdsWithNativeAfterInter(
+                    this,
+                    "inter_all",
+                    "inter_all",
+                    new InterCallback() {
+                        @Override
+                        public void onNextAction() {
+                            super.onNextAction();
+                            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                            startActivity(intent);
+//                            finish();
+                        }
+                    },
+                    true,
+                    "native_after_inter",
+                    "native_after_inter"
+            );
+        });
         //RewardManager.loadRewardAds(this, "rewarded", "rewarded");
         binding.tvShowReward.setOnClickListener(view -> {
             /*RewardManager.showRewardAds(this, "rewarded", "rewarded", new RewardedCallback() {

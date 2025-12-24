@@ -8,7 +8,10 @@ import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.InterCallback;
+import com.amazic.library.ads.callback.NativeCallback;
+import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
+import com.google.android.gms.ads.nativead.NativeAd;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +22,11 @@ public class InterManager {
 
     public static void loadAndShowInterAds(Activity activity, String adsKey, String remoteKey, InterCallback interCallback) {
         Admob.getInstance().loadInterAdsLoadAndShow(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, remoteKey);
+    }
+
+    public static void loadAndShowInterAdsWithNativeAfterInter(Activity activity, String adsKeyInter, String remoteKeyInter, InterCallback interCallback, boolean isShowNativeAfterInter, String adsKeyNative, String remoteKeyNative) {
+        NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative);
+        Admob.getInstance().loadInterAdsLoadAndShowWithNativeAfterInter(activity, AdmobApi.getInstance().getListIDByName(adsKeyInter), interCallback, remoteKeyInter, isShowNativeAfterInter);
     }
 
     public static void loadInterAds(Context context, String adsKey, String remoteKey) {

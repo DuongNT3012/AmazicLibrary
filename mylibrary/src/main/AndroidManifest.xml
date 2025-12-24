@@ -6,9 +6,12 @@
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <application android:usesCleartextTraffic="true"
-        android:hardwareAccelerated="true">
-
-
+    <application
+        android:hardwareAccelerated="true"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name="com.amazic.library.view.NativeAfterInterActivity"
+            android:exported="false" />
     </application>
+
 </manifest>

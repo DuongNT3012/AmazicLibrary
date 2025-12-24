@@ -6,6 +6,7 @@ import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -49,6 +50,7 @@ import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.dialog.LoadingAdsDialog;
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
+import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.mylibrary.R;
 import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdError;
@@ -209,11 +211,11 @@ public class Admob {
         this.timeOutCallSplashAds = timeOutCallSplashAds;
     }
 
-    public int getTimeDelayAdsSplash(){
+    public int getTimeDelayAdsSplash() {
         return timeDelayAdsSplash;
     }
 
-    public void setTimeDelayAdsSplash(int timeDelay){
+    public void setTimeDelayAdsSplash(int timeDelay) {
         this.timeDelayAdsSplash = timeDelay;
     }
 
@@ -452,6 +454,189 @@ public class Admob {
             mInterstitialAd.setImmersiveMode(true);
             mInterstitialAd.show(activity);
         }
+    }
+
+    public void loadInterAdsLoadAndShowWithNativeAfterInter(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey, boolean isShowNativeAfterInter) {
+        ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
+        //Set timeout inter ads x(s) if cannot load
+        isLoadInterAdsIdTimeout = false;
+        runnable = () -> {
+            Log.d(TAG, "loadInterAdsLoadAndShow: inter_ads_id_timeout: " + remoteKey);
+            EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_ads_id_timeout, "remoteKey", remoteKey);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                dismissLoadingDialog();
+            }
+            if (interCallback != null) {
+                isLoadInterAdsIdTimeout = true;
+                interCallback.onNextAction();
+            }
+            removeHandlerInterAds();
+        };
+        handlerTimeoutInter.postDelayed(runnable, timeOutCallInterAds);
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+            Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdInterTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            isInterOrRewardedShowing = false;
+            interCallback.onNextAction();
+            removeHandlerInterAds();
+            return;
+        }
+        if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
+            Log.d(TAG, "INTER: Not show interstitial because the time interval. " + remoteKey);
+            interCallback.onNextAction();
+            removeHandlerInterAds();
+            return;
+        }
+        if (System.currentTimeMillis() - timeStart < timeIntervalFromStart) {
+            Log.d(TAG, "INTER: Not show interstitial because the time interval from start. " + remoteKey);
+            interCallback.onNextAction();
+            removeHandlerInterAds();
+            return;
+        }
+        loadingAdsDialog = new LoadingAdsDialog(activity);
+        if (!activity.isFinishing() && !activity.isDestroyed() && !loadingAdsDialog.isShowing()) {
+            loadingAdsDialog.show();
+        }
+        isInterOrRewardedShowing = true;
+        EventTrackingHelper.logEvent(activity, remoteKey + "_true");
+        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
+        if (timeHttpInter != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpInter);
+        AdRequest adRequest = adRequestBuilder.build();
+        InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,
+                new InterstitialAdLoadCallback() {
+                    @Override
+                    public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
+                        // The mInterstitialAd reference will be null until
+                        // an ad is loaded.
+                        interCallback.onAdLoaded(interstitialAd);
+                        Log.i(TAG, "INTER: onAdLoaded. " + remoteKey);
+                        if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            dismissLoadingDialog();
+                        }
+                        showInterAdsLoadAndShowWithNativeAfterInter(activity, interstitialAd, interCallback, remoteKey, isShowNativeAfterInter);
+                        //Tracking revenue
+                        interstitialAd.setOnPaidEventListener(adValue -> {
+                            //Adjust
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        });
+                        removeHandlerInterAds();
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        // Handle the error
+                        Log.e(TAG, "INTER: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
+                        interCallback.onAdFailedToLoad();
+                        if (!listIdInterTemp.isEmpty()) {
+                            listIdInterTemp.remove(0);
+                        }
+                        if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            dismissLoadingDialog();
+                        }
+                        loadInterAdsLoadAndShow(activity, listIdInterTemp, interCallback, remoteKey);
+                    }
+                });
+    }
+
+    public void showInterAdsLoadAndShowWithNativeAfterInter(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, String remoteKey, boolean isShowNativeAfterInter) {
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+            Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+
+            if (isShowNativeAfterInter) {
+                startNativeAfterInter(activity, interCallback);
+            } else {
+                interCallback.onNextAction();
+            }
+            return;
+        }
+        if (mInterstitialAd == null) {
+            Log.d(TAG, "INTER: The interstitial ad wasn't ready yet. " + remoteKey);
+            if (isShowNativeAfterInter) {
+                startNativeAfterInter(activity, interCallback);
+            } else {
+                interCallback.onNextAction();
+            }
+            return;
+        }
+        if (!isLoadInterAdsIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
+            mInterstitialAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdClicked() {
+                    AppOpenManager.isLastActionClickAd = true;
+                    // Called when a click is recorded for an ad.
+                    Log.d(TAG, "INTER: Ad was clicked. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                    interCallback.onAdClicked();
+                }
+
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    // Called when ad is dismissed.
+                    // Set the ad reference to null so you don't show the ad a second time.
+                    Log.d(TAG, "INTER: Ad dismissed fullscreen content. " + remoteKey);
+                    interCallback.onAdDismissedFullScreenContent();
+                    if (!openActivityAfterShowInterAds) {
+                        if (isShowNativeAfterInter) {
+                            startNativeAfterInter(activity, interCallback);
+                        } else {
+                            interCallback.onNextAction();
+                        }
+                    }
+                    isInterOrRewardedShowing = false;
+                    lastTimeDismissInter = System.currentTimeMillis();
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    // Called when ad fails to show.
+                    Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + remoteKey);
+                    interCallback.onAdFailedToShowFullScreenContent();
+                    if (!openActivityAfterShowInterAds) {
+                        if (isShowNativeAfterInter) {
+                            startNativeAfterInter(activity, interCallback);
+                        } else {
+                            interCallback.onNextAction();
+                        }
+                    }
+                    isInterOrRewardedShowing = false;
+                    removeHandlerInterAds();
+                }
+
+                @Override
+                public void onAdImpression() {
+                    // Called when an impression is recorded for an ad.
+                    Log.d(TAG, "INTER: Ad recorded an impression. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                    interCallback.onAdImpression();
+                }
+
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    // Called when ad is shown.
+                    Log.d(TAG, "INTER: Ad showed fullscreen content. " + remoteKey);
+                    interCallback.onAdShowedFullScreenContent();
+                    isInterOrRewardedShowing = true;
+                    removeHandlerInterAds();
+                }
+            });
+            isInterOrRewardedShowing = true;
+            if (openActivityAfterShowInterAds) {
+                if (isShowNativeAfterInter) {
+                    startNativeAfterInter(activity, interCallback);
+                } else {
+                    interCallback.onNextAction();
+                }
+            }
+            mInterstitialAd.setImmersiveMode(true);
+            mInterstitialAd.show(activity);
+        }
+    }
+
+    private void startNativeAfterInter(Activity activity, InterCallback interCallback) {
+        NativeAfterInterActivity.Companion.setInterCallback(interCallback);
+        Intent intent = new Intent(activity, NativeAfterInterActivity.class);
+        activity.startActivity(intent);
     }
 
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {

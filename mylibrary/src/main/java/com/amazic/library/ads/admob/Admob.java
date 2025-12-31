@@ -775,7 +775,7 @@ public class Admob {
         }, 250);
     }
 
-    public void showInterAdsSplashDelay(AppCompatActivity activity, InterCallback interCallback, boolean isShowNativeAfterInter) {
+    public void showInterAdsSplashDelay(AppCompatActivity activity, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -795,8 +795,16 @@ public class Admob {
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "SPLASH: The interstitial ad wasn't ready yet.");
             AppOpenManager.getInstance().setEnableResume(true);
-            if (isShowNativeAfterInter) {
-                startNativeAfterInter(activity, interCallback);
+            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (isConfigShowNativeAfterInter) {
+                    if (isEmptyListNativeAfterInter) {
+                        interCallback.onNextAction();
+                    } else {
+                        startNativeAfterInter(activity, interCallback);
+                    }
+                } else {
+                    interCallback.onNextAction();
+                }
             } else {
                 interCallback.onNextAction();
             }
@@ -827,8 +835,16 @@ public class Admob {
                         interCallback.onAdDismissedFullScreenContent();
                         AppOpenManager.getInstance().setEnableResume(true);
                         if (!openActivityAfterShowInterAds) {
-                            if (isShowNativeAfterInter) {
-                                startNativeAfterInter(activity, interCallback);
+                            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                                if (isConfigShowNativeAfterInter) {
+                                    if (isEmptyListNativeAfterInter) {
+                                        interCallback.onNextAction();
+                                    } else {
+                                        startNativeAfterInter(activity, interCallback);
+                                    }
+                                } else {
+                                    interCallback.onNextAction();
+                                }
                             } else {
                                 interCallback.onNextAction();
                             }
@@ -844,8 +860,16 @@ public class Admob {
                         Log.e(TAG, "SPLASH: Ad failed to show fullscreen content.");
                         interCallback.onAdFailedToShowFullScreenContent();
                         if (isSplashResume && !openActivityAfterShowInterAds) {
-                            if (isShowNativeAfterInter) {
-                                startNativeAfterInter(activity, interCallback);
+                            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                                if (isConfigShowNativeAfterInter) {
+                                    if (isEmptyListNativeAfterInter) {
+                                        interCallback.onNextAction();
+                                    } else {
+                                        startNativeAfterInter(activity, interCallback);
+                                    }
+                                } else {
+                                    interCallback.onNextAction();
+                                }
                             } else {
                                 interCallback.onNextAction();
                             }
@@ -902,12 +926,25 @@ public class Admob {
                     AppOpenManager.getInstance().setEnableResume(false);
                     if (openActivityAfterShowInterAds) {
                         Log.d(TAG, "SPLASH: showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
-                        if (isShowNativeAfterInter) {
-                            startNativeAfterInter(activity, interCallback);
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isConfigShowNativeAfterInter) {
+                                if (isEmptyListNativeAfterInter) {
+                                    Log.d(TAG, "SPLASH: showInterAdsSplash: isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
+                                    interCallback.onNextAction();
+                                } else {
+                                    Log.d(TAG, "SPLASH: showInterAdsSplash: show Native After Inter");
+                                    startNativeAfterInter(activity, interCallback);
+                                }
+                            } else {
+                                Log.d(TAG, "SPLASH: showInterAdsSplash: onNextAction");
+                                interCallback.onNextAction();
+                            }
                         } else {
+                            Log.d(TAG, "SPLASH: showInterAdsSplash: onNextAction init set off Native After Inter");
                             interCallback.onNextAction();
                         }
                     }
+                    Log.d(TAG, "SPLASH: showInterAdsSplash: show Inter");
                     mInterstitialAdSplash.setImmersiveMode(true);
                     mInterstitialAdSplash.show(activity);
                 } else {
@@ -1372,7 +1409,9 @@ public class Admob {
         NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative);
         startTime = System.currentTimeMillis();
 
-        boolean isShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
+        boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
+
+        boolean isEmptyListNativeAfterInter = AdmobApi.getInstance().getListIDByName(adsKeyNative).isEmpty();
 
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
@@ -1383,8 +1422,16 @@ public class Admob {
             }
             if (interCallback != null) {
                 isLoadInterSplashIdTimeout = true;
-                if (isShowNativeAfterInter) {
-                    startNativeAfterInter(activity, interCallback);
+                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (isConfigShowNativeAfterInter) {
+                        if (isEmptyListNativeAfterInter) {
+                            interCallback.onNextAction();
+                        } else {
+                            startNativeAfterInter(activity, interCallback);
+                        }
+                    } else {
+                        interCallback.onNextAction();
+                    }
                 } else {
                     interCallback.onNextAction();
                 }
@@ -1399,7 +1446,7 @@ public class Admob {
             public void run() {
                 Log.d(TAG, "Đã đủ 7 giây đếm ngược.");
                 isTimerDelayFinished = true;
-                checkConditionAdsSplash(activity, interCallback, isShowNativeAfterInter);
+                checkConditionAdsSplash(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
             }
         };
         handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
@@ -1442,7 +1489,7 @@ public class Admob {
                         interCallback.onAdLoaded(interstitialAd);
                         mInterstitialAdSplash = interstitialAd;
                         isAdLoadAdsSplashFinished = true;
-                        checkConditionAdsSplash(activity, interCallback, isShowNativeAfterInter);
+                        checkConditionAdsSplash(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
                         removeHandlerSplashAds();
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
@@ -1464,7 +1511,7 @@ public class Admob {
                 });
     }
 
-    private void checkConditionAdsSplash(AppCompatActivity activity, InterCallback interCallback, boolean isShowNativeAfterInter) {
+    private void checkConditionAdsSplash(AppCompatActivity activity, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             Log.d(TAG, "removeHandlerDelayAdsSplash");
             removeHandlerDelayAdsSplash();
@@ -1474,7 +1521,7 @@ public class Admob {
             String timeFormatted = String.format("%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
             Log.d(TAG, "===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây");
 
-            showInterAdsSplashDelay(activity, interCallback, isShowNativeAfterInter);
+            showInterAdsSplashDelay(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
             removeHandlerDelayAdsSplash();
         }
 

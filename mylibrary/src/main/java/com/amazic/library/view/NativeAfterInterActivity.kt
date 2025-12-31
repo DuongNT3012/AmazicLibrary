@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.graphics.Rect
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.Window
 import android.view.WindowManager
 import android.widget.FrameLayout
@@ -36,7 +37,7 @@ class NativeAfterInterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_native_after_inter)
 
         frAds = findViewById(R.id.fr_ads)
-
+        Log.d("Admob", "SPLASH: showInterAdsSplash: Show Screen Native After Inter");
         NativeAfterInterManager.showPreloadNativeAfterInter(
             frAds,
             this,

@@ -12,10 +12,13 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.callback.NativeCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
+
+import java.util.Random;
 
 public class NativeManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
@@ -38,6 +41,9 @@ public class NativeManager implements LifecycleEventObserver {
     private int timeOutCallAds = 12000;
     private boolean canLoadMainNative = true;
     private boolean canLoadSecondaryNative = true;
+    private String remoteKeyAdNativeDisplayOrder = null;
+    private int randomPercentShowNativeMain = 100;
+    private boolean isShowNativeSecond = false;
 
     public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey) {
         this.builder = builder;
@@ -59,7 +65,18 @@ public class NativeManager implements LifecycleEventObserver {
         this.lifecycleOwner.getLifecycle().addObserver(this);
     }
 
-    public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey, String remoteKeySecondary, String remoteKeyBackup) {
+    public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey, String remoteKeySecondary, String remoteKeyAdNativeDisplayOrder) {
+        this.builder = builder;
+        this.context = context;
+        this.remoteKey = remoteKey;
+        this.remoteKeySecondary = remoteKeySecondary;
+        this.remoteKeyBackup = remoteKey;
+        this.lifecycleOwner = lifecycleOwner;
+        this.lifecycleOwner.getLifecycle().addObserver(this);
+        this.remoteKeyAdNativeDisplayOrder = remoteKeyAdNativeDisplayOrder;
+    }
+
+    public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey, String remoteKeySecondary, String remoteKeyAdNativeDisplayOrder, String remoteKeyBackup) {
         this.builder = builder;
         this.context = context;
         this.remoteKey = remoteKey;
@@ -67,6 +84,7 @@ public class NativeManager implements LifecycleEventObserver {
         this.remoteKeyBackup = remoteKeyBackup;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
+        this.remoteKeyAdNativeDisplayOrder = remoteKeyAdNativeDisplayOrder;
     }
 
     @Override
@@ -74,6 +92,7 @@ public class NativeManager implements LifecycleEventObserver {
         switch (event) {
             case ON_CREATE:
                 Log.d(TAG, "onStateChanged: ON_CREATE");
+                randomPercentShowNativeMain = (int) (Math.random() * 101);
                 loadNativeFloor(builder.maxRequest);
                 break;
             case ON_RESUME:
@@ -165,9 +184,24 @@ public class NativeManager implements LifecycleEventObserver {
             if (builder.nativeAdViewSecondary != null)
                 builder.nativeAdViewSecondary.setVisibility(View.GONE);
         }
+        //check show native Main Or Second first
+        if (remoteKeyAdNativeDisplayOrder != null) {
+            long percentRemote = RemoteConfigHelper.getInstance().get_config_long(context, remoteKeyAdNativeDisplayOrder);
+            isShowNativeSecond = randomPercentShowNativeMain > percentRemote;
+            Log.d(TAG, "percent show Native Second: randomPercentShowNativeMain = " + randomPercentShowNativeMain + ", percentRemote = " + percentRemote);
+        }
+        //
+
         handleTimeoutCallNative();
-        loadMainNative();
-        loadSecondaryNative();
+        if(isShowNativeSecond){
+            //show ads native second len dau
+            loadSecondaryNative();
+            loadMainNative();
+        }else {
+            //show ads native main len dau
+            loadMainNative();
+            loadSecondaryNative();
+        }
     }
 
     private void loadMainNative() {
@@ -190,6 +224,7 @@ public class NativeManager implements LifecycleEventObserver {
                     super.onAdImpression();
                     Log.d(TAG, "onAdImpression: Main");
                     builder.getCallback().onAdImpression();
+                    handleImpressionNative();
                     startReloadNative();
                 }
 
@@ -199,6 +234,7 @@ public class NativeManager implements LifecycleEventObserver {
                     builder.getCallback().onAdClicked();
                     Log.d(TAG, "onAdClicked: Main");
                 }
+
                 @Override
                 public void onAdFailedToLoad(LoadAdError loadAdError) {
                     super.onAdFailedToLoad(loadAdError);
@@ -234,7 +270,8 @@ public class NativeManager implements LifecycleEventObserver {
                     super.onAdImpression();
                     Log.d(TAG, "onAdImpression: Secondary");
                     builder.getCallback().onAdImpression();
-                    handleImpressionNativeSecondary();
+//                    handleImpressionNativeSecondary();
+                    handleImpressionNative();
                     startReloadNative();
                 }
 
@@ -287,6 +324,28 @@ public class NativeManager implements LifecycleEventObserver {
                     builder.nativeAdViewSecondary.setVisibility(View.GONE);
                 builder.nativeAdViewMain.setVisibility(View.VISIBLE);
                 builder.shimmerFrameLayout.setVisibility(View.GONE);
+            }, 800);
+        }
+    }
+
+    private void handleImpressionNative() {
+        if (myNativeAdMain != null) {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (isShowNativeSecond) {
+                    Log.d(TAG, "onAdImpression: Second - isShowNativeSecond = "+isShowNativeSecond);
+                    //show ads native second len dau
+                    if (builder.nativeAdViewMain != null)
+                        builder.nativeAdViewMain.setVisibility(View.GONE);
+                    builder.nativeAdViewSecondary.setVisibility(View.VISIBLE);
+                    builder.shimmerFrameLayout.setVisibility(View.GONE);
+                } else {
+                    Log.d(TAG, "onAdImpression: Second - isShowNativeSecond = "+isShowNativeSecond);
+                    //show ads native main len dau
+                    if (builder.nativeAdViewSecondary != null)
+                        builder.nativeAdViewSecondary.setVisibility(View.GONE);
+                    builder.nativeAdViewMain.setVisibility(View.VISIBLE);
+                    builder.shimmerFrameLayout.setVisibility(View.GONE);
+                }
             }, 800);
         }
     }
@@ -369,7 +428,7 @@ public class NativeManager implements LifecycleEventObserver {
 
     private void startReloadNative() {
         Log.d(TAG, "startReloadNative: " + (countDownTimer != null)
-                + " && " + (this.lifecycleOwner.getLifecycle().getCurrentState() )
+                + " && " + (this.lifecycleOwner.getLifecycle().getCurrentState())
                 + " && " + !isTimerRunning);
         if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED && !isTimerRunning) {
             Log.d(TAG, "startReloadNative: ok");
@@ -397,5 +456,9 @@ public class NativeManager implements LifecycleEventObserver {
 
     public void setTimeOutCallAds(int timeOutCallAds) {
         this.timeOutCallAds = timeOutCallAds;
+    }
+
+    public void setRemoteKeyAdNativeDisplayOrder(String remoteKeyAdNativeDisplayOrder) {
+        this.remoteKeyAdNativeDisplayOrder = remoteKeyAdNativeDisplayOrder;
     }
 }

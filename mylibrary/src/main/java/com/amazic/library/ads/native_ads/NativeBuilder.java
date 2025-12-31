@@ -79,7 +79,7 @@ public class NativeBuilder {
 
         if (useNewAdLoading) {
             flAd.removeAllViews();
-            nativeAdViewSecondary = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNative, null);
+            nativeAdViewSecondary = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNativeMeta, null);
             nativeAdViewMain.setVisibility(View.GONE);
             nativeAdViewSecondary.setVisibility(View.GONE);
             flAd.addView(nativeAdViewSecondary);

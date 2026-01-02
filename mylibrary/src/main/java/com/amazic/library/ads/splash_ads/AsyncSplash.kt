@@ -190,7 +190,7 @@ class AsyncSplash {
         this.keyIntervalBetweenInterstitial = "interval_between_interstitial"
         this.keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
         this.keyNativeAfterInter = "native_after_inter"
-        this.isShowNativeAfterInter = true
+        this.isShowNativeAfterInter = false
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {

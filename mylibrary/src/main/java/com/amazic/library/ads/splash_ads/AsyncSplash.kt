@@ -147,8 +147,10 @@ class AsyncSplash {
 
     private fun logEventStep(step: String) {
         val bundle = Bundle()
-        bundle.putString("time_between_step", "${System.currentTimeMillis() - timeLastStep}")
-        bundle.putString("time_to_step", "${timeStep1 - System.currentTimeMillis()}")
+        val time_between_step = "${System.currentTimeMillis() - timeLastStep}"
+        val time_to_step = "${System.currentTimeMillis() - timeStep1}"
+        bundle.putString("time_between_step", time_between_step)
+        bundle.putString("time_to_step", time_to_step)
         EventTrackingHelper.logEventWithMultipleParams(activity, normalizeFirebaseEventName("AsyncSplash_$step"), bundle)
         timeLastStep = System.currentTimeMillis()
     }

@@ -121,8 +121,41 @@ class AsyncSplash {
     //Set key interval inter
     private var keyIntervalBetweenInterstitial = "interval_between_interstitial"
     private var keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
+    private var timeStep1 = System.currentTimeMillis()
+    private var timeLastStep = System.currentTimeMillis()
+
+    fun normalizeFirebaseEventName(input: String): String {
+        if (input.isBlank()) return DEFAULT_EVENT_NAME
+
+        var name = input
+            .trim()
+            .lowercase()
+
+        name = name.replace(Regex("[^a-z0-9_]"), "_")
+
+        if (name.firstOrNull()?.isLetter() != true) {
+            name = "e_$name"
+        }
+
+        if (name.length > MAX_EVENT_NAME_LENGTH) {
+            name = name.take(MAX_EVENT_NAME_LENGTH)
+        }
+
+        return name.ifBlank { DEFAULT_EVENT_NAME }
+    }
+
+
+    private fun logEventStep(step: String) {
+        val bundle = Bundle()
+        bundle.putString("time_between_step", "${System.currentTimeMillis() - timeLastStep}")
+        bundle.putString("time_to_step", "${timeStep1 - System.currentTimeMillis()}")
+        EventTrackingHelper.logEventWithMultipleParams(activity, normalizeFirebaseEventName("AsyncSplash_$step"), bundle)
+        timeLastStep = System.currentTimeMillis()
+    }
 
     companion object {
+        private const val MAX_EVENT_NAME_LENGTH = 40
+        private const val DEFAULT_EVENT_NAME = "event_unknown"
         const val TECH_MANAGER = "TechManager"
         const val DETECT_TEST_AD = "DetectTestAd"
         private var INSTANCE: AsyncSplash? = null
@@ -145,6 +178,9 @@ class AsyncSplash {
     ) {
         resetVarToDefault()
         this.activity = activity
+        EventTrackingHelper.logEvent(activity, "${TAG}_INIT")
+        timeStep1 = System.currentTimeMillis()
+        timeLastStep = System.currentTimeMillis()
         this.adjustKey = adjustKey
         this.jsonIdAdsDefault = jsonIdAdsDefault
         this.linkServer = linkServer
@@ -384,11 +420,22 @@ class AsyncSplash {
         onNoInternetAction: () -> Unit,
         onAsyncSplashDone: () -> Unit
     ) {
+        logEventStep("handleAsync")
         Admob.getInstance().timeStart = System.currentTimeMillis()
         timeStartSplash = System.currentTimeMillis()
         lifecycleCoroutineScope.launch {
             delay(timeOutSplash)
             Log.d(TAG, "Timeout check $isShowAdsSplash $isNoInternetAction ")
+            logEventStep("AsyncTimeout")
+
+            val bundleEvent = Bundle()
+            bundleEvent.putString("isTimeout", "$isTimeout")
+            bundleEvent.putString("isNoInternetAction", "$isNoInternetAction")
+            EventTrackingHelper.logEventWithMultipleParams(
+                activity,
+                normalizeFirebaseEventName("AsyncSplash_VAsyncTimeout"),
+                bundleEvent
+            )
             if (!isShowAdsSplash && !isNoInternetAction) {
                 //1.log event timeout splash 12s
                 val bundle = Bundle()
@@ -430,6 +477,7 @@ class AsyncSplash {
             return@launch
         }
         if (NetworkUtil.isNetworkActive(activity)) {
+            logEventStep("AsyncInternet")
             EventTrackingHelper.logEvent(activity, "splash_have_internet_original")
             measureDownloadSpeed(urlCheckInternetSpeed) { speedMbps ->
                 Log.d(TAG, "measureDownloadSpeed log event: ${speedMbps.toInt()}")
@@ -441,6 +489,7 @@ class AsyncSplash {
                 )
             }
             lifecycleCoroutineScope.launch {
+                logEventStep("StartAsyncInit")
                 val asyncAdmobApi = async { initAdmobApi(activity) }
                 val asyncRemoteConfig = async { initRemoteConfig(activity) }
                 val asyncUMP = async { initAdsConsentManager(activity) }
@@ -459,6 +508,7 @@ class AsyncSplash {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
+                    logEventStep("DoneAsyncInit")
                     lifecycleCoroutineScope.launch {
                         loadBannerSplash(
                             activity,
@@ -469,9 +519,12 @@ class AsyncSplash {
                         )
                     }
                     try {
+                        logEventStep("StartIDApi")
                         //wait to load inter or open splash
                         asyncAdmobApi.await()
+                        logEventStep("DoneIDApi")
                     } catch (e: Exception) {
+                        logEventStep("IDApiFailed")
                         e.printStackTrace()
                     } finally {
                         val timeAsync = (System.currentTimeMillis() - timeSplashCheck) / 1000
@@ -483,6 +536,7 @@ class AsyncSplash {
                         )
                         onPrepareLoadInterOpenSplashAds?.invoke()
                         lifecycleCoroutineScope.launch {
+                            logEventStep("StartAdSplash")
                             var rateAoaInterSplash: String =
                                 RemoteConfigHelper.getInstance().get_config_string(
                                     activity,
@@ -534,6 +588,7 @@ class AsyncSplash {
                 }
             }
         } else {
+            logEventStep("AsyncNoInternet")
             if (!isShowAdsSplash && !isTimeout) {
                 onNoInternetAction.invoke()
                 isNoInternetAction = true
@@ -909,6 +964,14 @@ class AsyncSplash {
         interCallback: InterCallback?
     ) {
         Log.d(TAG, "showAdsSplash check $isTimeout $isNoInternetAction")
+        val bundle = Bundle()
+        bundle.putString("isTimeout", "$isTimeout")
+        bundle.putString("isNoInternetAction", "$isNoInternetAction")
+        EventTrackingHelper.logEventWithMultipleParams(
+            activity,
+            normalizeFirebaseEventName("AsyncSplash_showAdsSplash"),
+            bundle
+        )
         if (!isTimeout && !isNoInternetAction) {
             adsSplash?.showAdsSplashApi(
                 activity,

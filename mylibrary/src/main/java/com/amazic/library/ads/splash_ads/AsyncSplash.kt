@@ -38,6 +38,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.URL
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 import kotlin.system.measureTimeMillis
@@ -415,6 +416,20 @@ class AsyncSplash {
         this.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
     }
 
+    private fun logEventDoneInit() {
+        val bundle = Bundle()
+        val time = String.format(
+            Locale.US, "%.1f_%.2f_%.3f_%.4f",
+            timeInitAdmobApi / 1000f,
+            timeInitRemoteConfig / 1000f,
+            timeInitAdsConsentManager / 1000f,
+            timeInitTechManager / 1000f
+        )
+        bundle.putString("time_between_step", time)
+        EventTrackingHelper.logEventWithMultipleParams(activity, normalizeFirebaseEventName("AsyncSplash_doneInit"), bundle)
+        timeLastStep = System.currentTimeMillis()
+    }
+
     fun handleAsync(
         context: Context,
         lifecycleOwner: LifecycleOwner,
@@ -529,6 +544,7 @@ class AsyncSplash {
                         logEventStep("IDApiFailed")
                         e.printStackTrace()
                     } finally {
+                        logEventDoneInit()
                         val timeAsync = (System.currentTimeMillis() - timeSplashCheck) / 1000
                         EventTrackingHelper.logEventWithAParam(
                             activity,
@@ -644,12 +660,15 @@ class AsyncSplash {
         }
     }
 
+    private var timeInitRemoteConfig = 0L
     private suspend fun initRemoteConfig(
         activity: AppCompatActivity?
     ) = suspendCoroutine<Unit> { continuation ->
+        timeInitRemoteConfig = 0L
         if (isUseAppUpdateManager) {
             continuation.resume(Unit)
         } else {
+            val startTimeInitRemoteConfig = System.currentTimeMillis()
             EventTrackingHelper.logEvent(activity, "initRemoteConfig")
             //Handle remote config id ads timeout
             Handler(Looper.getMainLooper()).postDelayed({
@@ -663,6 +682,7 @@ class AsyncSplash {
                     )
                     EventTrackingHelper.logEvent(activity, "timeout_call_id_remote_config")
                     initWelcomeBack(activity)//17.09.2025
+                    timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
                 }
             }, timeOutCallIdRemoteConfig)
             var isResumed = false
@@ -715,6 +735,7 @@ class AsyncSplash {
                         RemoteConfigHelper.interval_interstitial_from_start
                     ) * 1000
                 )
+                timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
                 if (!isResumed) {
                     isResumed = true
                     continuation.resume(Unit)
@@ -725,8 +746,11 @@ class AsyncSplash {
         }
     }
 
+    private var timeInitAdsConsentManager = 0L
     private suspend fun initAdsConsentManager(activity: AppCompatActivity?) =
         suspendCoroutine { continuation ->
+            timeInitAdsConsentManager = 0L
+            val startTimeInitAdsConsentManager = System.currentTimeMillis()
             val adsConsentManager = AdsConsentManager(activity)
             var isResumed = false
             adsConsentManager.requestUMP {
@@ -738,22 +762,27 @@ class AsyncSplash {
                             AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass)
                         }
                     }
-                    continuation.resume(Unit)
+                    timeInitAdsConsentManager = System.currentTimeMillis() - startTimeInitAdsConsentManager
                     initAdsConsentManager = true
+                    continuation.resume(Unit)
                     Log.d(TAG, "initAdsConsentManager.")
                 }
             }
         }
 
+    private var timeInitTechManager = 0L
     private suspend fun initTechManager(activity: AppCompatActivity?) =
         suspendCoroutine<Unit> { continuation ->
             var isResumed = false
+            timeInitTechManager = 0L
+            val startTimeInitTechManager = System.currentTimeMillis()
             if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
                 TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
                     if (it) {
                         isTech = true
                         AppOpenManager.getInstance().isEnableResume = false
                     }
+                    timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
                     if (!isResumed) {
                         isResumed = true
                         continuation.resume(Unit)
@@ -762,15 +791,18 @@ class AsyncSplash {
                     }
                 }
             } else {
+                timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
                 continuation.resume(Unit)
                 initTechManager = true
                 Log.d(TAG, "initTechManager else.")
             }
         }
 
+    private var timeInitAdmobApi = 0L
     private suspend fun initAdmobApi(activity: AppCompatActivity?) =
         suspendCoroutine<Unit> { continuation ->
             if (!isUseIdAdsFromRemoteConfig) {
+                val startTimeInitAdmobApi = System.currentTimeMillis()
                 AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
                 AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
                 AdmobApi.getInstance().init(activity, linkServer, appId, object : ApiCallback() {
@@ -786,6 +818,7 @@ class AsyncSplash {
                         }
                     }
                 })
+                timeInitAdmobApi = System.currentTimeMillis() - startTimeInitAdmobApi
             } else {
                 continuation.resume(Unit)
             }

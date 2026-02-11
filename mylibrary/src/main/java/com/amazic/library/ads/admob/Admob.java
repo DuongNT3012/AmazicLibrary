@@ -78,6 +78,7 @@ import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoa
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Admob {
     private static Admob INSTANCE;
@@ -285,7 +286,7 @@ public class Admob {
     }
 
     public void removeHandlerSplashAds() {
-        if (handlerTimeoutSplash != null && runnable != null) {
+        if (runnable != null) {
             handlerTimeoutSplash.removeCallbacks(runnable);
             handlerTimeoutSplash.removeCallbacksAndMessages(null);
             //handlerTimeoutSplash = null;
@@ -1523,10 +1524,10 @@ public class Admob {
                         bundle.putString("failed_message", "load_" + loadAdError.getMessage());
                         EventTrackingHelper.logEventWithMultipleParams(activity, "splash_delay_failed", bundle);
                         interCallback.onAdFailedToLoad();
-                        if (!listIdInterTemp.isEmpty()) {
+                        if (listIdInterTemp.size() > 1) {
                             listIdInterTemp.remove(0);
+                            loadAndShowInterAdSplash(activity, listIdInterTemp, interCallback);
                         }
-                        loadAndShowInterAdSplash(activity, listIdInterTemp, interCallback);
                     }
                 });
     }
@@ -1538,9 +1539,9 @@ public class Admob {
             return;
         }
         if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
-            String timeFormatted = String.format("%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
+            String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
             Log.d(TAG, "===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây");
-
+            EventTrackingHelper.logEventWithAParam(activity, "Splash_time_wait", "time_to_step", timeFormatted);
             showInterAdsSplashDelay(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
             removeHandlerDelayAdsSplash();
         }

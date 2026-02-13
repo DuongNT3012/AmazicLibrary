@@ -168,6 +168,7 @@ public class BannerManager implements LifecycleEventObserver {
                 if (builder.getFrContainer() != null) {
                     builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
                     builder.getFrContainer().addView(builder.bannerAdViewMain);
+                    builder.getFrContainer().removeView(builder.shimmerBanner);
                 }
             }
 
@@ -214,6 +215,7 @@ public class BannerManager implements LifecycleEventObserver {
                 if (builder.getFrContainer() != null) {
                     builder.getFrContainer().removeView(builder.bannerAdViewMain);
                     builder.getFrContainer().addView(builder.bannerAdViewSecondary);
+                    builder.getFrContainer().removeView(builder.shimmerBanner);
                 }
             }
 
@@ -282,6 +284,7 @@ public class BannerManager implements LifecycleEventObserver {
                 if (builder.getFrContainer() != null) {
                     builder.getFrContainer().removeView(builder.bannerAdViewMain);
                     builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
+                    builder.getFrContainer().removeView(builder.shimmerBanner);
                     builder.getFrContainer().addView(builder.bannerAdViewBackup);
                 }
             }

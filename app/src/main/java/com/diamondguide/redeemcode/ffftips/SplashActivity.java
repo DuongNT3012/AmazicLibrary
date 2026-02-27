@@ -134,13 +134,13 @@ public class SplashActivity extends AppCompatActivity {
 
     private void handleAsyncSplashJustOnce() {
         if (!isHandleAsyncSplash) {
-            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
+            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "ca-app-pub-3940256099942544~3347511713", jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
             AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
             AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
-            AsyncSplash.Companion.getInstance().setPreloadResumeAds(true);
+            AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
             AsyncSplash.Companion.getInstance().setUseAdPreloadingResume(true);
             AsyncSplash.Companion.getInstance().setShowNativeAfterInter(false);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
@@ -152,9 +152,9 @@ public class SplashActivity extends AppCompatActivity {
 //            ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
 //            listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
 //            AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
-            //AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
-            AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
-            //AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
+            AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
+//            AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
+//            AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
             ArrayList<String> listTurnOffRemote = new ArrayList<>();
             //listTurnOffRemote.add("native_wb");
             AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
@@ -162,7 +162,7 @@ public class SplashActivity extends AppCompatActivity {
             listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
-            AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("appopen_resume_custom_key");
+//            AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("appopen_resume_custom_key");
             AsyncSplash.Companion.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");
             AsyncSplash.Companion.getInstance().setKeyIntervalInterstitialFromStart("interval_interstitial_from_start");
             AsyncSplash.Companion.getInstance().setShowBannerSplash(binding.bannerContainerView, listIdBannerSplash, "banner_splash");

@@ -675,12 +675,12 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             return;
         }
         // If the app open ad is not available yet, invoke the callback then load the ad.
-        if (!isAdAvailable()) {
-            Log.d(TAG, " APP Open Preload: The app open ad is not ready yet.");
-            //onShowAdCompleteListener.onShowAdComplete();
-            loadAdPreloadNotCheckRemote(activity, listIdOpenResume, remoteKey);
-            return;
-        }
+//        if (!isAdAvailable()) {
+//            Log.d(TAG, " APP Open Preload: The app open ad is not ready yet.");
+//            //onShowAdCompleteListener.onShowAdComplete();
+//            loadAdPreloadNotCheckRemote(activity, listIdOpenResume, remoteKey);
+//            return;
+//        }
         // If the app open ad is already showing, do not show the ad again.
         if (isShowingAd) {
             Log.d(TAG, "APP Open Preload: The app open ad is already showing.");
@@ -729,7 +729,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         if (ad != null) {
             ad.setOnPaidEventListener(
                     adValue -> {
-
+                        ad.getResponseInfo();
+                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
                     }
             );
 
@@ -1305,14 +1306,14 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
         Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
-//        if (AsyncSplash.Companion.getInstance().getUseAdPreloadingResume()) {
-//            showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);
-//        } else {
+        if (AsyncSplash.Companion.getInstance().getUseAdPreloadingResume()) {
+            showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);
+        } else {
             if (AsyncSplash.Companion.getInstance().getPreloadResumeAds()) {
                 showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, remoteKey);
             } else {
                 showAdIfAvailableWelcomeBackLoadAndShow(currentActivity, listIdOpenResumeAd, null, remoteKey, true);
             }
-//        }
+        }
     }
 }

@@ -25,6 +25,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.DefaultLifecycleObserver;
 import androidx.lifecycle.Lifecycle;
@@ -63,14 +64,18 @@ import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.ResponseInfo;
 import com.google.android.gms.ads.VideoController;
 import com.google.android.gms.ads.VideoOptions;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
+import com.google.android.gms.ads.interstitial.InterstitialAdPreloader;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
 import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.gms.ads.preload.PreloadCallbackV2;
+import com.google.android.gms.ads.preload.PreloadConfiguration;
 import com.google.android.gms.ads.rewarded.RewardedAd;
 import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
@@ -641,6 +646,144 @@ public class Admob {
         Intent intent = new Intent(activity, NativeAfterInterActivity.class);
         activity.startActivity(intent);
     }
+
+    //Inter Preload
+    public void loadInterAdPreload(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey, int numberLoad) {
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
+            Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdInter.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
+            interCallback.onAdFailedToLoad();
+            return;
+        }
+        EventTrackingHelper.logEvent(context, remoteKey + "_true");
+
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInter.get(0)).setBufferSize(numberLoad).build();
+
+        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+            @Override
+            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+                super.onAdFailedToPreload(s, adError);
+                Log.d(TAG, "INTER Ad Preload: Preload ad " + s + " failed to load with error: " + adError.getMessage());
+            }
+
+            @Override
+            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+                super.onAdPreloaded(s, responseInfo);
+                Log.d("Admob", "INTER Ad Preload: Preload ad for " + s + " is available.");
+
+            }
+
+
+            @Override
+            public void onAdsExhausted(@NonNull String s) {
+                super.onAdsExhausted(s);
+                Log.d(TAG, "INTER Ad Preload: Preload ad for " + s + " is exhausted.");
+            }
+        };
+
+        InterstitialAdPreloader.start(listIdInter.get(0), configuration, callback);
+
+    }
+
+    public void showInterAdPreload(Activity activity, List<String> listIdInter, InterCallback interCallback, boolean isShowLoading, String remoteKey) {
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+            Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            interCallback.onNextAction();
+            return;
+        }
+        if (System.currentTimeMillis() - lastTimeDismissInter < timeInterval) {
+            Log.d(TAG, "INTER Ad Preload: Not show interstitial because the time interval. " + remoteKey);
+            interCallback.onNextAction();
+            return;
+        }
+        if (System.currentTimeMillis() - timeStart < timeIntervalFromStart) {
+            Log.d(TAG, "INTER Ad Preload: Not show interstitial because the time interval from start. " + remoteKey);
+            interCallback.onNextAction();
+            return;
+        }
+//        if (!InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
+//            Log.d(TAG, "INTER Ad Preload: The interstitial ad wasn't ready yet. " + remoteKey);
+//            interCallback.onNextAction();
+//            return;
+//        }
+        if (isShowLoading) {
+            loadingAdsDialog = new LoadingAdsDialog(activity);
+            if (!activity.isFinishing() && !activity.isDestroyed() && !loadingAdsDialog.isShowing()) {
+                loadingAdsDialog.show();
+            }
+        }
+
+        InterstitialAd ad = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+        if(ad != null){
+            ad.setOnPaidEventListener(
+                    adValue -> {
+
+                    }
+            );
+
+            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdClicked() {
+                    AppOpenManager.isLastActionClickAd = true;
+                    // Called when a click is recorded for an ad.
+                    Log.d(TAG, "INTER Ad Preload: Ad was clicked. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                    interCallback.onAdClicked();
+                }
+
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    Log.d(TAG, "INTER Ad Preload: Ad dismissed fullscreen content. " + remoteKey);
+                    interCallback.onAdDismissedFullScreenContent();
+                    if (!openActivityAfterShowInterAds) {
+                        interCallback.onNextAction();
+                    }
+                    isInterOrRewardedShowing = false;
+                    lastTimeDismissInter = System.currentTimeMillis();
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    Log.e(TAG, "INTER Ad Preload: Ad failed to show fullscreen content. " + remoteKey);
+                    interCallback.onAdFailedToShowFullScreenContent();
+                    if (!openActivityAfterShowInterAds) {
+                        interCallback.onNextAction();
+                    }
+                    if (!activity.isFinishing() && !activity.isDestroyed() && isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        dismissLoadingDialog();
+                    }
+                    isInterOrRewardedShowing = false;
+                }
+
+                @Override
+                public void onAdImpression() {
+                    Log.d(TAG, "INTER Ad Preload: Ad recorded an impression. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                    interCallback.onAdImpression();
+                }
+
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    super.onAdShowedFullScreenContent();
+                    Log.d(TAG, "INTER Ad Preload: Ad showed fullscreen content. " + remoteKey);
+                    interCallback.onAdShowedFullScreenContent();
+                    if (!activity.isFinishing() && !activity.isDestroyed() && isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        dismissLoadingDialog();
+                    }
+                    isInterOrRewardedShowing = true;
+                }
+            });
+            isInterOrRewardedShowing = true;
+            if (openActivityAfterShowInterAds) {
+                interCallback.onNextAction();
+            }
+            ad.show(activity);
+        }
+
+    }
+
+    //End Inter Preload
 
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
@@ -1503,7 +1646,7 @@ public class Admob {
                         // The mInterstitialAd reference will be null until
                         // an ad is loaded.
                         Log.i(TAG, "SPLASH: Ad was loaded inter splash.");
-                        EventTrackingHelper.logEvent(activity,"splash_delay_true");
+                        EventTrackingHelper.logEvent(activity, "splash_delay_true");
                         interCallback.onAdLoaded(interstitialAd);
                         mInterstitialAdSplash = interstitialAd;
                         isAdLoadAdsSplashFinished = true;

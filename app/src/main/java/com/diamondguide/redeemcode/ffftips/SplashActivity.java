@@ -15,6 +15,7 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
+import com.amazic.library.ads.inter_ads.InterManager;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 /*import com.amazic.library.iap.IAPManager;
@@ -139,7 +140,8 @@ public class SplashActivity extends AppCompatActivity {
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
             AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
-            AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
+            AsyncSplash.Companion.getInstance().setPreloadResumeAds(true);
+            AsyncSplash.Companion.getInstance().setUseAdPreloadingResume(true);
             AsyncSplash.Companion.getInstance().setShowNativeAfterInter(false);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
@@ -187,6 +189,8 @@ public class SplashActivity extends AppCompatActivity {
                     Admob.getInstance().setCustomAnimationDialog(listAnim);
                     AppOpenManager.getInstance().setCustomAnimationDialog(listAnim);*/
                             NativeAfterInterManager.preloadNativeAfterInter(SplashActivity.this, "native_after_inter", "native_after_inter");
+
+                            InterManager.loadInterAdPreload(SplashActivity.this, "inter_all","inter_all",2);
                             return null;
                         }
                     });

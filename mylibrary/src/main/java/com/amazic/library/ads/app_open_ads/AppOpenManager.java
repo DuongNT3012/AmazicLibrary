@@ -33,7 +33,11 @@ import com.google.android.gms.ads.AdError;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.FullScreenContentCallback;
 import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.ResponseInfo;
 import com.google.android.gms.ads.appopen.AppOpenAd;
+import com.google.android.gms.ads.appopen.AppOpenAdPreloader;
+import com.google.android.gms.ads.preload.PreloadCallbackV2;
+import com.google.android.gms.ads.preload.PreloadConfiguration;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -619,6 +623,178 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }, 250);
     }
 
+    //Ad Preload
+    public void loadAdPreloadNotCheckRemote(Activity activity, List<String> listIdOpenResume, String remoteKey) {
+        // Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() /*|| IAPManager.getInstance().isPurchase()*/) {
+            Log.d(TAG, "APP Open Preload: Check condition loadAdNotCheckRemote. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResume.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            return;
+        }
+        // Do not load ad if there is an unused ad or one is already loading.
+        if (isLoadingAd || isAdAvailable()) {
+            Log.d(TAG, "APP Open Preload: Do not load ad if there is an unused ad or one is already loading.");
+            return;
+        }
+        isLoadingAd = true;
+
+        //log event can request ads
+        EventTrackingHelper.logEvent(activity, remoteKey + "_true");
+        //end log event can request ads
+
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResume.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
+
+        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+            @Override
+            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+                Log.d(TAG, "APP Open Preload: Preload ad " + s + " had an error : " + adError.getMessage() + ".");
+            }
+
+            @Override
+            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+                Log.d(TAG, "APP Open Preload: Preload ad for " + s + " is available.");
+            }
+
+            @Override
+            public void onAdsExhausted(@NonNull String s) {
+                Log.d(TAG, "APP Open Preload: Preload ad  " + s + " is exhausted.");
+            }
+        };
+
+        AppOpenAdPreloader.start(listIdOpenResume.get(0), configuration, callback);
+    }
+
+    private void showAdPreload(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
+        Log.d(TAG, "APP Open Preload: Ads Click:" + isLastActionClickAd + " && " + !isShowAdResumeAfterAdClick);
+        if (isLastActionClickAd && !isShowAdResumeAfterAdClick) {
+            isLastActionClickAd = false;
+            return;
+        }
+        //Ads resume is disabled
+        if (!isEnableResume) {
+            Log.d(TAG, "APP Open Preload: Ads resume is disabled.");
+            return;
+        }
+        // If the app open ad is not available yet, invoke the callback then load the ad.
+        if (!isAdAvailable()) {
+            Log.d(TAG, " APP Open Preload: The app open ad is not ready yet.");
+            //onShowAdCompleteListener.onShowAdComplete();
+            loadAdPreloadNotCheckRemote(activity, listIdOpenResume, remoteKey);
+            return;
+        }
+        // If the app open ad is already showing, do not show the ad again.
+        if (isShowingAd) {
+            Log.d(TAG, "APP Open Preload: The app open ad is already showing.");
+            return;
+        }
+        // Not show open ads if inter is showing
+        if (Admob.getInstance().isInterOrRewardedShowing()) {
+            Log.d(TAG, "APP Open Preload: Not show open ads because inter is showing.");
+            return;
+        }
+        //Not show open ads because currentActivity is null.
+        if (currentActivity == null) {
+            Log.d(TAG, "APP Open Preload: Not show open ads because currentActivity is null.");
+            return;
+        }
+        // Not show ads resume when activity is disabled
+        for (Class activityDisabled : disabledAppOpenList) {
+            if (activityDisabled != null)
+                if (activityDisabled.getName().equals(currentActivity.getClass().getName())) {
+                    Log.d(TAG, "APP Open Preload: onStart: activity is disabled " + activityDisabled.getName());
+                    return;
+                }
+        }
+        //show welcome back activity
+        if (welcomeBackClass != null && currentActivity.getClass() != welcomeBackClass && currentActivity.getClass() != AdActivity.class) {
+            currentActivity.startActivity(new Intent(currentActivity, welcomeBackClass));
+            if (!this.isShowWelcomeBelowAdsResume) {
+                return;
+            }
+        }
+        // Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+            Log.d(TAG, "APP Open Preload: Check condition showAdIfAvailable. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResume.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+            if (appOpenCallback != null) {
+                appOpenCallback.onAdFailedToShowFullScreenContent();
+            }
+            return;
+        }
+        loadingAdsResumeDialog = new LoadingAdsResumeDialog(activity);
+        if (!loadingAdsResumeDialog.isShowing()) {
+            loadingAdsResumeDialog.show();
+        }
+
+        AppOpenAd ad = AppOpenAdPreloader.pollAd(listIdOpenResume.get(0));
+
+        if (ad != null) {
+            ad.setOnPaidEventListener(
+                    adValue -> {
+
+                    }
+            );
+
+            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    Log.d(TAG, "APP Open Preload: Ad dismissed fullscreen content. " + remoteKey);
+                    appOpenAd = null;
+                    isShowingAd = false;
+                    if (appOpenCallback != null) {
+                        appOpenCallback.onAdDismissedFullScreenContent();
+                    }
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    Log.d(TAG, "APP Open Preload: Ad Failed To Show FullScreen Content. " + adError + ". " + remoteKey);
+                    appOpenAd = null;
+                    isShowingAd = false;
+                    if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                        loadingAdsResumeDialog.dismiss();
+                    }
+                    if (appOpenCallback != null) {
+                        appOpenCallback.onAdFailedToShowFullScreenContent();
+                    }
+                }
+
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    Log.d(TAG, "APP Open Preload: Ad showed fullscreen content. " + remoteKey);
+                    if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                        loadingAdsResumeDialog.dismiss();
+                    }
+                    if (appOpenCallback != null) {
+                        appOpenCallback.onAdShowedFullScreenContent();
+                    }
+                }
+
+                @Override
+                public void onAdClicked() {
+                    AppOpenManager.isLastActionClickAd = true;
+                    Log.d(TAG, "APP Open Preload: onAdClicked. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                    if (appOpenCallback != null) {
+                        appOpenCallback.onAdClicked();
+                    }
+                }
+
+                @Override
+                public void onAdImpression() {
+                    Log.d(TAG, "APP Open Preload: onAdImpression. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                    if (appOpenCallback != null) {
+                        appOpenCallback.onAdImpression();
+                    }
+                }
+            });
+            isShowingAd = true;
+            ad.show(activity);
+        }
+
+    }
+
+    //end
+
     public void showAdIfAvailableWelcomeBack(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResume.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
@@ -1129,10 +1305,14 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
         Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
-        if (AsyncSplash.Companion.getInstance().getPreloadResumeAds()) {
-            showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, remoteKey);
-        } else {
-            showAdIfAvailableWelcomeBackLoadAndShow(currentActivity, listIdOpenResumeAd, null, remoteKey, true);
-        }
+//        if (AsyncSplash.Companion.getInstance().getUseAdPreloadingResume()) {
+//            showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);
+//        } else {
+            if (AsyncSplash.Companion.getInstance().getPreloadResumeAds()) {
+                showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, remoteKey);
+            } else {
+                showAdIfAvailableWelcomeBackLoadAndShow(currentActivity, listIdOpenResumeAd, null, remoteKey, true);
+            }
+//        }
     }
 }

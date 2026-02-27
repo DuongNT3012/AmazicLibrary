@@ -81,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
                 true);
         //nativeBuilder.maxRequest = 10;
         //nativeBuilder.maxRequestReload = 10;
-        NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb","native_wb","ad_native_display_order");
+        NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb", "native_wb", "ad_native_display_order");
         nativeManager.setIntervalReloadNative(5000);
         nativeManager.setAlwaysReloadOnResume(true);
         nativeBuilder.setListIdAdMain(List.of("ca-app-pub-3940256099942544/2247696110"));
@@ -136,6 +136,22 @@ public class MainActivity extends AppCompatActivity {
                     },
                     "native_after_inter",
                     "native_after_inter"
+            );
+        });
+
+        binding.tvShowInterPreload.setOnClickListener(view -> {
+            InterManager.showInterAdPreload(
+                    this,
+                    "inter_all",
+                    "inter_all",
+                    new InterCallback() {
+                        @Override
+                        public void onNextAction() {
+                            super.onNextAction();
+                            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+                            startActivity(intent);
+                        }
+                    }, true
             );
         });
         //RewardManager.loadRewardAds(this, "rewarded", "rewarded");

@@ -35,6 +35,16 @@
         app:layout_constraintTop_toBottomOf="@id/tv_show_inter" />
 
     <TextView
+        android:id="@+id/tv_show_inter_preload"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:text="Show inter ads Preload"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_show_inter_native_after" />
+
+    <TextView
         android:id="@+id/tv_show_reward"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,7 +52,7 @@
         android:text="Show reward ads"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_show_inter_native_after" />
+        app:layout_constraintTop_toBottomOf="@id/tv_show_inter_preload" />
 
     <TextView
         android:id="@+id/tv_show_reward_inter"

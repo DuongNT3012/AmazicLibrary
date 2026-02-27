@@ -101,4 +101,68 @@ public class InterManager {
             }
         }, isShowLoading, remoteKey);
     }
+
+    //preload
+    public static void loadInterAdPreload(Context context, String adsKey, String remoteKey, int numberLoad) {
+        Admob.getInstance().loadInterAdPreload(context, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {
+            @Override
+            public void onAdLoaded(InterstitialAd interstitialAd) {
+
+            }
+        }, remoteKey, numberLoad);
+    }
+
+    public static void showInterAdPreload(Activity activity, String adsKey, String remoteKey, InterCallback interCallback, boolean isShowLoading){
+        Admob.getInstance().showInterAdPreload(activity, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback(){
+            @Override
+            public void onNextAction() {
+                super.onNextAction();
+                interCallback.onNextAction();
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                AppOpenManager.isLastActionClickAd = true;
+                interCallback.onAdClicked();
+            }
+
+            @Override
+            public void onAdDismissedFullScreenContent() {
+                super.onAdDismissedFullScreenContent();
+                interCallback.onAdDismissedFullScreenContent();
+            }
+
+            @Override
+            public void onAdFailedToLoad() {
+                super.onAdFailedToLoad();
+                interCallback.onAdFailedToLoad();
+            }
+
+            @Override
+            public void onAdFailedToShowFullScreenContent() {
+                super.onAdFailedToShowFullScreenContent();
+                interCallback.onAdFailedToShowFullScreenContent();
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                interCallback.onAdImpression();
+            }
+
+            @Override
+            public void onAdLoaded(InterstitialAd interstitialAd) {
+                super.onAdLoaded(interstitialAd);
+                interCallback.onAdLoaded(interstitialAd);
+            }
+
+            @Override
+            public void onAdShowedFullScreenContent() {
+                super.onAdShowedFullScreenContent();
+                interCallback.onAdShowedFullScreenContent();
+            }
+        }, isShowLoading, remoteKey);
+    }
+
 }

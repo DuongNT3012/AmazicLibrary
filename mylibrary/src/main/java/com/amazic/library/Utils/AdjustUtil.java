@@ -20,7 +20,7 @@ public class AdjustUtil {
         double valueMicros = adValue.getValueMicros() / 1000000d;
         Log.d("AdjustRevenue", "adName: " + adName + " - valueMicros: " + valueMicros);
         // send ad revenue info to Adjust
-        AdjustAdRevenue adRevenue = new AdjustAdRevenue(AdjustConfig.AD_REVENUE_ADMOB);
+        AdjustAdRevenue adRevenue = new AdjustAdRevenue("admob_sdk");
         adRevenue.setRevenue(valueMicros, adValue.getCurrencyCode());
         adRevenue.setAdRevenueNetwork(adName);
         Adjust.trackAdRevenue(adRevenue);

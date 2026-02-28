@@ -31,10 +31,10 @@ public abstract class AdsApplication extends Application implements Application.
         config.setLogLevel(LogLevel.VERBOSE);
         config.setFbAppId(getFacebookID());
         config.setDefaultTracker(getAppTokenAdjust());
-        config.setSendInBackground(true);
-        Adjust.onCreate(config);
+        config.enableSendingInBackground();
+        Adjust.initSdk(config);
         // Enable the SDK
-        Adjust.setEnabled(true);
+        Adjust.enable();
     }
 
     @Override

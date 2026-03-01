@@ -162,7 +162,7 @@ public class SplashActivity extends AppCompatActivity {
             listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
-//            AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("appopen_resume_custom_key");
+            AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("open_splash");
             AsyncSplash.Companion.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");
             AsyncSplash.Companion.getInstance().setKeyIntervalInterstitialFromStart("interval_interstitial_from_start");
             AsyncSplash.Companion.getInstance().setShowBannerSplash(binding.bannerContainerView, listIdBannerSplash, "banner_splash");
@@ -190,10 +190,18 @@ public class SplashActivity extends AppCompatActivity {
                     AppOpenManager.getInstance().setCustomAnimationDialog(listAnim);*/
                             NativeAfterInterManager.preloadNativeAfterInter(SplashActivity.this, "native_after_inter", "native_after_inter");
 
-                            InterManager.loadInterAdPreload(SplashActivity.this, "inter_all","inter_all",2);
                             return null;
                         }
                     });
+            AsyncSplash.Companion.getInstance().setOnInitAdmobDone(new Function0<Unit>() {
+                @Override
+                public Unit invoke() {
+                    Log.d("Admob", "initAdmob: done");
+                    InterManager.loadInterAdPreload(SplashActivity.this, "inter_all","inter_all",2);
+
+                    return null;
+                }
+            });
             isHandleAsyncSplash = true;
         }
     }

@@ -630,12 +630,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             Log.d(TAG, "APP Open Preload: Check condition loadAdNotCheckRemote. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResume.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             return;
         }
-        // Do not load ad if there is an unused ad or one is already loading.
-        if (isLoadingAd || isAdAvailable()) {
-            Log.d(TAG, "APP Open Preload: Do not load ad if there is an unused ad or one is already loading.");
-            return;
-        }
-        isLoadingAd = true;
 
         //log event can request ads
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
@@ -646,11 +640,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override
             public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+                isLoadingAd = false;
                 Log.d(TAG, "APP Open Preload: Preload ad " + s + " had an error : " + adError.getMessage() + ".");
             }
 
             @Override
             public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+                isLoadingAd = false;
                 Log.d(TAG, "APP Open Preload: Preload ad for " + s + " is available.");
             }
 
@@ -663,7 +659,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAdPreloader.start(listIdOpenResume.get(0), configuration, callback);
     }
 
-    private void showAdPreload(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
+    public void showAdPreload(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
         Log.d(TAG, "APP Open Preload: Ads Click:" + isLastActionClickAd + " && " + !isShowAdResumeAfterAdClick);
         if (isLastActionClickAd && !isShowAdResumeAfterAdClick) {
             isLastActionClickAd = false;
@@ -674,13 +670,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             Log.d(TAG, "APP Open Preload: Ads resume is disabled.");
             return;
         }
-        // If the app open ad is not available yet, invoke the callback then load the ad.
-//        if (!isAdAvailable()) {
-//            Log.d(TAG, " APP Open Preload: The app open ad is not ready yet.");
-//            //onShowAdCompleteListener.onShowAdComplete();
-//            loadAdPreloadNotCheckRemote(activity, listIdOpenResume, remoteKey);
-//            return;
-//        }
+
         // If the app open ad is already showing, do not show the ad again.
         if (isShowingAd) {
             Log.d(TAG, "APP Open Preload: The app open ad is already showing.");

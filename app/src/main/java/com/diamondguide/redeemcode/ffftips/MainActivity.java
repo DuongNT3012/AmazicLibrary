@@ -191,7 +191,7 @@ public class MainActivity extends AppCompatActivity {
         binding.tvShowOpenResume.setOnClickListener(view -> {
             Log.d("AppOpenManager", "list: "+AdmobApi.getInstance().getListIDAppOpenResume());
             Log.d("AppOpenManager", "list intro: "+AdmobApi.getInstance().getListIDInterIntro());
-            AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(MainActivity.this, AdmobApi.getInstance().getListIDOpenSplash(), new AppOpenCallback() {
+            AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(MainActivity.this, AdmobApi.getInstance().getListIDByName("open_splash"), new AppOpenCallback() {
                 @Override
                 public void onNextAction() {
                     super.onNextAction();

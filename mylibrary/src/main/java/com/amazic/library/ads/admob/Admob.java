@@ -129,6 +129,7 @@ public class Admob {
     private boolean isAdLoadAdsSplashFinished = false;
     private long startTime;
     private int timeDelayAdsSplash = 7000;
+    private boolean isInitAdmobDone = false;
     //end
 
     public static Admob getInstance() {
@@ -145,6 +146,7 @@ public class Admob {
             // Initialize the Google Mobile Ads SDK on a background thread.
             MobileAds.initialize(activity, initializationStatus -> {
                 Log.d(TAG, "initAdmob: " + initializationStatus.getAdapterStatusMap());
+                setIsInitAdmobDone(true);
                 iOnInitAdmobDone.onInitAdmobDone();
             });
         }).start();
@@ -281,6 +283,14 @@ public class Admob {
 
     public boolean getShowAllAds() {
         return isShowAllAds;
+    }
+
+    public void setIsInitAdmobDone(boolean isInitDone) {
+        this.isInitAdmobDone = isInitDone;
+    }
+
+    public boolean getIsInitAdmobDone() {
+        return isInitAdmobDone;
     }
 
     public void removeHandlerInterAds() {
@@ -703,11 +713,12 @@ public class Admob {
             interCallback.onNextAction();
             return;
         }
-//        if (!InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
-//            Log.d(TAG, "INTER Ad Preload: The interstitial ad wasn't ready yet. " + remoteKey);
-//            interCallback.onNextAction();
-//            return;
-//        }
+        Log.d(TAG, "INTER Ad Preload: Check isAdAvailable InterstitialAdPreloader - " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+        if (!InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
+            Log.d(TAG, "INTER Ad Preload: The interstitial ad wasn't ready yet. " + remoteKey);
+            interCallback.onNextAction();
+            return;
+        }
         if (isShowLoading) {
             loadingAdsDialog = new LoadingAdsDialog(activity);
             if (!activity.isFinishing() && !activity.isDestroyed() && !loadingAdsDialog.isShowing()) {

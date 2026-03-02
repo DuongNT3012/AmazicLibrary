@@ -183,7 +183,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         // Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResumeTemp.size() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            appOpenCallback.onAdFailedToLoad();
+            if (appOpenCallback != null) {
+                appOpenCallback.onAdFailedToLoad();
+            }
             return;
         }
         // Do not load ad if one is already loading.
@@ -216,7 +218,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 appOpenAd = ad;
                 isLoadingAd = false;
                 loadTime = (new Date()).getTime();
-                appOpenCallback.onAdLoaded(ad);
+                if (appOpenCallback != null) {
+                    appOpenCallback.onAdLoaded(ad);
+                }
                 showAdIfAvailableWelcomeBackLoadAndShow(activity, listIdOpenResume, appOpenCallback, remoteKey, false);
                 //Tracking revenue
                 ad.setOnPaidEventListener(adValue -> {
@@ -233,7 +237,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 if (!listIdOpenResumeTemp.isEmpty()) {
                     listIdOpenResumeTemp.remove(0);
                 }
-                appOpenCallback.onAdFailedToLoad();
+                if (appOpenCallback != null) {
+                    appOpenCallback.onAdFailedToLoad();
+                }
                 loadAndShowResumeAds(activity, listIdOpenResumeTemp, appOpenCallback, remoteKey);
             }
         });
@@ -784,6 +790,18 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     }
 
+    public void loadAndShowAdsResumeCheckDisableAppOpen(Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
+        for (Class activityDisabled : disabledAppOpenList) {
+            if (activityDisabled != null)
+                if (activityDisabled.getName().equals(currentActivity.getClass().getName())) {
+                    Log.d(TAG, "APP Open Preload: onStart: activity is disabled " + activityDisabled.getName());
+                    return;
+                }
+        }
+        Log.d(TAG, "APP Open Preload: load and show normal");
+        loadAndShowResumeAds(activity, listIdOpenResume, appOpenCallback, remoteKey);
+    }
+
     //end
 
     public void showAdIfAvailableWelcomeBack(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
@@ -1297,7 +1315,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         DefaultLifecycleObserver.super.onStart(owner);
         Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
         if (AsyncSplash.Companion.getInstance().getUseAdPreloadingResume()) {
-            showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);
+            if (Admob.getInstance().getIsInitAdmobDone()) {
+                Log.d(TAG, "APP Open Preload: initAdmob Done have data preload -> show ads preload");
+                showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);
+            } else {
+                Log.d(TAG, "APP Open Preload: initAdmob not Yet -> load and show normal");
+                loadAndShowAdsResumeCheckDisableAppOpen(currentActivity, listIdOpenResumeAd, null, remoteKey);
+            }
         } else {
             if (AsyncSplash.Companion.getInstance().getPreloadResumeAds()) {
                 showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, remoteKey);

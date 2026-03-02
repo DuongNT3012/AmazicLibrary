@@ -142,7 +142,7 @@ public class SplashActivity extends AppCompatActivity {
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
             AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
             AsyncSplash.Companion.getInstance().setUseAdPreloadingResume(true);
-            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(false);
+            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
 //            AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
@@ -188,7 +188,7 @@ public class SplashActivity extends AppCompatActivity {
                     listAnim.add(R.raw.custom_loading);
                     Admob.getInstance().setCustomAnimationDialog(listAnim);
                     AppOpenManager.getInstance().setCustomAnimationDialog(listAnim);*/
-                            NativeAfterInterManager.preloadNativeAfterInter(SplashActivity.this, "native_after_inter", "native_after_inter");
+                            NativeAfterInterManager.preloadNativeAfterInter(SplashActivity.this, "native_all", "native_after_inter");
 
                             return null;
                         }

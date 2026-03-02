@@ -488,9 +488,13 @@ public class Admob {
             }
             if (interCallback != null) {
                 isLoadInterAdsIdTimeout = true;
-                if (isShowNativeAfterInter) {
-                    startNativeAfterInter(activity, interCallback);
-                } else {
+                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (isShowNativeAfterInter) {
+                        startNativeAfterInter(activity, interCallback);
+                    } else {
+                        interCallback.onNextAction();
+                    }
+                }else {
                     interCallback.onNextAction();
                 }
             }
@@ -571,9 +575,13 @@ public class Admob {
         }
         if (mInterstitialAd == null) {
             Log.d(TAG, "INTER: The interstitial ad wasn't ready yet. " + remoteKeyInter);
-            if (isShowNativeAfterInter) {
-                startNativeAfterInter(activity, interCallback);
-            } else {
+            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (isShowNativeAfterInter) {
+                    startNativeAfterInter(activity, interCallback);
+                } else {
+                    interCallback.onNextAction();
+                }
+            }else{
                 interCallback.onNextAction();
             }
             return;
@@ -596,9 +604,13 @@ public class Admob {
                     Log.d(TAG, "INTER: Ad dismissed fullscreen content. " + remoteKeyInter);
                     interCallback.onAdDismissedFullScreenContent();
                     if (!openActivityAfterShowInterAds) {
-                        if (isShowNativeAfterInter) {
-                            startNativeAfterInter(activity, interCallback);
-                        } else {
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isShowNativeAfterInter) {
+                                startNativeAfterInter(activity, interCallback);
+                            } else {
+                                interCallback.onNextAction();
+                            }
+                        }else{
                             interCallback.onNextAction();
                         }
                     }
@@ -612,9 +624,13 @@ public class Admob {
                     Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + remoteKeyInter);
                     interCallback.onAdFailedToShowFullScreenContent();
                     if (!openActivityAfterShowInterAds) {
-                        if (isShowNativeAfterInter) {
-                            startNativeAfterInter(activity, interCallback);
-                        } else {
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isShowNativeAfterInter) {
+                                startNativeAfterInter(activity, interCallback);
+                            } else {
+                                interCallback.onNextAction();
+                            }
+                        }else{
                             interCallback.onNextAction();
                         }
                     }
@@ -641,9 +657,13 @@ public class Admob {
             });
             isInterOrRewardedShowing = true;
             if (openActivityAfterShowInterAds) {
-                if (isShowNativeAfterInter) {
-                    startNativeAfterInter(activity, interCallback);
-                } else {
+                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (isShowNativeAfterInter) {
+                        startNativeAfterInter(activity, interCallback);
+                    } else {
+                        interCallback.onNextAction();
+                    }
+                }else{
                     interCallback.onNextAction();
                 }
             }
@@ -696,7 +716,7 @@ public class Admob {
 
     }
 
-    public void showInterAdPreload(Activity activity, List<String> listIdInter, InterCallback interCallback, boolean isShowLoading, String remoteKey) {
+    public void showInterAdPreload(Activity activity, List<String> listIdInter, InterCallback interCallback, boolean isShowLoading, String remoteKey, boolean isShowNativeAfterInter) {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
@@ -716,7 +736,15 @@ public class Admob {
         Log.d(TAG, "INTER Ad Preload: Check isAdAvailable InterstitialAdPreloader - " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
         if (!InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
             Log.d(TAG, "INTER Ad Preload: The interstitial ad wasn't ready yet. " + remoteKey);
-            interCallback.onNextAction();
+            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (isShowNativeAfterInter) {
+                    startNativeAfterInter(activity, interCallback);
+                } else {
+                    interCallback.onNextAction();
+                }
+            }else {
+                interCallback.onNextAction();
+            }
             return;
         }
         if (isShowLoading) {
@@ -749,7 +777,15 @@ public class Admob {
                     Log.d(TAG, "INTER Ad Preload: Ad dismissed fullscreen content. " + remoteKey);
                     interCallback.onAdDismissedFullScreenContent();
                     if (!openActivityAfterShowInterAds) {
-                        interCallback.onNextAction();
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isShowNativeAfterInter) {
+                                startNativeAfterInter(activity, interCallback);
+                            } else {
+                                interCallback.onNextAction();
+                            }
+                        }else {
+                            interCallback.onNextAction();
+                        }
                     }
                     isInterOrRewardedShowing = false;
                     lastTimeDismissInter = System.currentTimeMillis();
@@ -760,7 +796,15 @@ public class Admob {
                     Log.e(TAG, "INTER Ad Preload: Ad failed to show fullscreen content. " + remoteKey);
                     interCallback.onAdFailedToShowFullScreenContent();
                     if (!openActivityAfterShowInterAds) {
-                        interCallback.onNextAction();
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isShowNativeAfterInter) {
+                                startNativeAfterInter(activity, interCallback);
+                            } else {
+                                interCallback.onNextAction();
+                            }
+                        }else{
+                            interCallback.onNextAction();
+                        }
                     }
                     if (!activity.isFinishing() && !activity.isDestroyed() && isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
@@ -788,11 +832,27 @@ public class Admob {
             });
             isInterOrRewardedShowing = true;
             if (openActivityAfterShowInterAds) {
-                interCallback.onNextAction();
+                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (isShowNativeAfterInter) {
+                        startNativeAfterInter(activity, interCallback);
+                    } else {
+                        interCallback.onNextAction();
+                    }
+                }else {
+                    interCallback.onNextAction();
+                }
             }
             ad.show(activity);
         } else {
-            interCallback.onNextAction();
+            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (isShowNativeAfterInter) {
+                    startNativeAfterInter(activity, interCallback);
+                } else {
+                    interCallback.onNextAction();
+                }
+            }else{
+                interCallback.onNextAction();
+            }
         }
 
     }

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
@@ -112,7 +113,10 @@ public class InterManager {
         }, remoteKey, numberLoad);
     }
 
-    public static void showInterAdPreload(Activity activity, String adsKey, String remoteKey, InterCallback interCallback, boolean isShowLoading){
+    public static void showInterAdPreload(Activity activity, String adsKey, String remoteKeyInter, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter, InterCallback interCallback, boolean isShowLoading){
+        NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNativeAfterInter, remoteKeyNativeAfterInter);
+        boolean isShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNativeAfterInter);
+
         Admob.getInstance().showInterAdPreload(activity, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback(){
             @Override
             public void onNextAction() {
@@ -162,7 +166,7 @@ public class InterManager {
                 super.onAdShowedFullScreenContent();
                 interCallback.onAdShowedFullScreenContent();
             }
-        }, isShowLoading, remoteKey);
+        }, isShowLoading, remoteKeyInter, isShowNativeAfterInter);
     }
 
 }

@@ -144,6 +144,8 @@ public class MainActivity extends AppCompatActivity {
                     this,
                     "inter_all",
                     "inter_all",
+                    "native_after_inter",
+                    "native_all",
                     new InterCallback() {
                         @Override
                         public void onNextAction() {
@@ -189,8 +191,8 @@ public class MainActivity extends AppCompatActivity {
             }, true);
         });
         binding.tvShowOpenResume.setOnClickListener(view -> {
-            Log.d("AppOpenManager", "list: "+AdmobApi.getInstance().getListIDAppOpenResume());
-            Log.d("AppOpenManager", "list intro: "+AdmobApi.getInstance().getListIDInterIntro());
+            Log.d("AppOpenManager", "list: " + AdmobApi.getInstance().getListIDAppOpenResume());
+            Log.d("AppOpenManager", "list intro: " + AdmobApi.getInstance().getListIDInterIntro());
             AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(MainActivity.this, AdmobApi.getInstance().getListIDByName("open_splash"), new AppOpenCallback() {
                 @Override
                 public void onNextAction() {

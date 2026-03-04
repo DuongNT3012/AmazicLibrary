@@ -321,7 +321,8 @@ class AsyncSplash {
         return this.isPreloadResumeAds
     }
 
-    fun setNumberPreloading(number: Int) {
+    fun setKeyNumberPreloading(keyNumber: String) {
+        var number: Int = RemoteConfigHelper.getInstance().get_config_long(activity, keyNumber).toInt()
         this.numberPreloading = number
     }
 
@@ -646,6 +647,9 @@ class AsyncSplash {
                             AppOpenManager.getInstance().setCustomAnimationDialog(listAnim)
                             //end
                             onAsyncSplashDone.invoke()
+
+                            ///load ad preload resume
+                            loadAdPreloadResume()
                         }
                     }
                 }
@@ -892,16 +896,6 @@ class AsyncSplash {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
-                    } else {
-                        Log.d(
-                            TAG,
-                            "APP Open Preload: NORMAL - start loadAdPreloadNotCheckRemote"
-                        )
-                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
-                            activity,
-                            listIdResume,
-                            keyAdsOpenResume
-                        )
                     }
                     AppOpenManager.getInstance().init(activity, listIdResume)
                     activity?.let {
@@ -930,16 +924,6 @@ class AsyncSplash {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
-                    } else {
-                        Log.d(
-                            TAG,
-                            "APP Open Preload: BELOW - start loadAdPreloadNotCheckRemote"
-                        )
-                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
-                            activity,
-                            listIdResume,
-                            keyAdsOpenResume
-                        )
                     }
                     welcomeBackClass?.let {
                         AppOpenManager.getInstance()
@@ -973,16 +957,6 @@ class AsyncSplash {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
-                    }else{
-                        Log.d(
-                            TAG,
-                            "APP Open Preload: ABOVE - start loadAdPreloadNotCheckRemote"
-                        )
-                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
-                            activity,
-                            listIdResume,
-                            keyAdsOpenResume
-                        )
                     }
                     welcomeBackClass?.let {
                         AppOpenManager.getInstance()
@@ -1014,22 +988,35 @@ class AsyncSplash {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
-                    }else{
-                        Log.d(
-                            TAG,
-                            "APP Open Preload: ELSE - start loadAdPreloadNotCheckRemote"
-                        )
-                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
-                            activity,
-                            listIdResume,
-                            keyAdsOpenResume
-                        )
                     }
                     AppOpenManager.getInstance().init(activity, listIdResume)
                     activity?.let {
                         AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass)
                     } //disable resume splash
                 }
+            }
+        }
+    }
+
+    private fun loadAdPreloadResume(){
+        if (isUseAdPreloading) {
+            val listIdResume = mutableListOf<String>()
+            if (keyAdsOpenResume.isNotEmpty()) {
+                listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+            } else {
+                listIdResume.addAll(AdmobApi.getInstance().listIDAppOpenResume)
+                keyAdsOpenResume = "open_resume"
+            }
+            if (listIdResume.isNotEmpty()) {
+                Log.d(
+                    TAG,
+                    "APP Open Preload: start loadAdPreloadNotCheckRemote"
+                )
+                AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
+                    activity,
+                    listIdResume,
+                    keyAdsOpenResume
+                )
             }
         }
     }

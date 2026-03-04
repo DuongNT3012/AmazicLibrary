@@ -141,7 +141,7 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
             AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
-            AsyncSplash.Companion.getInstance().setUseAdPreloadingResume(true);
+            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
             AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
@@ -189,19 +189,11 @@ public class SplashActivity extends AppCompatActivity {
                     Admob.getInstance().setCustomAnimationDialog(listAnim);
                     AppOpenManager.getInstance().setCustomAnimationDialog(listAnim);*/
                             NativeAfterInterManager.preloadNativeAfterInter(SplashActivity.this, "native_all", "native_after_inter");
+                            InterManager.loadInterAdPreload(SplashActivity.this, "inter_all", "inter_all");
 
                             return null;
                         }
                     });
-            AsyncSplash.Companion.getInstance().setOnInitAdmobDone(new Function0<Unit>() {
-                @Override
-                public Unit invoke() {
-                    Log.d("Admob", "initAdmob: done");
-                    InterManager.loadInterAdPreload(SplashActivity.this, "inter_all","inter_all",2);
-
-                    return null;
-                }
-            });
             isHandleAsyncSplash = true;
         }
     }

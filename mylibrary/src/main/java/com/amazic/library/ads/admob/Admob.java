@@ -142,14 +142,14 @@ public class Admob {
     public void initAdmob(Activity activity, IOnInitAdmobDone iOnInitAdmobDone) {
         resetVariable();
         initLoadingDialog(activity);
-        new Thread(() -> {
-            // Initialize the Google Mobile Ads SDK on a background thread.
-            MobileAds.initialize(activity, initializationStatus -> {
-                Log.d(TAG, "initAdmob: " + initializationStatus.getAdapterStatusMap());
-                setIsInitAdmobDone(true);
-                iOnInitAdmobDone.onInitAdmobDone();
-            });
-        }).start();
+//        new Thread(() -> {
+//            // Initialize the Google Mobile Ads SDK on a background thread.
+//            MobileAds.initialize(activity, initializationStatus -> {
+//                Log.d(TAG, "initAdmob: " + initializationStatus.getAdapterStatusMap());
+//                setIsInitAdmobDone(true);
+//                iOnInitAdmobDone.onInitAdmobDone();
+//            });
+//        }).start();
     }
 
     private void resetVariable() {
@@ -494,7 +494,7 @@ public class Admob {
                     } else {
                         interCallback.onNextAction();
                     }
-                }else {
+                } else {
                     interCallback.onNextAction();
                 }
             }
@@ -581,7 +581,7 @@ public class Admob {
                 } else {
                     interCallback.onNextAction();
                 }
-            }else{
+            } else {
                 interCallback.onNextAction();
             }
             return;
@@ -610,7 +610,7 @@ public class Admob {
                             } else {
                                 interCallback.onNextAction();
                             }
-                        }else{
+                        } else {
                             interCallback.onNextAction();
                         }
                     }
@@ -630,7 +630,7 @@ public class Admob {
                             } else {
                                 interCallback.onNextAction();
                             }
-                        }else{
+                        } else {
                             interCallback.onNextAction();
                         }
                     }
@@ -663,7 +663,7 @@ public class Admob {
                     } else {
                         interCallback.onNextAction();
                     }
-                }else{
+                } else {
                     interCallback.onNextAction();
                 }
             }
@@ -679,7 +679,7 @@ public class Admob {
     }
 
     //Inter Preload
-    public void loadInterAdPreload(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey, int numberLoad) {
+    public void loadInterAdPreload(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
         //Check condition
         if (!NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
             Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdInter.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
@@ -688,20 +688,24 @@ public class Admob {
         }
         EventTrackingHelper.logEvent(context, remoteKey + "_true");
 
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInter.get(0)).setBufferSize(numberLoad).build();
+        Log.d(TAG, "INTER Ad Preload: number ad preloading = "+AsyncSplash.Companion.getInstance().getNumberPreloading());
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInter.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
 
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override
             public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
                 super.onAdFailedToPreload(s, adError);
+                EventTrackingHelper.logEvent(context, remoteKey + "inter_preload_failed");
                 Log.d(TAG, "INTER Ad Preload: Preload ad " + s + " failed to load with error: " + adError.getMessage());
+                interCallback.onAdFailedToLoad();
             }
 
             @Override
             public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
                 super.onAdPreloaded(s, responseInfo);
+                EventTrackingHelper.logEvent(context, remoteKey + "inter_preload_loaded");
                 Log.d(TAG, "INTER Ad Preload: Preload ad for " + s + " is available.");
-
+                interCallback.onAdLoaded(null);
             }
 
 
@@ -742,7 +746,7 @@ public class Admob {
                 } else {
                     interCallback.onNextAction();
                 }
-            }else {
+            } else {
                 interCallback.onNextAction();
             }
             return;
@@ -768,13 +772,14 @@ public class Admob {
                     AppOpenManager.isLastActionClickAd = true;
                     // Called when a click is recorded for an ad.
                     Log.d(TAG, "INTER Ad Preload: Ad was clicked. " + remoteKey);
-                    EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                    EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_click");
                     interCallback.onAdClicked();
                 }
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     Log.d(TAG, "INTER Ad Preload: Ad dismissed fullscreen content. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_dismiss");
                     interCallback.onAdDismissedFullScreenContent();
                     if (!openActivityAfterShowInterAds) {
                         if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
@@ -783,7 +788,7 @@ public class Admob {
                             } else {
                                 interCallback.onNextAction();
                             }
-                        }else {
+                        } else {
                             interCallback.onNextAction();
                         }
                     }
@@ -794,6 +799,7 @@ public class Admob {
                 @Override
                 public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
                     Log.e(TAG, "INTER Ad Preload: Ad failed to show fullscreen content. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_failed_to_show");
                     interCallback.onAdFailedToShowFullScreenContent();
                     if (!openActivityAfterShowInterAds) {
                         if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
@@ -802,7 +808,7 @@ public class Admob {
                             } else {
                                 interCallback.onNextAction();
                             }
-                        }else{
+                        } else {
                             interCallback.onNextAction();
                         }
                     }
@@ -815,7 +821,7 @@ public class Admob {
                 @Override
                 public void onAdImpression() {
                     Log.d(TAG, "INTER Ad Preload: Ad recorded an impression. " + remoteKey);
-                    EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                    EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_impression");
                     interCallback.onAdImpression();
                 }
 
@@ -823,6 +829,7 @@ public class Admob {
                 public void onAdShowedFullScreenContent() {
                     super.onAdShowedFullScreenContent();
                     Log.d(TAG, "INTER Ad Preload: Ad showed fullscreen content. " + remoteKey);
+                    EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_show_full_screen");
                     interCallback.onAdShowedFullScreenContent();
                     if (!activity.isFinishing() && !activity.isDestroyed() && isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
@@ -838,7 +845,7 @@ public class Admob {
                     } else {
                         interCallback.onNextAction();
                     }
-                }else {
+                } else {
                     interCallback.onNextAction();
                 }
             }
@@ -850,11 +857,346 @@ public class Admob {
                 } else {
                     interCallback.onNextAction();
                 }
-            }else{
+            } else {
                 interCallback.onNextAction();
             }
         }
 
+    }
+
+    public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
+        Log.d(TAG, "AdsSplash Inter preload: Bắt đầu tiến trình Load And Show Inter Delay ads...");
+        NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative);
+        startTime = System.currentTimeMillis();
+
+        boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
+
+        boolean isEmptyListNativeAfterInter = AdmobApi.getInstance().getListIDByName(adsKeyNative).isEmpty();
+
+        ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
+        //Set timeout ads splash x(s) if cannot load
+        runnable = () -> {
+            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                dismissLoadingDialog();
+            }
+            if (interCallback != null) {
+                isLoadInterSplashIdTimeout = true;
+                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (isConfigShowNativeAfterInter) {
+                        if (isEmptyListNativeAfterInter) {
+                            interCallback.onNextAction();
+                        } else {
+                            startNativeAfterInter(activity, interCallback);
+                        }
+                    } else {
+                        interCallback.onNextAction();
+                    }
+                } else {
+                    interCallback.onNextAction();
+                }
+            }
+            removeHandlerSplashAds();
+        };
+        handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
+
+        //delay ads splash
+        timerDelayRunnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.d(TAG, "AdsSplash Inter preload: Đã đủ 7 giây đếm ngược.");
+                isTimerDelayFinished = true;
+                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+            }
+        };
+        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
+        //end
+
+        //Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
+            Log.d(TAG, "AdsSplash Inter preload: Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" /*+ IAPManager.getInstance().isPurchase()*/);
+            interCallback.onNextAction();
+            removeHandlerSplashAds();
+            Bundle bundle = new Bundle();
+            bundle.putString("failed_message", "lib_internet_" + NetworkUtil.isNetworkActive(activity)
+                    + "_Consent_" + AdsConsentManager.getConsentResult(activity)
+                    + "_isShowAllAds_" + isShowAllAds
+            );
+            EventTrackingHelper.logEventWithMultipleParams(activity, "splash_delay_failed", bundle);
+            return;
+        }
+
+        //Log event
+        Bundle bundle = new Bundle();
+        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
+        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
+        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
+        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
+        bundle.putString(EventTrackingHelper.showallad, String.valueOf(getShowAllAds()));
+        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
+        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
+
+        //log event can request
+        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
+        //end log event can request
+        //time start load splash ads
+        timeSplashLoadingAdShow = System.currentTimeMillis();
+
+        Log.d(TAG, "AdsSplash Inter preload: number ad preloading = "+AsyncSplash.Companion.getInstance().getNumberPreloadingSplash());
+
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash()).build();
+
+        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+            @Override
+            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+                super.onAdFailedToPreload(s, adError);
+                Log.d(TAG, "AdsSplash Inter preload: Preload ad " + s + " failed to load with error: " + adError.getMessage());
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", "load_" + adError.getMessage());
+                EventTrackingHelper.logEventWithMultipleParams(activity, "splash_delay_failed", bundle);
+                interCallback.onAdFailedToLoad();
+                if (listIdInterTemp.size() > 1) {
+                    listIdInterTemp.remove(0);
+                    loadAndShowInterAdPreloadingSplashDelay(activity, listIdInterTemp, interCallback, adsKeyNative, remoteKeyNative);
+                }
+            }
+
+            @Override
+            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+                super.onAdPreloaded(s, responseInfo);
+                Log.i(TAG, "AdsSplash Inter preload: Ad loaded inter splash.");
+                EventTrackingHelper.logEvent(activity, "splash_delay_true");
+                isAdLoadAdsSplashFinished = true;
+                Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is available.");
+                interCallback.onAdLoaded(null);
+
+                /// show ads
+                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+                removeHandlerSplashAds();
+            }
+
+
+            @Override
+            public void onAdsExhausted(@NonNull String s) {
+                super.onAdsExhausted(s);
+                Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is exhausted.");
+            }
+        };
+
+        InterstitialAdPreloader.start(listIdInterTemp.get(0), configuration, callback);
+    }
+
+    private void checkConditionAdPreloadingSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
+        if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
+            Log.d(TAG, "removeHandlerDelayAdsSplash");
+            removeHandlerDelayAdsSplash();
+            return;
+        }
+        if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
+            String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
+            Log.d(TAG, "AdsSplash Inter preload: ===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây");
+            EventTrackingHelper.logEventWithAParam(activity, "Splash_time_wait", "time_to_step", timeFormatted);
+            showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+            removeHandlerDelayAdsSplash();
+        }
+
+    }
+
+    public void showInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
+        countClickInterSplashAds = 0;
+        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onResume(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onResume(owner);
+                isSplashResume = true;
+                Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + true);
+            }
+
+            @Override
+            public void onStop(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onStop(owner);
+                isSplashResume = false;
+                Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + false);
+            }
+        });
+
+        InterstitialAd ad = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+
+        if (ad == null) {
+            Log.d(TAG, "AdsSplash Inter preload: The interstitial ad wasn't ready yet.");
+            AppOpenManager.getInstance().setEnableResume(true);
+            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (isConfigShowNativeAfterInter) {
+                    if (isEmptyListNativeAfterInter) {
+                        interCallback.onNextAction();
+                    } else {
+                        startNativeAfterInter(activity, interCallback);
+                    }
+                } else {
+                    interCallback.onNextAction();
+                }
+            } else {
+                interCallback.onNextAction();
+            }
+            return;
+        }
+
+        if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                ad.setOnPaidEventListener(
+                        adValue -> {
+                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        }
+                );
+
+                ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+                    @Override
+                    public void onAdClicked() {
+                        AppOpenManager.isLastActionClickAd = true;
+                        Log.d(TAG, "AdsSplash Inter preload: Ad was clicked.");
+                        interCallback.onAdClicked();
+                        countClickInterSplashAds++;
+                        int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                        if (splashOpenTimes == 1) {
+                            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_click + "_" + countClickInterSplashAds);
+                        }
+                    }
+
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        //increase splash open
+                        SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                        //end increase splash open
+                        Log.d(TAG, "AdsSplash Inter preload: Ad dismissed fullscreen content.");
+                        interCallback.onAdDismissedFullScreenContent();
+                        AppOpenManager.getInstance().setEnableResume(true);
+                        if (!openActivityAfterShowInterAds) {
+                            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                                if (isConfigShowNativeAfterInter) {
+                                    if (isEmptyListNativeAfterInter) {
+                                        interCallback.onNextAction();
+                                    } else {
+                                        startNativeAfterInter(activity, interCallback);
+                                    }
+                                } else {
+                                    interCallback.onNextAction();
+                                }
+                            } else {
+                                interCallback.onNextAction();
+                            }
+                        }
+                        isInterOrRewardedShowing = false;
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                        //increase splash open
+                        SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                        //end increase splash open
+                        Log.e(TAG, "AdsSplash Inter preload: Ad failed to show fullscreen content.");
+                        interCallback.onAdFailedToShowFullScreenContent();
+                        if (isSplashResume && !openActivityAfterShowInterAds) {
+                            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                                if (isConfigShowNativeAfterInter) {
+                                    if (isEmptyListNativeAfterInter) {
+                                        interCallback.onNextAction();
+                                    } else {
+                                        startNativeAfterInter(activity, interCallback);
+                                    }
+                                } else {
+                                    interCallback.onNextAction();
+                                }
+                            } else {
+                                interCallback.onNextAction();
+                            }
+                        }
+                        if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            dismissLoadingDialog();
+                        }
+                        isFailToShowAdSplash = true;
+                        AppOpenManager.getInstance().setEnableResume(true);
+                        isInterOrRewardedShowing = false;
+                        removeHandlerSplashAds();
+                        //log event
+                        EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                        //end log event
+                    }
+
+                    @Override
+                    public void onAdImpression() {
+                        InterstitialAdPreloader.destroy(listIdInter.get(0));
+                        // Called when an impression is recorded for an ad.
+                        Log.d(TAG, "AdsSplash Inter preload: Ad recorded an impression.");
+                        interCallback.onAdImpression();
+                        //log event
+                        EventTrackingHelper.logEventWithAParam(activity, time_splash_loading_ad_show, time_splash_loading_show, String.valueOf((System.currentTimeMillis() - timeSplashLoadingAdShow) / 1000));
+                        EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                        int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                        if (splashOpenTimes <= 3) {
+                            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_impression + "_" + splashOpenTimes);
+                        }
+                        //end log event
+                    }
+
+                    @Override
+                    public void onAdShowedFullScreenContent() {
+                        // Called when ad is shown.
+                        Log.d(TAG, "AdsSplash Inter preload: Ad showed fullscreen content.");
+                        interCallback.onAdShowedFullScreenContent();
+                        if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                            dismissLoadingDialog();
+                        }
+                        isInterOrRewardedShowing = true;
+                        isFailToShowAdSplash = false;
+                        removeHandlerSplashAds();
+                    }
+                });
+                boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+                Log.d(TAG, "AdsSplash Inter preload: ResumeState: " + isResumeState);
+                if (isResumeState) {
+                    loadingAdsDialog = new LoadingAdsDialog(activity);
+                    if (!activity.isFinishing() && !activity.isDestroyed() && !loadingAdsDialog.isShowing()) {
+                        loadingAdsDialog.show();
+                    }
+                    isInterOrRewardedShowing = true;
+                    AppOpenManager.getInstance().setEnableResume(false);
+                    if (openActivityAfterShowInterAds) {
+                        Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isConfigShowNativeAfterInter) {
+                                if (isEmptyListNativeAfterInter) {
+                                    Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
+                                    interCallback.onNextAction();
+                                } else {
+                                    Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: show Native After Inter");
+                                    startNativeAfterInter(activity, interCallback);
+                                }
+                            } else {
+                                Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: onNextAction");
+                                interCallback.onNextAction();
+                            }
+                        } else {
+                            Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: onNextAction init set off Native After Inter");
+                            interCallback.onNextAction();
+                        }
+                    }
+                    Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: show Inter");
+                    ad.setImmersiveMode(true);
+                    ad.show(activity);
+                } else {
+                    Log.e(TAG, "AdsSplash Inter preload: Fail to show on background.");
+                    if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                        dismissLoadingDialog();
+                    }
+                    isFailToShowAdSplash = true;
+                    if (runnable != null) {
+                        handlerTimeoutSplash.removeCallbacks(runnable);
+                    }
+                }
+            }, 250);
+        }
     }
 
     //End Inter Preload
@@ -3804,7 +4146,7 @@ public class Admob {
     }
 
     //reward preload
-    public void loadRewardAdPreload(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback, String remoteKey, int numberLoad) {
+    public void loadRewardAdPreload(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback, String remoteKey) {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewarded.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
@@ -3815,7 +4157,9 @@ public class Admob {
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         //end log event can request ads
 
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdRewarded.get(0)).setBufferSize(numberLoad).build();
+        Log.d(TAG, "REWARD Ad Preload: number ad preloading = "+AsyncSplash.Companion.getInstance().getNumberPreloading());
+
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdRewarded.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
 
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override

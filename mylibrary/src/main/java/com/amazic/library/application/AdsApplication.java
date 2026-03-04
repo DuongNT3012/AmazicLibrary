@@ -12,6 +12,8 @@ import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
 import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.ads.admob.admob_interface.IOnInitAdmobDone;
+import com.google.android.gms.ads.MobileAds;
 
 public abstract class AdsApplication extends Application implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "AdsApplication";
@@ -20,8 +22,16 @@ public abstract class AdsApplication extends Application implements Application.
     public void onCreate() {
         super.onCreate();
         Admob.getInstance().setTimeStart(System.currentTimeMillis());
+        initAdmob();
         setUpAdjust();
         registerActivityLifecycleCallbacks(this);
+    }
+
+    private void initAdmob(){
+        MobileAds.initialize(this, initializationStatus -> {
+            Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
+            Admob.getInstance().setIsInitAdmobDone(true);
+        });
     }
 
     private void setUpAdjust() {

@@ -641,6 +641,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         //end log event can request ads
 
+        Log.d(TAG, "APP Open Preload: number ad preloading = " + AsyncSplash.Companion.getInstance().getNumberPreloading());
         PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResume.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
 
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
@@ -800,6 +801,236 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
         Log.d(TAG, "APP Open Preload: load and show normal");
         loadAndShowResumeAds(activity, listIdOpenResume, appOpenCallback, remoteKey);
+    }
+
+    public void loadAndShowAdPreloadingAppOpenSplash(AppCompatActivity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        ArrayList<String> listIdOpenResumeTemp = new ArrayList<>(listIdOpenResume);
+        //Set timeout ads splash 20s if cannot load
+        runnable = () -> {
+            EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
+            if (appOpenCallback != null) {
+                appOpenCallback.onNextAction();
+            }
+            if (handlerTimeoutSplash != null) {
+                handlerTimeoutSplash = null;
+            }
+        };
+        if (handlerTimeoutSplash != null) {
+            handlerTimeoutSplash.postDelayed(runnable, Admob.getInstance().getTimeOutCallSplashAds());
+        }
+
+        // Check condition
+        if (!NetworkUtil.isNetworkActive(activity) || listIdOpenResumeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() /*|| IAPManager.getInstance().isPurchase()*/) {
+            Log.d(TAG, "App Open Preload SPLASH: Check condition loadAndShowAppOpenResumeSplash. Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdOpenResumeTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + Admob.getInstance().getShowAllAds() + "_IAP:" /*+ IAPManager.getInstance().isPurchase()*/);
+            appOpenCallback.onNextAction();
+            if (handlerTimeoutSplash != null && runnable != null) {
+                handlerTimeoutSplash.removeCallbacks(runnable);
+                handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                handlerTimeoutSplash = null;
+            }
+            return;
+        }
+
+        // Do not load ad if there is an unused ad or one is already loading.
+        if (isLoadingAdSplash) {
+            Log.d(TAG, "App Open Preload SPLASH: Do not load ad if there is an unused ad or one is already loading.");
+            return;
+        }
+
+        //Log event
+        Bundle bundle = new Bundle();
+        boolean idCheck = AdmobApi.getInstance().getListAdsSize() > 0;
+        bundle.putString(EventTrackingHelper.splash_detail, AdsConsentManager.getConsentResult(activity) + "_" + TechManager.getInstance().isTech(activity) + "_" + NetworkUtil.isNetworkActive(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" + idCheck + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        bundle.putString(EventTrackingHelper.ump, String.valueOf(AdsConsentManager.getConsentResult(activity)));
+        bundle.putString(EventTrackingHelper.organic, String.valueOf(TechManager.getInstance().isTech(activity)));
+        bundle.putString(EventTrackingHelper.haveinternet, String.valueOf(NetworkUtil.isNetworkActive(activity)));
+        bundle.putString(EventTrackingHelper.showallad, String.valueOf(Admob.getInstance().getShowAllAds()));
+        bundle.putString(EventTrackingHelper.idcheck, String.valueOf(idCheck));
+        bundle.putString(EventTrackingHelper.interremote + "_" + EventTrackingHelper.openremote + "_" + EventTrackingHelper.aoavalue, RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.inter_splash) + "_" + RemoteConfigHelper.getInstance().get_config(activity, EventTrackingHelper.open_splash) + "_" + RemoteConfigHelper.getInstance().get_config_string(activity, EventTrackingHelper.rate_aoa_inter_splash));
+        EventTrackingHelper.logEventWithMultipleParams(activity, EventTrackingHelper.inter_splash_tracking, bundle);
+
+        //log event can request
+        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_true);
+        //end log event can request
+
+        isLoadingAdSplash = true;
+
+        Log.d(TAG, "App Open Preload SPLASH: number ad preloading = "+AsyncSplash.Companion.getInstance().getNumberPreloadingSplash());
+
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResumeTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash()).build();
+
+        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+            @Override
+            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+                Log.d(TAG, "App Open Preload SPLASH: Preload ad " + s + " had an error : " + adError.getMessage() + ".");
+
+                isLoadingAdSplash = false;
+                if (!listIdOpenResumeTemp.isEmpty()) {
+                    listIdOpenResumeTemp.remove(0);
+                }
+                loadAndShowAdPreloadingAppOpenSplash(activity, listIdOpenResumeTemp, appOpenCallback);
+                appOpenCallback.onAdFailedToLoad();
+            }
+
+            @Override
+            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+                Log.d(TAG, "App Open Preload SPLASH: Preload ad for " + s + " is available.");
+                isLoadingAdSplash = false;
+                appOpenCallback.onAdLoaded(null);
+                /// show ads
+                showAdPreloadingSplash(activity, listIdOpenResumeTemp, appOpenCallback);
+
+                if (handlerTimeoutSplash != null && runnable != null) {
+                    handlerTimeoutSplash.removeCallbacks(runnable);
+                    handlerTimeoutSplash.removeCallbacksAndMessages(null);
+                    handlerTimeoutSplash = null;
+                }
+            }
+
+            @Override
+            public void onAdsExhausted(@NonNull String s) {
+                Log.d(TAG, "App Open Preload SPLASH: Preload ad  " + s + " is exhausted.");
+            }
+        };
+
+        AppOpenAdPreloader.start(listIdOpenResumeTemp.get(0), configuration, callback);
+
+    }
+
+    public void showAdPreloadingSplash(@NonNull final AppCompatActivity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback) {
+        countClickInterSplashAds = 0;
+        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+            @Override
+            public void onResume(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onResume(owner);
+                isSplashResume = true;
+                Log.d(TAG, "App Open Preload SPLASH: onSplashResume - " + true);
+            }
+
+            @Override
+            public void onStop(@NonNull LifecycleOwner owner) {
+                DefaultLifecycleObserver.super.onStop(owner);
+                isSplashResume = false;
+                Log.d(TAG, "App Open Preload SPLASH: onSplashStop - " + false);
+            }
+        });
+        // If the app open ad is already showing, do not show the ad again.
+        if (isShowingAd) {
+            Log.d(TAG, "App Open Preload SPLASH: The app open ad is already showing.");
+            return;
+        }
+        // Not show open ads if inter is showing
+        if (Admob.getInstance().isInterOrRewardedShowing()) {
+            Log.d(TAG, "App Open Preload SPLASH: Not show open ads because inter is showing.");
+            return;
+        }
+
+        loadingAdsResumeDialog = new LoadingAdsResumeDialog(activity);
+        if (!loadingAdsResumeDialog.isShowing() && !activity.isDestroyed()) {
+            loadingAdsResumeDialog.show();
+        }
+
+        AppOpenAd ad = AppOpenAdPreloader.pollAd(listIdOpenResume.get(0));
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            ad.setOnPaidEventListener(
+                    adValue -> {
+                        ad.getResponseInfo();
+                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    }
+            );
+
+            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+                @Override
+                public void onAdDismissedFullScreenContent() {
+                    //increase splash open
+                    SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                    //end increase splash open
+
+                    Log.d(TAG, "App Open Preload SPLASH: Ad dismissed fullscreen content.");
+                    isShowingAd = false;
+
+                    appOpenCallback.onAdDismissedFullScreenContent();
+                    appOpenCallback.onNextAction();
+                }
+
+                @Override
+                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    Log.d(TAG, "App Open Preload SPLASH: ad failed to show");
+                    isShowingAd = false;
+
+                    if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                        loadingAdsResumeDialog.dismiss();
+                    }
+                    appOpenCallback.onAdFailedToShowFullScreenContent();
+                    if (isSplashResume) {
+                        //increase splash open
+                        SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
+                        //end increase splash open
+                        appOpenCallback.onNextAction();
+                    }
+                    isFailToShowAdSplash = true;
+                    if (handlerTimeoutSplash != null && runnable != null) {
+                        handlerTimeoutSplash.removeCallbacks(runnable);
+                    }
+                    //log event
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    //end log event
+                }
+
+                @Override
+                public void onAdShowedFullScreenContent() {
+                    Log.d(TAG, "App Open Preload SPLASH: Ad showed fullscreen content.");
+                    if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                        loadingAdsResumeDialog.dismiss();
+                    }
+                    appOpenCallback.onAdShowedFullScreenContent();
+                    isFailToShowAdSplash = false;
+                    if (handlerTimeoutSplash != null && runnable != null) {
+                        handlerTimeoutSplash.removeCallbacks(runnable);
+                    }
+                }
+
+                @Override
+                public void onAdClicked() {
+                    Log.d(TAG, "App Open Preload SPLASH: ad clicked");
+                    AppOpenManager.isLastActionClickAd = true;
+                    Log.d(TAG, "SPLASH: onAdClicked.");
+                    countClickInterSplashAds++;
+                    int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                    if (splashOpenTimes == 1) {
+                        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_click + "_" + countClickInterSplashAds);
+                    }
+                    appOpenCallback.onAdClicked();
+                }
+
+                @Override
+                public void onAdImpression() {
+                    Log.d(TAG, "App Open Preload SPLASH: onAdImpression.");
+                    AppOpenAdPreloader.destroy(listIdOpenResume.get(0));
+                    appOpenCallback.onAdImpression();
+                    //log event
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
+                    if (splashOpenTimes <= 3) {
+                        EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_impression + "_" + splashOpenTimes);
+                    }
+                    //end log event
+                }
+            });
+            if (ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+                isShowingAd = true;
+                ad.show(activity);
+            } else {
+                Log.e(TAG, "App Open Preload SPLASH: Fail to show on background.");
+                if (loadingAdsResumeDialog != null && loadingAdsResumeDialog.isShowing()) {
+                    loadingAdsResumeDialog.dismiss();
+                }
+                isFailToShowAdSplash = true;
+                if (handlerTimeoutSplash != null && runnable != null) {
+                    handlerTimeoutSplash.removeCallbacks(runnable);
+                }
+            }
+        }, 250);
     }
 
     //end
@@ -1314,7 +1545,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
         Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
-        if (AsyncSplash.Companion.getInstance().getUseAdPreloadingResume()) {
+        if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {
             if (Admob.getInstance().getIsInitAdmobDone()) {
                 Log.d(TAG, "APP Open Preload: initAdmob Done have data preload -> show ads preload");
                 showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);

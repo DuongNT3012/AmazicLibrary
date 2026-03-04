@@ -289,4 +289,12 @@ public class AdmobApi {
     public void loadInterAdSplashLoop(AppCompatActivity activity, String adsKey, InterCallback interCallback) {
         Admob.getInstance().loadAndShowInterAdSplashLoop(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
     }
+
+    public void loadAndShowInterAdPreloadingSplash(AppCompatActivity activity, String adsKey, InterCallback interCallback, String adsKeyNative, String remoteKeyNative){
+        Admob.getInstance().loadAndShowInterAdPreloadingSplashDelay(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, adsKeyNative, remoteKeyNative);
+    }
+
+    public void loadAndShowAppOpenAdPreloadingSplash(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback){
+        AppOpenManager.getInstance().loadAndShowAdPreloadingAppOpenSplash(activity,AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
+    }
 }

@@ -104,13 +104,13 @@ public class InterManager {
     }
 
     //preload
-    public static void loadInterAdPreload(Context context, String adsKey, String remoteKey, int numberLoad) {
+    public static void loadInterAdPreload(Context context, String adsKey, String remoteKey) {
         Admob.getInstance().loadInterAdPreload(context, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {
             @Override
             public void onAdLoaded(InterstitialAd interstitialAd) {
 
             }
-        }, remoteKey, numberLoad);
+        }, remoteKey);
     }
 
     public static void showInterAdPreload(Activity activity, String adsKey, String remoteKeyInter, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter, InterCallback interCallback, boolean isShowLoading){

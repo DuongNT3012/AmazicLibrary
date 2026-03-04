@@ -87,8 +87,9 @@ class AsyncSplash {
     private var isAsyncSplashAds = false
 
     //ad preloading
-    private var isUseAdPreloadingResume = true
-    private var numberPreloadingResume = 2
+    private var isUseAdPreloading = true
+    private var numberPreloading = 3
+    private var numberPreloadingSplash = 1
 
     private var isShowNativeAfterInter = false
 
@@ -128,7 +129,7 @@ class AsyncSplash {
     private var keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
     private var timeStep1 = System.currentTimeMillis()
     private var timeLastStep = System.currentTimeMillis()
-    private var onInitAdmobDone: (() -> Unit)? = null
+//    private var onInitAdmobDone: (() -> Unit)? = null
 
     fun normalizeFirebaseEventName(input: String): String {
         if (input.isBlank()) return DEFAULT_EVENT_NAME
@@ -228,8 +229,9 @@ class AsyncSplash {
         this.initTechManager = false
         this.isUseIdAdsFromRemoteConfig = false
         this.isPreloadResumeAds = true
-        this.numberPreloadingResume = 2
-        this.isUseAdPreloadingResume = true
+        this.numberPreloading = 3
+        this.numberPreloadingSplash = 1
+        this.isUseAdPreloading = true
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
@@ -279,9 +281,9 @@ class AsyncSplash {
         this.onPrepareLoadInterOpenSplashAds = onPrepareLoadInterOpenSplashAds
     }
 
-    fun setOnInitAdmobDone(onInitAdmobDone: () -> Unit) {
-        this.onInitAdmobDone = onInitAdmobDone
-    }
+//    fun setOnInitAdmobDone(onInitAdmobDone: () -> Unit) {
+//        this.onInitAdmobDone = onInitAdmobDone
+//    }
 
     fun setUseAppUpdateManager() {
         this.isUseAppUpdateManager = true
@@ -320,19 +322,27 @@ class AsyncSplash {
     }
 
     fun setNumberPreloading(number: Int) {
-        this.numberPreloadingResume = number
+        this.numberPreloading = number
     }
 
     fun getNumberPreloading(): Int {
-        return this.numberPreloadingResume
+        return this.numberPreloading
     }
 
-    fun setUseAdPreloadingResume(isUsePreLoading: Boolean) {
-        this.isUseAdPreloadingResume = isUsePreLoading
+    fun setNumberPreloadingSplash(number: Int){
+        this.numberPreloadingSplash = number
     }
 
-    fun getUseAdPreloadingResume(): Boolean {
-        return this.isUseAdPreloadingResume
+    fun getNumberPreloadingSplash(): Int{
+        return this.numberPreloadingSplash
+    }
+
+    fun setUseAdPreloading(isUsePreLoading: Boolean) {
+        this.isUseAdPreloading = isUsePreLoading
+    }
+
+    fun getUseAdPreloading(): Boolean {
+        return this.isUseAdPreloading
     }
 
     fun setShowNativeAfterInter(isShowNativeAfterInter: Boolean) {
@@ -793,29 +803,7 @@ class AsyncSplash {
                     isResumed = true
                     if (it) {
                         Admob.getInstance().initAdmob(activity) {
-                            val listIdResume = mutableListOf<String>()
-                            if (keyAdsOpenResume.isNotEmpty()) {
-                                listIdResume.addAll(
-                                    AdmobApi.getInstance().getListIDByName(keyAdsOpenResume)
-                                )
-                            } else {
-                                listIdResume.addAll(AdmobApi.getInstance().listIDAppOpenResume)
-                                keyAdsOpenResume = "open_resume"
-                            }
-                            if (listIdResume.isNotEmpty()) {
-                                if (isUseAdPreloadingResume) {
-                                    Log.d(
-                                        TAG,
-                                        "APP Open Preload: start loadAdPreloadNotCheckRemote"
-                                    )
-                                    AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
-                                        activity,
-                                        listIdResume,
-                                        keyAdsOpenResume
-                                    )
-                                }
-                            }
-                            onInitAdmobDone?.invoke()
+//                            onInitAdmobDone?.invoke()
                         }
                         activity?.let { it1 ->
                             AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass)
@@ -895,15 +883,25 @@ class AsyncSplash {
                     keyAdsOpenResume = "open_resume"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloadingResume) {
+                    if (!isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: normal - isUseAdPreloadingResume = $isUseAdPreloadingResume, isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: normal - isUseAdPreloading = $isUseAdPreloading, isPreloadResumeAds = $isPreloadResumeAds"
                         )
                         if (isPreloadResumeAds) {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
+                    } else {
+                        Log.d(
+                            TAG,
+                            "APP Open Preload: NORMAL - start loadAdPreloadNotCheckRemote"
+                        )
+                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
+                            activity,
+                            listIdResume,
+                            keyAdsOpenResume
+                        )
                     }
                     AppOpenManager.getInstance().init(activity, listIdResume)
                     activity?.let {
@@ -923,15 +921,25 @@ class AsyncSplash {
                     keyAdsOpenResume = "resume_wb"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloadingResume) {
+                    if (!isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: below - isUseAdPreloadingResume = $isUseAdPreloadingResume ,isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: below - isUseAdPreloading = $isUseAdPreloading ,isPreloadResumeAds = $isPreloadResumeAds"
                         )
                         if (isPreloadResumeAds) {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
+                    } else {
+                        Log.d(
+                            TAG,
+                            "APP Open Preload: BELOW - start loadAdPreloadNotCheckRemote"
+                        )
+                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
+                            activity,
+                            listIdResume,
+                            keyAdsOpenResume
+                        )
                     }
                     welcomeBackClass?.let {
                         AppOpenManager.getInstance()
@@ -956,15 +964,25 @@ class AsyncSplash {
                     keyAdsOpenResume = "resume_wb"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloadingResume) {
+                    if (!isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: above - isUseAdPreloadingResume = $isUseAdPreloadingResume, isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: above - isUseAdPreloading = $isUseAdPreloading, isPreloadResumeAds = $isPreloadResumeAds"
                         )
                         if (isPreloadResumeAds) {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
+                    }else{
+                        Log.d(
+                            TAG,
+                            "APP Open Preload: ABOVE - start loadAdPreloadNotCheckRemote"
+                        )
+                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
+                            activity,
+                            listIdResume,
+                            keyAdsOpenResume
+                        )
                     }
                     welcomeBackClass?.let {
                         AppOpenManager.getInstance()
@@ -987,15 +1005,25 @@ class AsyncSplash {
                     keyAdsOpenResume = "open_resume"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloadingResume) {
+                    if (!isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: else - isUseAdPreloadingResume = $isUseAdPreloadingResume, isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: else - isUseAdPreloading = $isUseAdPreloading, isPreloadResumeAds = $isPreloadResumeAds"
                         )
                         if (isPreloadResumeAds) {
                             AppOpenManager.getInstance()
                                 .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
                         }
+                    }else{
+                        Log.d(
+                            TAG,
+                            "APP Open Preload: ELSE - start loadAdPreloadNotCheckRemote"
+                        )
+                        AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
+                            activity,
+                            listIdResume,
+                            keyAdsOpenResume
+                        )
                     }
                     AppOpenManager.getInstance().init(activity, listIdResume)
                     activity?.let {

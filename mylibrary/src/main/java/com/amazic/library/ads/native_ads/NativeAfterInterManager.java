@@ -26,7 +26,8 @@ public class NativeAfterInterManager {
     public static void preloadNativeAfterInter(Activity activity, String adsKey, String remoteKey) {
         NativeAfterInterActivity.Companion.setAdsKey(adsKey);
         NativeAfterInterActivity.Companion.setRemoteKey(remoteKey);
-        if (mapNativeAdsAfterInter.get(adsKey) == null) {
+        Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter - list is Empty: "+AdmobApi.getInstance().getListIDByName(adsKey).isEmpty());
+        if (mapNativeAdsAfterInter.get(adsKey) == null || !AdmobApi.getInstance().getListIDByName(adsKey).isEmpty()) {
             Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter."+ AdmobApi.getInstance().getListIDByName(adsKey));
             Admob.getInstance().loadNativeAds(
                     activity,

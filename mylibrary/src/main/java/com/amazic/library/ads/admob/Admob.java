@@ -722,8 +722,8 @@ public class Admob {
 
     public void showInterAdPreload(Activity activity, List<String> listIdInter, InterCallback interCallback, boolean isShowLoading, String remoteKey, boolean isShowNativeAfterInter) {
         //Check condition
-        if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
-            Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+            Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty: " + listIdInter.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             interCallback.onNextAction();
             return;
         }
@@ -740,6 +740,7 @@ public class Admob {
         Log.d(TAG, "INTER Ad Preload: Check isAdAvailable InterstitialAdPreloader - " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
         if (!InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
             Log.d(TAG, "INTER Ad Preload: The interstitial ad wasn't ready yet. " + remoteKey);
+            Log.d(TAG, "INTER Ad Preload: InterstitialAdPreloader.isAdAvailable - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = "+isShowNativeAfterInter);
             if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                 if (isShowNativeAfterInter) {
                     startNativeAfterInter(activity, interCallback);
@@ -781,6 +782,9 @@ public class Admob {
                     Log.d(TAG, "INTER Ad Preload: Ad dismissed fullscreen content. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_dismiss");
                     interCallback.onAdDismissedFullScreenContent();
+
+                    Log.d(TAG, "INTER Ad Preload: onAdDismissedFullScreenContent - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = "+isShowNativeAfterInter + ", openActivityAfterShowInterAds = "+openActivityAfterShowInterAds);
+
                     if (!openActivityAfterShowInterAds) {
                         if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                             if (isShowNativeAfterInter) {
@@ -801,6 +805,8 @@ public class Admob {
                     Log.e(TAG, "INTER Ad Preload: Ad failed to show fullscreen content. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_failed_to_show");
                     interCallback.onAdFailedToShowFullScreenContent();
+                    Log.d(TAG, "INTER Ad Preload: onAdFailedToShowFullScreenContent - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = "+isShowNativeAfterInter + ", openActivityAfterShowInterAds = "+openActivityAfterShowInterAds);
+
                     if (!openActivityAfterShowInterAds) {
                         if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                             if (isShowNativeAfterInter) {
@@ -838,6 +844,8 @@ public class Admob {
                 }
             });
             isInterOrRewardedShowing = true;
+            Log.d(TAG, "INTER Ad Preload: call show ads - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = "+isShowNativeAfterInter + ", openActivityAfterShowInterAds = "+openActivityAfterShowInterAds);
+
             if (openActivityAfterShowInterAds) {
                 if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                     if (isShowNativeAfterInter) {
@@ -851,6 +859,8 @@ public class Admob {
             }
             ad.show(activity);
         } else {
+            Log.d(TAG, "INTER Ad Preload: not call show ads- getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = "+isShowNativeAfterInter + ", openActivityAfterShowInterAds = "+openActivityAfterShowInterAds);
+
             if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                 if (isShowNativeAfterInter) {
                     startNativeAfterInter(activity, interCallback);
@@ -996,7 +1006,7 @@ public class Admob {
         }
         if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
             String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
-            Log.d(TAG, "AdsSplash Inter preload: ===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây");
+            Log.d(TAG, "AdsSplash Inter preload: ===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây , isEmptyListNativeAfterInter = "+isEmptyListNativeAfterInter);
             EventTrackingHelper.logEventWithAParam(activity, "Splash_time_wait", "time_to_step", timeFormatted);
             showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
             removeHandlerDelayAdsSplash();

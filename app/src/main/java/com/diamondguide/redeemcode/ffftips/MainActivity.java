@@ -144,8 +144,6 @@ public class MainActivity extends AppCompatActivity {
                     this,
                     "inter_all",
                     "inter_all",
-                    "native_after_inter",
-                    "native_all",
                     new InterCallback() {
                         @Override
                         public void onNextAction() {

@@ -87,7 +87,7 @@ class AsyncSplash {
     private var isAsyncSplashAds = false
 
     //ad preloading
-    private var isUseAdPreloading = true
+    private var isUseAdPreloading = false
     private var numberPreloading = 3
     private var numberPreloadingSplash = 1
 
@@ -231,7 +231,7 @@ class AsyncSplash {
         this.isPreloadResumeAds = true
         this.numberPreloading = 3
         this.numberPreloadingSplash = 1
-        this.isUseAdPreloading = true
+        this.isUseAdPreloading = false
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"

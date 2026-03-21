@@ -111,6 +111,48 @@ public class InterManager {
                 super.onAdLoaded(interstitialAd);
                 showInterAdPreload(activity, adsKeyInter, remoteKeyInter, remoteKeyNativeAfterInter, adsKeyNativeAfterInter, interCallback, false);
             }
+
+            @Override
+            public void onNextAction() {
+                super.onNextAction();
+                interCallback.onNextAction();
+            }
+
+            @Override
+            public void onAdFailedToLoad() {
+                super.onAdFailedToLoad();
+                interCallback.onAdFailedToLoad();
+            }
+
+            @Override
+            public void onAdClicked() {
+                super.onAdClicked();
+                interCallback.onAdClicked();
+            }
+
+            @Override
+            public void onAdDismissedFullScreenContent() {
+                super.onAdDismissedFullScreenContent();
+                interCallback.onAdDismissedFullScreenContent();
+            }
+
+            @Override
+            public void onAdFailedToShowFullScreenContent() {
+                super.onAdFailedToShowFullScreenContent();
+                interCallback.onAdFailedToShowFullScreenContent();
+            }
+
+            @Override
+            public void onAdImpression() {
+                super.onAdImpression();
+                interCallback.onAdImpression();
+            }
+
+            @Override
+            public void onAdShowedFullScreenContent() {
+                super.onAdShowedFullScreenContent();
+                interCallback.onAdShowedFullScreenContent();
+            }
         }, remoteKeyInter, remoteKeyNativeAfterInter);
     }
 

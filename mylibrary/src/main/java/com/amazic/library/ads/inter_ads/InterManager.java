@@ -104,6 +104,20 @@ public class InterManager {
     }
 
     //preload
+    public static void loadAndShowInterAdsPreload(Activity activity, String adsKeyInter, String remoteKeyInter, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter, InterCallback interCallback) {
+        Admob.getInstance().loadInterAdPreloadWithHandleTimeOut(activity, AdmobApi.getInstance().getListIDByName(adsKeyInter), new InterCallback() {
+            @Override
+            public void onAdLoaded(InterstitialAd interstitialAd) {
+                super.onAdLoaded(interstitialAd);
+                showInterAdPreload(activity, adsKeyInter, remoteKeyInter, remoteKeyNativeAfterInter, adsKeyNativeAfterInter, interCallback, false);
+            }
+        }, remoteKeyInter, remoteKeyNativeAfterInter);
+    }
+
+    public static void loadAndShowInterAdsPreload(Activity activity, String adsKeyInter, String remoteKeyInter, InterCallback interCallback) {
+        loadAndShowInterAdsPreload(activity, adsKeyInter, remoteKeyInter, "", "", interCallback);
+    }
+
     public static void loadInterAdPreload(Context context, String adsKey, String remoteKey) {
         Admob.getInstance().loadInterAdPreload(context, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {
             @Override

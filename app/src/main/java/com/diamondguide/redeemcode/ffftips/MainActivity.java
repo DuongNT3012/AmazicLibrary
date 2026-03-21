@@ -140,18 +140,31 @@ public class MainActivity extends AppCompatActivity {
         });
 
         binding.tvShowInterPreload.setOnClickListener(view -> {
-            InterManager.showInterAdPreload(
+//            InterManager.showInterAdPreload(
+//                    this,
+//                    "inter_all",
+//                    "inter_all",
+//                    new InterCallback() {
+//                        @Override
+//                        public void onNextAction() {
+//                            super.onNextAction();
+//                            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+//                            startActivity(intent);
+//                        }
+//                    }, true
+//            );
+            InterManager.loadAndShowInterAdsPreload(
                     this,
                     "inter_all",
                     "inter_all",
-                    new InterCallback() {
+                    new InterCallback(){
                         @Override
                         public void onNextAction() {
                             super.onNextAction();
                             Intent intent = new Intent(MainActivity.this, MainActivity2.class);
                             startActivity(intent);
                         }
-                    }, true
+                    }
             );
         });
         //RewardManager.loadRewardAds(this, "rewarded", "rewarded");

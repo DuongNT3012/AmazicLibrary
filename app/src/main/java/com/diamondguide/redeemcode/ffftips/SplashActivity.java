@@ -189,7 +189,7 @@ public class SplashActivity extends AppCompatActivity {
                     Admob.getInstance().setCustomAnimationDialog(listAnim);
                     AppOpenManager.getInstance().setCustomAnimationDialog(listAnim);*/
                             NativeAfterInterManager.preloadNativeAfterInter(SplashActivity.this, "native_all", "native_after_inter");
-                            InterManager.loadInterAdPreload(SplashActivity.this, "inter_all", "inter_all");
+//                            InterManager.loadInterAdPreload(SplashActivity.this, "inter_all", "inter_all");
 
                             return null;
                         }

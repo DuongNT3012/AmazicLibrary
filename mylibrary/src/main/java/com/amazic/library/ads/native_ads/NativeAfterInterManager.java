@@ -72,7 +72,7 @@ public class NativeAfterInterManager {
         }else {
             Log.d(TAG, "NativeAfterInterManager: NativeAd NULL onNext");
             if(listener != null){
-                listener.onClose();
+                listener.onFail();
             }
         }
         mapNativeAdsAfterInter.put(adsKey, null);
@@ -82,6 +82,7 @@ public class NativeAfterInterManager {
 
     public interface OnCloseNativeListener {
         void onClose();
+        void onFail();
     }
 }
 

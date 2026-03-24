@@ -49,6 +49,9 @@ class NativeAfterInterActivity : AppCompatActivity() {
                     finish()
                 }
 
+                override fun onFail() {
+                    finish()
+                }
             }
         )
 

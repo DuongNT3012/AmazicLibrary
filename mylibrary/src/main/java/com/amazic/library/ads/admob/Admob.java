@@ -491,7 +491,12 @@ public class Admob {
                 isLoadInterAdsIdTimeout = true;
                 if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                     if (isShowNativeAfterInter) {
-                        startNativeAfterInter(activity, interCallback);
+                        NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+                        if (nativeAd == null) {
+                            interCallback.onNextAction();
+                        } else {
+                            startNativeAfterInter(activity, interCallback);
+                        }
                     } else {
                         interCallback.onNextAction();
                     }
@@ -581,7 +586,7 @@ public class Admob {
                     NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
                     if (nativeAd == null) {
                         interCallback.onNextAction();
-                    }else {
+                    } else {
                         startNativeAfterInter(activity, interCallback);
                     }
                 } else {
@@ -774,7 +779,7 @@ public class Admob {
                     NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
                     if (nativeAd == null) {
                         interCallback.onNextAction();
-                    }else {
+                    } else {
                         startNativeAfterInter(activity, interCallback);
                     }
                 } else {
@@ -935,7 +940,7 @@ public class Admob {
     }
 
     /// use load and show first ad preloading
-    public void loadInterAdPreloadWithHandleTimeOut(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey, String remoteKeyNativeAfterInter) {
+    public void loadInterAdPreloadWithHandleTimeOut(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter) {
         if (InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
             Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow HAVE DATA => show inter preload " + remoteKey);
             interCallback.onAdLoaded(null);
@@ -962,7 +967,12 @@ public class Admob {
                     isLoadInterAdsIdTimeout = true;
                     if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                         if (isShowNativeAfterInter) {
-                            startNativeAfterInter(activity, interCallback);
+                            NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNativeAfterInter);
+                            if (nativeAd == null) {
+                                interCallback.onNextAction();
+                            } else {
+                                startNativeAfterInter(activity, interCallback);
+                            }
                         } else {
                             interCallback.onNextAction();
                         }
@@ -1077,7 +1087,12 @@ public class Admob {
                         if (isEmptyListNativeAfterInter) {
                             interCallback.onNextAction();
                         } else {
-                            startNativeAfterInter(activity, interCallback);
+                            NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+                            if (nativeAd == null) {
+                                interCallback.onNextAction();
+                            } else {
+                                startNativeAfterInter(activity, interCallback);
+                            }
                         }
                     } else {
                         interCallback.onNextAction();
@@ -1096,7 +1111,7 @@ public class Admob {
             public void run() {
                 Log.d(TAG, "AdsSplash Inter preload: Đã đủ 7 giây đếm ngược.");
                 isTimerDelayFinished = true;
-                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
             }
         };
         handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
@@ -1163,7 +1178,7 @@ public class Admob {
                 interCallback.onAdLoaded(null);
 
                 /// show ads
-                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
                 removeHandlerSplashAds();
             }
 
@@ -1178,7 +1193,7 @@ public class Admob {
         InterstitialAdPreloader.start(listIdInterTemp.get(0), configuration, callback);
     }
 
-    private void checkConditionAdPreloadingSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
+    private void checkConditionAdPreloadingSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             Log.d(TAG, "removeHandlerDelayAdsSplash");
             removeHandlerDelayAdsSplash();
@@ -1188,13 +1203,13 @@ public class Admob {
             String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
             Log.d(TAG, "AdsSplash Inter preload: ===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây , isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
             EventTrackingHelper.logEventWithAParam(activity, "Splash_time_wait", "time_to_step", timeFormatted);
-            showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+            showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
             removeHandlerDelayAdsSplash();
         }
 
     }
 
-    public void showInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
+    public void showInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -1222,7 +1237,12 @@ public class Admob {
                     if (isEmptyListNativeAfterInter) {
                         interCallback.onNextAction();
                     } else {
-                        startNativeAfterInter(activity, interCallback);
+                        NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+                        if (nativeAd == null) {
+                            interCallback.onNextAction();
+                        } else {
+                            startNativeAfterInter(activity, interCallback);
+                        }
                     }
                 } else {
                     interCallback.onNextAction();
@@ -1268,7 +1288,12 @@ public class Admob {
                                     if (isEmptyListNativeAfterInter) {
                                         interCallback.onNextAction();
                                     } else {
-                                        startNativeAfterInter(activity, interCallback);
+                                        NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+                                        if (nativeAd == null) {
+                                            interCallback.onNextAction();
+                                        } else {
+                                            startNativeAfterInter(activity, interCallback);
+                                        }
                                     }
                                 } else {
                                     interCallback.onNextAction();
@@ -1293,7 +1318,12 @@ public class Admob {
                                     if (isEmptyListNativeAfterInter) {
                                         interCallback.onNextAction();
                                     } else {
-                                        startNativeAfterInter(activity, interCallback);
+                                        NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+                                        if (nativeAd == null) {
+                                            interCallback.onNextAction();
+                                        } else {
+                                            startNativeAfterInter(activity, interCallback);
+                                        }
                                     }
                                 } else {
                                     interCallback.onNextAction();

@@ -157,6 +157,8 @@ public class MainActivity extends AppCompatActivity {
                     this,
                     "inter_all",
                     "inter_all",
+                    "native_wb",
+                    "native_wb",
                     new InterCallback(){
                         @Override
                         public void onNextAction() {

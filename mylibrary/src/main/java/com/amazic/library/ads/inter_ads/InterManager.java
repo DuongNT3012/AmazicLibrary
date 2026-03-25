@@ -105,6 +105,11 @@ public class InterManager {
 
     //preload
     public static void loadAndShowInterAdsPreload(Activity activity, String adsKeyInter, String remoteKeyInter, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter, InterCallback interCallback) {
+        if (remoteKeyNativeAfterInter != "" || adsKeyNativeAfterInter != "") {
+            Log.d(TAG, "INTER Ad Preload: loadAndShowInterAdsPreload start preload native after inter");
+            NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNativeAfterInter, remoteKeyNativeAfterInter);
+        }
+
         Admob.getInstance().loadInterAdPreloadWithHandleTimeOut(activity, AdmobApi.getInstance().getListIDByName(adsKeyInter), new InterCallback() {
             @Override
             public void onAdLoaded(InterstitialAd interstitialAd) {
@@ -160,13 +165,21 @@ public class InterManager {
         loadAndShowInterAdsPreload(activity, adsKeyInter, remoteKeyInter, "", "", interCallback);
     }
 
-    public static void loadInterAdPreload(Context context, String adsKey, String remoteKey) {
-        Admob.getInstance().loadInterAdPreload(context, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {
+    public static void loadInterAdPreload(Activity activity, String adsKey, String remoteKey, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter) {
+        if (remoteKeyNativeAfterInter != "" || adsKeyNativeAfterInter != "") {
+            Log.d(TAG, "INTER Ad Preload: loadAndShowInterAdsPreload start preload native after inter");
+            NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNativeAfterInter, remoteKeyNativeAfterInter);
+        }
+        Admob.getInstance().loadInterAdPreload(activity, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {
             @Override
             public void onAdLoaded(InterstitialAd interstitialAd) {
 
             }
         }, remoteKey);
+    }
+
+    public static void loadInterAdPreload(Activity activity, String adsKey, String remoteKey) {
+        loadInterAdPreload(activity, adsKey, remoteKey, "", "");
     }
 
     public static void showInterAdPreload(Activity activity, String adsKey, String remoteKeyInter, InterCallback interCallback, boolean isShowLoading) {
@@ -176,12 +189,10 @@ public class InterManager {
     public static void showInterAdPreload(Activity activity, String adsKey, String remoteKeyInter, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter, InterCallback interCallback, boolean isShowLoading) {
         boolean isShowNativeAfterInter = false;
         if (remoteKeyNativeAfterInter != "" || adsKeyNativeAfterInter != "") {
-            NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNativeAfterInter, remoteKeyNativeAfterInter);
             isShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNativeAfterInter);
         }
 
         Log.d(TAG, "INTER Ad Preload: isShowNativeAfterInter = " + isShowNativeAfterInter);
-
         Admob.getInstance().showInterAdPreload(activity, AdmobApi.getInstance().getListIDByName(adsKey), new InterCallback() {
             @Override
             public void onNextAction() {

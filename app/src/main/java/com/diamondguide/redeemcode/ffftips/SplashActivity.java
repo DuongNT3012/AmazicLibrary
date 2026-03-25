@@ -163,6 +163,7 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("open_splash");
+            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
             AsyncSplash.Companion.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");
             AsyncSplash.Companion.getInstance().setKeyIntervalInterstitialFromStart("interval_interstitial_from_start");
             AsyncSplash.Companion.getInstance().setShowBannerSplash(binding.bannerContainerView, listIdBannerSplash, "banner_splash");

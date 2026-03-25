@@ -37,7 +37,7 @@ class NativeAfterInterActivity : AppCompatActivity() {
         setContentView(R.layout.activity_native_after_inter)
 
         frAds = findViewById(R.id.fr_ads)
-        Log.d("Admob", "SPLASH: showInterAdsSplash: Show Screen Native After Inter");
+        Log.d("Admob", "Native After Inter: Show Screen Native After Inter");
         NativeAfterInterManager.showPreloadNativeAfterInter(
             frAds,
             this,
@@ -45,11 +45,13 @@ class NativeAfterInterActivity : AppCompatActivity() {
             remoteKey,
             object : NativeAfterInterManager.OnCloseNativeListener {
                 override fun onClose() {
+                    Log.d("Admob", "Native After Inter: Show Screen Native After Inter");
                     interCallback?.onNextAction()
                     finish()
                 }
 
                 override fun onFail() {
+                    Log.d("Admob", "Native After Inter: Show Screen Native After Inter");
                     finish()
                 }
             }

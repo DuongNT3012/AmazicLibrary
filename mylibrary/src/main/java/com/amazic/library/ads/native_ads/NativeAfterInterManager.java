@@ -26,9 +26,9 @@ public class NativeAfterInterManager {
     public static void preloadNativeAfterInter(Activity activity, String adsKey, String remoteKey) {
         NativeAfterInterActivity.Companion.setAdsKey(adsKey);
         NativeAfterInterActivity.Companion.setRemoteKey(remoteKey);
-        Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter - list is Empty: "+AdmobApi.getInstance().getListIDByName(adsKey).isEmpty());
+        Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter - list is Empty: "+AdmobApi.getInstance().getListIDByName(adsKey).isEmpty() + ", adskey = "+mapNativeAdsAfterInter.get(adsKey));
         if (mapNativeAdsAfterInter.get(adsKey) == null || !AdmobApi.getInstance().getListIDByName(adsKey).isEmpty()) {
-            Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter."+ AdmobApi.getInstance().getListIDByName(adsKey));
+            Log.d(TAG, "NativeAfterInterManager: 1.preloadNativeAfterInter."+ AdmobApi.getInstance().getListIDByName(adsKey));
             Admob.getInstance().loadNativeAds(
                     activity,
                     AdmobApi.getInstance().getListIDByName(adsKey),
@@ -43,7 +43,8 @@ public class NativeAfterInterManager {
                         @Override
                         public void onAdFailedToLoad(LoadAdError loadAdError) {
                             super.onAdFailedToLoad(loadAdError);
-                            Log.d(TAG, "NativeAfterInterManager: onAdFailedToLoad: " + loadAdError.getMessage());
+                            mapNativeAdsAfterInter.put(adsKey, null);
+                            Log.d(TAG, "NativeAfterInterManager: 1.onAdFailedToLoad: " + loadAdError.getMessage());
                         }
                     }, remoteKey
             );

@@ -167,7 +167,7 @@ public class InterManager {
         loadAndShowInterAdsPreload(activity, adsKeyInter, remoteKeyInter, "", "", interCallback);
     }
 
-    public static void loadInterAdPreload(Activity activity, String adsKey, String remoteKey, @NonNull String remoteKeyNativeAfterInter, @NonNull String adsKeyNativeAfterInter) {
+    public static void loadInterAdPreload(Activity activity, String adsKey, String remoteKey, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter) {
         if (remoteKeyNativeAfterInter != "" || adsKeyNativeAfterInter != "") {
             Log.d(TAG, "INTER Ad Preload: loadAndShowInterAdsPreload start preload native after inter");
             NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNativeAfterInter, remoteKeyNativeAfterInter);
@@ -188,7 +188,7 @@ public class InterManager {
         showInterAdPreload(activity, adsKey, remoteKeyInter, "", "", interCallback, isShowLoading);
     }
 
-    public static void showInterAdPreload(Activity activity, String adsKey, String remoteKeyInter, @NonNull String remoteKeyNativeAfterInter, @NonNull String adsKeyNativeAfterInter, InterCallback interCallback, boolean isShowLoading) {
+    public static void showInterAdPreload(Activity activity, String adsKey, String remoteKeyInter, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter, InterCallback interCallback, boolean isShowLoading) {
         boolean isShowNativeAfterInter = false;
         if (remoteKeyNativeAfterInter != "" || adsKeyNativeAfterInter != "") {
             isShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNativeAfterInter);

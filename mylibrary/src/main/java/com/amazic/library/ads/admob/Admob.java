@@ -1282,8 +1282,12 @@ public class Admob {
                         Log.d(TAG, "AdsSplash Inter preload: Ad dismissed fullscreen content.");
                         interCallback.onAdDismissedFullScreenContent();
                         AppOpenManager.getInstance().setEnableResume(true);
+                        Log.d(TAG, "AdsSplash Inter preload: start check openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
+
                         if (!openActivityAfterShowInterAds) {
+                            Log.d(TAG, "AdsSplash Inter preload: start check getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
                             if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                                Log.d(TAG, "AdsSplash Inter preload: start check isConfigShowNativeAfterInter = " + isConfigShowNativeAfterInter + ", isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
                                 if (isConfigShowNativeAfterInter) {
                                     if (isEmptyListNativeAfterInter) {
                                         interCallback.onNextAction();
@@ -1390,8 +1394,14 @@ public class Admob {
                                     Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
                                     interCallback.onNextAction();
                                 } else {
-                                    Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: show Native After Inter");
-                                    startNativeAfterInter(activity, interCallback);
+                                    NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+                                    if (nativeAd == null) {
+                                        Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: NATIVE AD NULL NOT Show Native After Inter");
+                                        interCallback.onNextAction();
+                                    } else {
+                                        Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: show Native After Inter");
+                                        startNativeAfterInter(activity, interCallback);
+                                    }
                                 }
                             } else {
                                 Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: onNextAction");

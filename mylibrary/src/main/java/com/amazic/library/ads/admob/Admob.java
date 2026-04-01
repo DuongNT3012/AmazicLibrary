@@ -941,6 +941,11 @@ public class Admob {
 
     /// use load and show first ad preloading
     public void loadInterAdPreloadWithHandleTimeOut(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter) {
+        if(listIdInter.isEmpty()){
+            interCallback.onNextAction();
+            return;
+        }
+
         if (InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
             Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow HAVE DATA => show inter preload " + remoteKey);
             interCallback.onAdLoaded(null);
@@ -4382,6 +4387,11 @@ public class Admob {
             RewardedCallback rewardedCallback,
             String remoteKey
     ) {
+        if (listIdRewarded.isEmpty()){
+            rewardedCallback.onNextAction();
+            return;
+        }
+
         if (RewardedAdPreloader.isAdAvailable(listIdRewarded.get(0))) {
             Log.d(TAG, "REWARD Ad Preload - loadAndShow: HAVE DATA");
             rewardedCallback.onAdLoaded(null);

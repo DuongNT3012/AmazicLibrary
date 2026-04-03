@@ -142,7 +142,7 @@ public class SplashActivity extends AppCompatActivity {
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
             AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
             AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
-            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
+            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(false);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
 //            AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);

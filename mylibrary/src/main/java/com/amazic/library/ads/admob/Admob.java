@@ -941,7 +941,7 @@ public class Admob {
 
     /// use load and show first ad preloading
     public void loadInterAdPreloadWithHandleTimeOut(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter) {
-        if(listIdInter.isEmpty()){
+        if (listIdInter.isEmpty()) {
             interCallback.onNextAction();
             return;
         }
@@ -1029,14 +1029,16 @@ public class Admob {
                         dismissLoadingDialog();
                     }
 
-                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                        if (isShowNativeAfterInter) {
-                            startNativeAfterInter(activity, interCallback);
+                    if (isFirstLoadAd.getAndSet(false)) {
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isShowNativeAfterInter) {
+                                startNativeAfterInter(activity, interCallback);
+                            } else {
+                                interCallback.onNextAction();
+                            }
                         } else {
                             interCallback.onNextAction();
                         }
-                    } else {
-                        interCallback.onNextAction();
                     }
                     removeHandlerInterAds();
                 }
@@ -4387,7 +4389,7 @@ public class Admob {
             RewardedCallback rewardedCallback,
             String remoteKey
     ) {
-        if (listIdRewarded.isEmpty()){
+        if (listIdRewarded.isEmpty()) {
             rewardedCallback.onNextAction();
             return;
         }

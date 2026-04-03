@@ -1029,19 +1029,23 @@ public class Admob {
                 public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
                     super.onAdFailedToPreload(s, adError);
                     EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_failed");
-                    Log.d(TAG, "INTER Ad Preload - loadAndShow: Preload ad " + s + " failed to load with error: " + adError.getMessage());
+                    Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - Preload ad " + s + " failed to load with error: " + adError.getMessage());
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
                     }
 
                     if (isFirstLoadAd.getAndSet(false)) {
+                        Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - getShowNativeAfterInter = " +AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
                         if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                             if (isShowNativeAfterInter) {
+                                Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - show Native after inter");
                                 startNativeAfterInter(activity, interCallback);
                             } else {
+                                Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - ONNEXT Not show Native after inter");
                                 interCallback.onNextAction();
                             }
                         } else {
+                            Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload -Onnext");
                             interCallback.onNextAction();
                         }
                     }

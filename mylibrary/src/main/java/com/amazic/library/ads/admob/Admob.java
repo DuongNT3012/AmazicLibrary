@@ -882,6 +882,7 @@ public class Admob {
                         dismissLoadingDialog();
                     }
                     isInterOrRewardedShowing = false;
+                    removeHandlerInterAds();
                 }
 
                 @Override
@@ -901,6 +902,7 @@ public class Admob {
                         dismissLoadingDialog();
                     }
                     isInterOrRewardedShowing = true;
+                    removeHandlerInterAds();
                 }
             });
             isInterOrRewardedShowing = true;
@@ -970,9 +972,12 @@ public class Admob {
                 }
                 if (interCallback != null) {
                     isLoadInterAdsIdTimeout = true;
+                    Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow - inter_ads_id_timeout: getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
                     if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                        Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow - inter_ads_id_timeout: isShowNativeAfterInter = " + isShowNativeAfterInter);
                         if (isShowNativeAfterInter) {
                             NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNativeAfterInter);
+                            Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow - inter_ads_id_timeout: nativeAd = " + nativeAd);
                             if (nativeAd == null) {
                                 interCallback.onNextAction();
                             } else {

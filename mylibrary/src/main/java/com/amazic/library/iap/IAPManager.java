@@ -2,15 +2,19 @@ package com.amazic.library.iap;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.android.billingclient.api.AcknowledgePurchaseParams;
 import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ConsumeParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.ProductDetailsResponseListener;
 import com.android.billingclient.api.Purchase;
@@ -69,22 +73,19 @@ public class IAPManager {
 
     public void initBilling(Context context, ArrayList<ProductDetailCustom> listProductDetailCustoms, BillingCallback billingCallback) {
         setListProductDetails(listProductDetailCustoms);
-        purchasesUpdatedListener = new PurchasesUpdatedListener() {
-            @Override
-            public void onPurchasesUpdated(@NonNull BillingResult billingResult, @Nullable List<Purchase> list) {
-                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null) {
-                    for (Purchase purchase : list) {
-                        handlePurchase(purchase);
-                    }
-                    Log.d(TAG, "onPurchasesUpdated OK");
-                } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
-                    // Handle an error caused by a user cancelling the purchase flow.
-                    purchaseCallback.onUserCancelBilling();
-                    Log.d(TAG, "user cancelling the purchase flow");
-                } else {
-                    // Handle any other error codes.
-                    Log.d(TAG, "onPurchasesUpdated:... ");
+        purchasesUpdatedListener = (billingResult, list) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && list != null) {
+                for (Purchase purchase : list) {
+                    handlePurchase(purchase);
                 }
+                Log.d(TAG, "onPurchasesUpdated OK");
+            } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
+                // Handle an error caused by a user cancelling the purchase flow.
+                purchaseCallback.onUserCancelBilling();
+                Log.d(TAG, "user cancelling the purchase flow");
+            } else {
+                // Handle any other error codes.
+                Log.d(TAG, "onPurchasesUpdated:... ");
             }
         };
         billingClient = BillingClient.newBuilder(context).setListener(purchasesUpdatedListener).enablePendingPurchases().build();
@@ -132,30 +133,22 @@ public class IAPManager {
     }
 
     private void showProductsAvailableToBuy(ArrayList<QueryProductDetailsParams.Product> listIAPProduct, ArrayList<QueryProductDetailsParams.Product> listSubProduct) {
-        if (listIAPProduct.size() > 0) {
+        if (!listIAPProduct.isEmpty()) {
             QueryProductDetailsParams queryProductDetailsParamsIAP = QueryProductDetailsParams.newBuilder().setProductList(listIAPProduct).build();
-            billingClient.queryProductDetailsAsync(queryProductDetailsParamsIAP, new ProductDetailsResponseListener() {
-                public void onProductDetailsResponse(BillingResult billingResult, List<ProductDetails> productDetailsList) {
-                    // check billingResult
-                    // process returned productDetailsList
-                    if (productDetailsList != null) {
-                        productDetailsListIAP = productDetailsList;
-                        addProductDetailsINAPToMap(productDetailsList);
-                    }
-                }
+            billingClient.queryProductDetailsAsync(queryProductDetailsParamsIAP, (billingResult, productDetailsList) -> {
+                // check billingResult
+                // process returned productDetailsList
+                productDetailsListIAP = productDetailsList;
+                addProductDetailsINAPToMap(productDetailsList);
             });
         }
-        if (listSubProduct.size() > 0) {
+        if (!listSubProduct.isEmpty()) {
             QueryProductDetailsParams queryProductDetailsParamsSub = QueryProductDetailsParams.newBuilder().setProductList(listSubProduct).build();
-            billingClient.queryProductDetailsAsync(queryProductDetailsParamsSub, new ProductDetailsResponseListener() {
-                public void onProductDetailsResponse(BillingResult billingResult, List<ProductDetails> productDetailsList) {
-                    // check billingResult
-                    // process returned productDetailsList
-                    if (productDetailsList != null) {
-                        productDetailsListSub = productDetailsList;
-                        addProductDetailsSubsToMap(productDetailsList);
-                    }
-                }
+            billingClient.queryProductDetailsAsync(queryProductDetailsParamsSub, (billingResult, productDetailsList) -> {
+                // check billingResult
+                // process returned productDetailsList
+                productDetailsListSub = productDetailsList;
+                addProductDetailsSubsToMap(productDetailsList);
             });
         }
     }
@@ -264,56 +257,113 @@ public class IAPManager {
     }
 
     private void handlePurchase(Purchase purchase) {
-        isPurchase = true;
-        purchaseCallback.onProductPurchased(purchase.getOrderId(), purchase.getOriginalJson());
+        /*isPurchase = true;
+        purchaseCallback.onProductPurchased(purchase.getOrderId(), purchase.getOriginalJson());*/
+
+        if (purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED) {
+            for (String productId : purchase.getProducts()) {
+                if (isConsumable(productId)) {
+                    // Nếu là vật phẩm tiêu hao (Vàng, Kim cương...)
+                    handleConsume(purchase);
+                } else {
+                    // Nếu là Subscriptions hoặc sản phẩm mua một lần (Remove Ads...)
+                    handleAcknowledge(purchase);
+                }
+            }
+        }
+    }
+
+    private void handleConsume(Purchase purchase) {
+        ConsumeParams consumeParams = ConsumeParams.newBuilder()
+                .setPurchaseToken(purchase.getPurchaseToken())
+                .build();
+
+        billingClient.consumeAsync(consumeParams, (billingResult, purchaseToken) -> {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                Log.d(TAG, "Consume thành công! User có thể mua lại sản phẩm này.");
+
+                new Handler(Looper.getMainLooper()).post(() -> {
+                    isPurchase = true; //??????????????????????
+                    purchaseCallback.onProductPurchased(purchase.getOrderId(), purchase.getOriginalJson());
+                });
+            }
+        });
+    }
+
+    private void handleAcknowledge(Purchase purchase) {
+        if (!purchase.isAcknowledged()) {
+            AcknowledgePurchaseParams acknowledgePurchaseParams = AcknowledgePurchaseParams.newBuilder()
+                    .setPurchaseToken(purchase.getPurchaseToken())
+                    .build();
+
+            billingClient.acknowledgePurchase(acknowledgePurchaseParams, billingResult -> {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    Log.d(TAG, "Acknowledge thành công! Giao dịch đã được xác nhận vĩnh viễn.");
+
+                    new Handler(Looper.getMainLooper()).post(() -> {
+                        isPurchase = true;
+                        purchaseCallback.onProductPurchased(purchase.getOrderId(), purchase.getOriginalJson());
+                    });
+                }
+            });
+        } else {
+            Log.d(TAG, "Đã acknowledge rồi! Giao dịch đã được xác nhận vĩnh viễn.");
+            // Đã acknowledge rồi thì chỉ cần trả kết quả về callback
+            isPurchase = true;
+            purchaseCallback.onProductPurchased(purchase.getOrderId(), purchase.getOriginalJson());
+        }
+    }
+
+    private boolean isConsumable(String productId) {
+        //Check IAP product
+        for (QueryProductDetailsParams.Product p : listIAPProduct) {
+            if (p.zza().equals(productId)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void verifyPurchased(BillingCallback billingCallback) {
-        if (listIAPProduct != null && listIAPProduct.size() > 0) {
-            billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(typeIAP).build(), new PurchasesResponseListener() {
-                @Override
-                public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        for (Purchase purchase : list) {
-                            for (QueryProductDetailsParams.Product id : listIAPProduct) {
-                                if (purchase.getProducts().contains(id.zza())) {
-                                    isPurchase = true;
-                                }
+        if (listIAPProduct != null && !listIAPProduct.isEmpty()) {
+            billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(typeIAP).build(), (billingResult, list) -> {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    for (Purchase purchase : list) {
+                        for (QueryProductDetailsParams.Product id : listIAPProduct) {
+                            if (purchase.getProducts().contains(id.zza())) {
+                                isPurchase = true;
                             }
                         }
                     }
-                    isVerifyIAP = true;
-                    if (listSubProduct != null && listSubProduct.size() > 0) {
-                        if (isVerifySub) {
-                            billingCallback.onBillingSetupFinished(billingResult.getResponseCode());
-                        }
-                    } else {
+                }
+                isVerifyIAP = true;
+                if (listSubProduct != null && !listSubProduct.isEmpty()) {
+                    if (isVerifySub) {
                         billingCallback.onBillingSetupFinished(billingResult.getResponseCode());
                     }
+                } else {
+                    billingCallback.onBillingSetupFinished(billingResult.getResponseCode());
                 }
             });
         }
-        if (listSubProduct != null && listSubProduct.size() > 0) {
-            billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(), new PurchasesResponseListener() {
-                @Override
-                public void onQueryPurchasesResponse(@NonNull BillingResult billingResult, @NonNull List<Purchase> list) {
-                    if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
-                        for (Purchase purchase : list) {
-                            for (QueryProductDetailsParams.Product id : listSubProduct) {
-                                if (purchase.getProducts().contains(id.zza())) {
-                                    isPurchase = true;
-                                }
+        if (listSubProduct != null && !listSubProduct.isEmpty()) {
+            billingClient.queryPurchasesAsync(QueryPurchasesParams.newBuilder().setProductType(BillingClient.ProductType.SUBS).build(), (billingResult, list) -> {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    for (Purchase purchase : list) {
+                        for (QueryProductDetailsParams.Product id : listSubProduct) {
+                            if (purchase.getProducts().contains(id.zza())) {
+                                isPurchase = true;
                             }
                         }
                     }
-                    isVerifySub = true;
-                    if (listIAPProduct != null && listIAPProduct.size() > 0) {
-                        if (isVerifyIAP) {
-                            billingCallback.onBillingSetupFinished(billingResult.getResponseCode());
-                        }
-                    } else {
+                }
+                isVerifySub = true;
+                if (listIAPProduct != null && !listIAPProduct.isEmpty()) {
+                    if (isVerifyIAP) {
                         billingCallback.onBillingSetupFinished(billingResult.getResponseCode());
                     }
+                } else {
+                    billingCallback.onBillingSetupFinished(billingResult.getResponseCode());
                 }
             });
         }

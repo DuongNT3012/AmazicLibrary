@@ -6,24 +6,26 @@ import androidx.annotation.Nullable;
 
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAdRevenue;
-import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.AdjustEvent;
 import com.amazic.library.ads.admob.Admob;
-import com.google.android.gms.ads.AdValue;
-import com.google.android.gms.ads.AdapterResponseInfo;
+import com.google.android.libraries.ads.mobile.sdk.common.AdSourceResponseInfo;
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue;
 
 public class AdjustUtil {
-    public static void trackRevenue(@Nullable AdapterResponseInfo loadedAdapterResponseInfo, AdValue adValue) {
+    public static void trackRevenue(@Nullable AdSourceResponseInfo loadedAdSourceInfo, AdValue adValue) {
         String adName = "";
-        if (loadedAdapterResponseInfo != null)
-            adName = loadedAdapterResponseInfo.getAdSourceName();
+        if (loadedAdSourceInfo != null) {
+            adName = loadedAdSourceInfo.getName();
+        }
         double valueMicros = adValue.getValueMicros() / 1000000d;
         Log.d("AdjustRevenue", "adName: " + adName + " - valueMicros: " + valueMicros);
         // send ad revenue info to Adjust
         AdjustAdRevenue adRevenue = new AdjustAdRevenue("admob_sdk");
         adRevenue.setRevenue(valueMicros, adValue.getCurrencyCode());
         adRevenue.setAdRevenueNetwork(adName);
+
         Adjust.trackAdRevenue(adRevenue);
+
         Log.d("AdjustRevenue", "trackRevenue: " + adValue.getCurrencyCode());
         if (!Admob.getInstance().getTokenEventAdjust().isEmpty()) {
             AdjustEvent event = new AdjustEvent(Admob.getInstance().getTokenEventAdjust());

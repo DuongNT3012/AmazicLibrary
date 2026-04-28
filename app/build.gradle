@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace 'com.diamondguide.redeemcode.ffftips'
-    compileSdk 35
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.diamondguide.redeemcode.ffftips"
         minSdk 24
-        targetSdk 35
+        targetSdk 36
         versionCode 100
         versionName "1.0.0"
 

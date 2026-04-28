@@ -54,33 +54,26 @@ import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
 import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.mylibrary.R;
-import com.google.ads.mediation.admob.AdMobAdapter;
 import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdListener;
-import com.google.android.gms.ads.AdLoader;
-import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdSize;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.ResponseInfo;
 import com.google.android.gms.ads.VideoController;
 import com.google.android.gms.ads.VideoOptions;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
-import com.google.android.gms.ads.interstitial.InterstitialAdPreloader;
 import com.google.android.gms.ads.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdOptions;
-import com.google.android.gms.ads.nativead.NativeAdView;
-import com.google.android.gms.ads.preload.PreloadCallbackV2;
-import com.google.android.gms.ads.preload.PreloadConfiguration;
-import com.google.android.gms.ads.rewarded.RewardedAd;
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
-import com.google.android.gms.ads.rewarded.RewardedAdPreloader;
-import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
-import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd;
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdEventCallback;
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback;
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue;
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.nativead.CustomNativeAd;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdEventCallback;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoader;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallback;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -132,6 +125,10 @@ public class Admob {
     private int timeDelayAdsSplash = 7000;
     private boolean isInitAdmobDone = false;
     //end
+
+    //use to destroy banner
+    private AdView adViewBanner;
+    private AdView adViewBannerFragment;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -1035,7 +1032,7 @@ public class Admob {
                     }
 
                     if (isFirstLoadAd.getAndSet(false)) {
-                        Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - getShowNativeAfterInter = " +AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
+                        Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
                         if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                             if (isShowNativeAfterInter) {
                                 Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - show Native after inter");
@@ -2708,7 +2705,21 @@ public class Admob {
         return adView;
     }
 
+    private void destroyBanner(AdView adView) {
+        if (adView != null) {
+            // Remove banner from view hierarchy.
+            if (adView.getParent() instanceof ViewGroup) {
+                ((ViewGroup) adView.getParent()).removeView(adView);
+            }
+            // Destroy the banner ad resources.
+            adView.destroy();
+            // Drop reference to the banner ad.
+            adView = null;
+        }
+    }
+
     public void loadBannerAds(Activity activity, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String remoteKey) {
+        destroyBanner(adViewBanner);
         ArrayList<String> listIdBannerTemp = new ArrayList<>(listIdBanner);
         if (adContainerView != null) {
             adContainerView.removeAllViews();
@@ -2729,111 +2740,105 @@ public class Admob {
         }
         // [START create_ad_view]
         // Create a new ad view.
-        AdView adView = new AdView(activity);
-        adView.setAdUnitId(listIdBannerTemp.get(0));
-        adView.setAdSize(getAdSize(activity));
-        // [END create_ad_view]
+        adViewBanner = new AdView(activity);
+        if (adContainerView != null) {
+            adContainerView.addView(adViewBanner);
+        }
+        AdSize adSize = getAdSize(activity);
+        BannerAdRequest adRequest = new BannerAdRequest.Builder(listIdBannerTemp.get(0), adSize).build();
 
-        // [START load_ad]
-        // Start loading the ad in the background.
-        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
-        if (timeHttpBanner != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpBanner);
-        AdRequest adRequest = adRequestBuilder.build();
-        adView.loadAd(adRequest);
-        adView.setAdListener(new AdListener() {
-            @Override
-            public void onAdClicked() {
-                super.onAdClicked();
-                AppOpenManager.isLastActionClickAd = true;
-                Log.d(TAG, "BANNER: onAdClicked. " + remoteKey);
-                EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                bannerCallback.onAdClicked();
-            }
+        adViewBanner.loadAd(
+                adRequest,
+                new AdLoadCallback<BannerAd>() {
+                    @Override
+                    public void onAdLoaded(@NonNull BannerAd bannerAd) {
+                        Log.i(TAG, "BANNER: onAdLoaded. " + remoteKey);
+                        // Replace ad container with new ad view.
+                        if (adContainerView != null) {
+                            adContainerView.removeAllViews();
+                            adContainerView.addView(adView);
+                        }
 
-            @Override
-            public void onAdClosed() {
-                super.onAdClosed();
-                Log.d(TAG, "BANNER: onAdClosed. " + remoteKey);
-                bannerCallback.onAdClosed();
-            }
+                        //DetectTestAd
+                        //Reset TechManager to false
+                        if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                            TechManager.getInstance().detectedTech(activity, false);
+                        }
+                        if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+                                && !AsyncSplash.Companion.getInstance().getDebug()
+                                && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                        ) {
+                            boolean isTestAd = detectTestAd(adView);
+                            Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
+                            TechManager.getInstance().detectedTech(activity, isTestAd);
 
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                super.onAdFailedToLoad(loadAdError);
-                Log.e(TAG, "BANNER: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                bannerCallback.onAdFailedToLoad();
-                if (!listIdBannerTemp.isEmpty()) {
-                    listIdBannerTemp.remove(0);
-                }
-                loadBannerAds(activity, listIdBannerTemp, adContainerView, bannerCallback, iOnAdsImpression, remoteKey);
-            }
+                            if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                                    && TechManager.getInstance().isTech(activity)
+                                    && !AsyncSplash.Companion.getInstance().getDebug()) {
+                                AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                            }
+                        }
+                        bannerCallback.onAdLoaded();
 
-            @Override
-            public void onAdImpression() {
-                super.onAdImpression();
-                Log.d(TAG, "BANNER: onAdImpression. " + remoteKey);
-                EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                bannerCallback.onAdImpression();
-                //use for auto reload banner after x seconds
-                iOnAdsImpression.onAdsImpression();
-            }
+                        //callback
+                        bannerAd.setAdEventCallback(
+                                new BannerAdEventCallback() {
+                                    @Override
+                                    public void onAdPaid(@NonNull AdValue value) {
+                                        BannerAdEventCallback.super.onAdPaid(value);
+                                        Log.d(TAG, "BANNER: onAdPaid. " + remoteKey);
+                                        //Adjust
+                                        AdjustUtil.trackRevenue(bannerAd.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                                    }
 
-            @Override
-            public void onAdLoaded() {
-                super.onAdLoaded();
-                Log.i(TAG, "BANNER: onAdLoaded. " + remoteKey);
-                // Replace ad container with new ad view.
-                if (adContainerView != null) {
-                    adContainerView.removeAllViews();
-                    adContainerView.addView(adView);
-                }
+                                    @Override
+                                    public void onAdImpression() {
+                                        Log.d(TAG, "BANNER: onAdImpression. " + remoteKey);
+                                        EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                                        bannerCallback.onAdImpression();
+                                        //use for auto reload banner after x seconds
+                                        iOnAdsImpression.onAdsImpression();
+                                    }
 
-                //DetectTestAd
-                //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
-                    TechManager.getInstance().detectedTech(activity, false);
-                }
-                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                ) {
-                    boolean isTestAd = detectTestAd(adView);
-                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
-                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
-                    TechManager.getInstance().detectedTech(activity, isTestAd);
+                                    @Override
+                                    public void onAdClicked() {
+                                        AppOpenManager.isLastActionClickAd = true;
+                                        Log.d(TAG, "BANNER: onAdClicked. " + remoteKey);
+                                        EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                                        bannerCallback.onAdClicked();
+                                    }
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                            && TechManager.getInstance().isTech(activity)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                                    @Override
+                                    public void onAdShowedFullScreenContent() {
+                                        // Banner ad showed.
+                                        Log.d(TAG, "Banner ad showed full screen content. " + remoteKey);
+                                    }
+
+                                    @Override
+                                    public void onAdDismissedFullScreenContent() {
+                                        // Banner ad dismissed.
+                                        Log.d(TAG, "Banner ad dismissed full screen content. " + remoteKey);
+                                    }
+
+                                    @Override
+                                    public void onAdFailedToShowFullScreenContent(
+                                            @NonNull FullScreenContentError fullScreenContentError) {
+                                        // Banner ad failed to show.
+                                        Log.w(TAG, "Banner ad failed to show full screen content: " + fullScreenContentError + ". " + remoteKey);
+                                    }
+                                });
                     }
-                }
 
-                //Tracking revenue
-                adView.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                        Log.e(TAG, "BANNER: onAdFailedToLoad. " + adError + ". " + remoteKey);
+                        bannerCallback.onAdFailedToLoad();
+                        if (!listIdBannerTemp.isEmpty()) {
+                            listIdBannerTemp.remove(0);
+                        }
+                        loadBannerAds(activity, listIdBannerTemp, adContainerView, bannerCallback, iOnAdsImpression, remoteKey);
                     }
                 });
-                bannerCallback.onAdLoaded();
-            }
-
-            @Override
-            public void onAdOpened() {
-                super.onAdOpened();
-                Log.d(TAG, "BANNER: onAdOpened. " + remoteKey);
-                bannerCallback.onAdOpened();
-            }
-
-            @Override
-            public void onAdSwipeGestureClicked() {
-                super.onAdSwipeGestureClicked();
-                Log.d(TAG, "BANNER: onAdSwipeGestureClicked. " + remoteKey);
-                bannerCallback.onAdSwipeGestureClicked();
-            }
-        });
-        // [END load_ad]
     }
 
     private boolean detectTestAd(ViewGroup viewGroup) {
@@ -2852,20 +2857,20 @@ public class Admob {
 
     //can load banner ads in fragment
     public void loadBannerAds(Context context, int adWidth, List<String> listIdBanner, FrameLayout adContainerView, BannerCallback bannerCallback, IOnAdsImpression iOnAdsImpression, String remoteKey) {
+        destroyBanner(adViewBannerFragment);
         ArrayList<String> listIdBannerTemp = new ArrayList<>(listIdBanner);
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
-        //Check network
+        //Check condition
         if (!NetworkUtil.isNetworkActive(context) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
-            Log.d(TAG, "BANNER: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
+            Log.d(TAG, "BANNER: Check condition: RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
             bannerCallback.onAdFailedToLoad();
             return;
         }
         //log event can request ads
         EventTrackingHelper.logEvent(context, remoteKey + "_true");
         //end log event can request ads
-
         //Show loading shimmer
         View shimmerBanner = LayoutInflater.from(context).inflate(R.layout.layout_shimmer_banner, null);
         if (adContainerView != null) {
@@ -2873,109 +2878,105 @@ public class Admob {
         }
         // [START create_ad_view]
         // Create a new ad view.
-        AdView adView = new AdView(context);
-        adView.setAdUnitId(listIdBannerTemp.get(0));
-        adView.setAdSize(getAdSizeFragment(context, adWidth));
-        // [END create_ad_view]
+        adViewBannerFragment = new AdView(context);
+        if (adContainerView != null) {
+            adContainerView.addView(adViewBannerFragment);
+        }
+        AdSize adSize = getAdSizeFragment(context, adWidth);
+        BannerAdRequest adRequest = new BannerAdRequest.Builder(listIdBannerTemp.get(0), adSize).build();
 
-        // [START load_ad]
-        // Start loading the ad in the background.
-        AdRequest.Builder adRequestBuilder = new AdRequest.Builder();
-        if (timeHttpBanner != -1) adRequestBuilder.setHttpTimeoutMillis(timeHttpBanner);
-        AdRequest adRequest = adRequestBuilder.build();
-        adView.loadAd(adRequest);
-        adView.setAdListener(new AdListener() {
-            @Override
-            public void onAdClicked() {
-                super.onAdClicked();
-                AppOpenManager.isLastActionClickAd = true;
-                Log.d(TAG, "BANNER: onAdClicked. " + remoteKey);
-                EventTrackingHelper.logEvent(context, remoteKey + "_click");
-                bannerCallback.onAdClicked();
-            }
+        adViewBannerFragment.loadAd(
+                adRequest,
+                new AdLoadCallback<BannerAd>() {
+                    @Override
+                    public void onAdLoaded(@NonNull BannerAd bannerAd) {
+                        Log.i(TAG, "BANNER: onAdLoaded. " + remoteKey);
+                        // Replace ad container with new ad view.
+                        if (adContainerView != null) {
+                            adContainerView.removeAllViews();
+                            adContainerView.addView(adView);
+                        }
 
-            @Override
-            public void onAdClosed() {
-                super.onAdClosed();
-                Log.d(TAG, "BANNER: onAdClosed. " + remoteKey);
-                bannerCallback.onAdClosed();
-            }
+                        //DetectTestAd
+                        //Reset TechManager to false
+                        if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                            TechManager.getInstance().detectedTech(context, false);
+                        }
+                        if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+                                && !AsyncSplash.Companion.getInstance().getDebug()
+                                && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                        ) {
+                            boolean isTestAd = detectTestAd(adViewBannerFragment);
+                            Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
+                            TechManager.getInstance().detectedTech(context, isTestAd);
 
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                super.onAdFailedToLoad(loadAdError);
-                Log.e(TAG, "BANNER: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                bannerCallback.onAdFailedToLoad();
-                if (!listIdBannerTemp.isEmpty()) {
-                    listIdBannerTemp.remove(0);
-                }
-                loadBannerAds(context, adWidth, listIdBannerTemp, adContainerView, bannerCallback, iOnAdsImpression, remoteKey);
-            }
+                            if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                                    && TechManager.getInstance().isTech(context)
+                                    && !AsyncSplash.Companion.getInstance().getDebug()) {
+                                AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);
+                            }
+                        }
+                        bannerCallback.onAdLoaded();
 
-            @Override
-            public void onAdImpression() {
-                super.onAdImpression();
-                Log.d(TAG, "BANNER: onAdImpression. " + remoteKey);
-                EventTrackingHelper.logEvent(context, remoteKey + "_view");
-                bannerCallback.onAdImpression();
-                //use for auto reload banner after x seconds
-                iOnAdsImpression.onAdsImpression();
-            }
+                        //callback
+                        bannerAd.setAdEventCallback(
+                                new BannerAdEventCallback() {
+                                    @Override
+                                    public void onAdPaid(@NonNull AdValue value) {
+                                        BannerAdEventCallback.super.onAdPaid(value);
+                                        Log.d(TAG, "BANNER: onAdPaid. " + remoteKey);
+                                        //Adjust
+                                        AdjustUtil.trackRevenue(bannerAd.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                                    }
 
-            @Override
-            public void onAdLoaded() {
-                super.onAdLoaded();
-                Log.i(TAG, "BANNER: onAdLoaded. " + remoteKey);
-                // Replace ad container with new ad view.
-                if (adContainerView != null) {
-                    adContainerView.removeAllViews();
-                    adContainerView.addView(adView);
-                }
-                //DetectTestAd
-                //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
-                    TechManager.getInstance().detectedTech(context, false);
-                }
-                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                ) {
-                    boolean isTestAd = detectTestAd(adView);
-                    EventTrackingHelper.logEvent(context, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(context));
-                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
-                    TechManager.getInstance().detectedTech(context, isTestAd);
+                                    @Override
+                                    public void onAdImpression() {
+                                        Log.d(TAG, "BANNER: onAdImpression. " + remoteKey);
+                                        EventTrackingHelper.logEvent(context, remoteKey + "_view");
+                                        bannerCallback.onAdImpression();
+                                        //use for auto reload banner after x seconds
+                                        iOnAdsImpression.onAdsImpression();
+                                    }
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                            && TechManager.getInstance().isTech(context)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);
+                                    @Override
+                                    public void onAdClicked() {
+                                        AppOpenManager.isLastActionClickAd = true;
+                                        Log.d(TAG, "BANNER: onAdClicked. " + remoteKey);
+                                        EventTrackingHelper.logEvent(context, remoteKey + "_click");
+                                        bannerCallback.onAdClicked();
+                                    }
+
+                                    @Override
+                                    public void onAdShowedFullScreenContent() {
+                                        // Banner ad showed.
+                                        Log.d(TAG, "Banner ad showed full screen content. " + remoteKey);
+                                    }
+
+                                    @Override
+                                    public void onAdDismissedFullScreenContent() {
+                                        // Banner ad dismissed.
+                                        Log.d(TAG, "Banner ad dismissed full screen content. " + remoteKey);
+                                    }
+
+                                    @Override
+                                    public void onAdFailedToShowFullScreenContent(
+                                            @NonNull FullScreenContentError fullScreenContentError) {
+                                        // Banner ad failed to show.
+                                        Log.w(TAG, "Banner ad failed to show full screen content: " + fullScreenContentError + ". " + remoteKey);
+                                    }
+                                });
                     }
-                }
-                //Tracking revenue
-                adView.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                        Log.e(TAG, "BANNER: onAdFailedToLoad. " + adError + ". " + remoteKey);
+                        bannerCallback.onAdFailedToLoad();
+                        if (!listIdBannerTemp.isEmpty()) {
+                            listIdBannerTemp.remove(0);
+                        }
+                        loadBannerAds(context, adWidth, listIdBannerTemp, adContainerView, bannerCallback, iOnAdsImpression, remoteKey);
                     }
                 });
-                bannerCallback.onAdLoaded();
-            }
-
-            @Override
-            public void onAdOpened() {
-                super.onAdOpened();
-                Log.d(TAG, "BANNER: onAdOpened. " + remoteKey);
-                bannerCallback.onAdOpened();
-            }
-
-            @Override
-            public void onAdSwipeGestureClicked() {
-                super.onAdSwipeGestureClicked();
-                Log.d(TAG, "BANNER: onAdSwipeGestureClicked. " + remoteKey);
-                bannerCallback.onAdSwipeGestureClicked();
-            }
-        });
-        // [END load_ad]
     }
     //end can load banner ads in fragment
     //================================End banner ads================================
@@ -3002,10 +3003,7 @@ public class Admob {
             adContainerView.addView(shimmerBanner);
         }
         AdView adView = new AdView(activity);
-        adView.setAdUnitId(listIdCollapseBannerTemp.get(0));
-
         AdSize adSize = getAdSize(activity);
-        adView.setAdSize(adSize);
         // Create an extra parameter that aligns the bottom of the expanded ad to
         // the bottom of the bannerView.
         Bundle extras = new Bundle();
@@ -3014,89 +3012,89 @@ public class Admob {
         } else {
             extras.putString("collapsible", "top");
         }
-
-        AdRequest adRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+        BannerAdRequest bannerAdRequest = new BannerAdRequest.Builder(listIdCollapseBannerTemp.get(0), adSize)
+                .setGoogleExtrasBundle(extras)
                 .build();
-        adView.loadAd(adRequest);
-        adView.setAdListener(new AdListener() {
-            @Override
-            public void onAdClicked() {
-                super.onAdClicked();
-                AppOpenManager.isLastActionClickAd = true;
-                Log.d(TAG, "COLLAPSE BANNER: onAdClicked. " + remoteKey);
-                EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                bannerCallback.onAdClicked();
-            }
 
-            @Override
-            public void onAdClosed() {
-                super.onAdClosed();
-                Log.d(TAG, "COLLAPSE BANNER: onAdClosed. " + remoteKey);
-                bannerCallback.onAdClosed();
-            }
-
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                super.onAdFailedToLoad(loadAdError);
-                Log.e(TAG, "COLLAPSE BANNER: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                bannerCallback.onAdFailedToLoad();
-                iOnAdsFailToLoad.onAdsFailToLoad();
-                if (!listIdCollapseBannerTemp.isEmpty()) {
-                    listIdCollapseBannerTemp.remove(0);
-                }
-                loadCollapseBanner(activity, listIdCollapseBannerTemp, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, iOnAdsFailToLoad, collapseTypeClose, valueCountDownOrCountClick, remoteKey);
-            }
-
-            @Override
-            public void onAdImpression() {
-                super.onAdImpression();
-                Log.d(TAG, "COLLAPSE BANNER: onAdImpression. " + remoteKey);
-                EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                bannerCallback.onAdImpression();
-                iOnAdsImpression.onAdsImpression();
-            }
-
-            @Override
-            public void onAdLoaded() {
-                super.onAdLoaded();
-                Log.i(TAG, "COLLAPSE BANNER: onAdLoaded. " + remoteKey);
-                bannerCallback.onAdLoaded();
-                // Replace ad container with new ad view.
-                if (adContainerView != null) {
-                    activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
-                        @Override
-                        public void onResume(@NonNull LifecycleOwner owner) {
-                            DefaultLifecycleObserver.super.onResume(owner);
-                            adContainerView.removeAllViews();
-                            adContainerView.addView(adView);
+        adView.loadAd(
+                bannerAdRequest,
+                new AdLoadCallback<BannerAd>() {
+                    @Override
+                    public void onAdLoaded(@NonNull BannerAd bannerAd) {
+                        Log.i(TAG, "COLLAPSE BANNER: onAdLoaded. " + remoteKey);
+                        bannerCallback.onAdLoaded();
+                        // Replace ad container with new ad view.
+                        if (adContainerView != null) {
+                            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                                @Override
+                                public void onResume(@NonNull LifecycleOwner owner) {
+                                    DefaultLifecycleObserver.super.onResume(owner);
+                                    adContainerView.removeAllViews();
+                                    adContainerView.addView(adView);
+                                }
+                            });
                         }
-                    });
-                }
-                //Tracking revenue
-                adView.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+
+                        //callback
+                        bannerAd.setAdEventCallback(
+                                new BannerAdEventCallback() {
+                                    @Override
+                                    public void onAdPaid(@NonNull AdValue value) {
+                                        BannerAdEventCallback.super.onAdPaid(value);
+                                        Log.d(TAG, "COLLAPSE BANNER: onAdPaid. " + remoteKey);
+                                        //Adjust
+                                        AdjustUtil.trackRevenue(bannerAd.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                                    }
+
+                                    @Override
+                                    public void onAdImpression() {
+                                        Log.d(TAG, "COLLAPSE BANNER: onAdImpression. " + remoteKey);
+                                        EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                                        bannerCallback.onAdImpression();
+                                        iOnAdsImpression.onAdsImpression();
+                                    }
+
+                                    @Override
+                                    public void onAdClicked() {
+                                        AppOpenManager.isLastActionClickAd = true;
+                                        Log.d(TAG, "COLLAPSE BANNER: onAdClicked. " + remoteKey);
+                                        EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                                        bannerCallback.onAdClicked();
+                                    }
+
+                                    @Override
+                                    public void onAdShowedFullScreenContent() {
+                                        // Banner ad showed.
+                                        Log.d(TAG, "COLLAPSE BANNER: Banner ad showed full screen content. " + remoteKey);
+                                        applyTechForCollapseBanner(collapseTypeClose, valueCountDownOrCountClick);
+                                    }
+
+                                    @Override
+                                    public void onAdDismissedFullScreenContent() {
+                                        // Banner ad dismissed.
+                                        Log.d(TAG, "COLLAPSE BANNER: Banner ad dismissed full screen content. " + remoteKey);
+                                    }
+
+                                    @Override
+                                    public void onAdFailedToShowFullScreenContent(
+                                            @NonNull FullScreenContentError fullScreenContentError) {
+                                        // Banner ad failed to show.
+                                        Log.w(TAG, "COLLAPSE BANNER: Banner ad failed to show full screen content: " + fullScreenContentError + ". " + remoteKey);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                        Log.e(TAG, "COLLAPSE BANNER: onAdFailedToLoad. " + adError + ". " + remoteKey);
+                        bannerCallback.onAdFailedToLoad();
+                        iOnAdsFailToLoad.onAdsFailToLoad();
+                        if (!listIdCollapseBannerTemp.isEmpty()) {
+                            listIdCollapseBannerTemp.remove(0);
+                        }
+                        loadCollapseBanner(activity, listIdCollapseBannerTemp, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, iOnAdsFailToLoad, collapseTypeClose, valueCountDownOrCountClick, remoteKey);
                     }
                 });
-            }
-
-            @Override
-            public void onAdOpened() {
-                super.onAdOpened();
-                Log.d(TAG, "COLLAPSE BANNER: onAdOpened. " + remoteKey);
-                bannerCallback.onAdOpened();
-                applyTechForCollapseBanner(collapseTypeClose, valueCountDownOrCountClick);
-            }
-
-            @Override
-            public void onAdSwipeGestureClicked() {
-                super.onAdSwipeGestureClicked();
-                Log.d(TAG, "COLLAPSE BANNER: onAdSwipeGestureClicked. " + remoteKey);
-                bannerCallback.onAdSwipeGestureClicked();
-            }
-        });
         return adView;
     }
 
@@ -3121,10 +3119,7 @@ public class Admob {
             adContainerView.addView(shimmerBanner);
         }
         AdView adView = new AdView(context);
-        adView.setAdUnitId(listIdCollapseBannerTemp.get(0));
-
         AdSize adSize = getAdSizeFragment(context, adWidth);
-        adView.setAdSize(adSize);
         // Create an extra parameter that aligns the bottom of the expanded ad to
         // the bottom of the bannerView.
         Bundle extras = new Bundle();
@@ -3134,88 +3129,89 @@ public class Admob {
             extras.putString("collapsible", "top");
         }
 
-        AdRequest adRequest = new AdRequest.Builder()
-                .addNetworkExtrasBundle(AdMobAdapter.class, extras)
+        BannerAdRequest bannerAdRequest = new BannerAdRequest.Builder(listIdCollapseBannerTemp.get(0), adSize)
+                .setGoogleExtrasBundle(extras)
                 .build();
-        adView.loadAd(adRequest);
-        adView.setAdListener(new AdListener() {
-            @Override
-            public void onAdClicked() {
-                super.onAdClicked();
-                AppOpenManager.isLastActionClickAd = true;
-                Log.d(TAG, "COLLAPSE BANNER: onAdClicked. " + remoteKey);
-                EventTrackingHelper.logEvent(context, remoteKey + "_click");
-                bannerCallback.onAdClicked();
-            }
 
-            @Override
-            public void onAdClosed() {
-                super.onAdClosed();
-                Log.d(TAG, "COLLAPSE BANNER: onAdClosed. " + remoteKey);
-                bannerCallback.onAdClosed();
-            }
-
-            @Override
-            public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                super.onAdFailedToLoad(loadAdError);
-                Log.e(TAG, "COLLAPSE BANNER: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                bannerCallback.onAdFailedToLoad();
-                iOnAdsFailToLoad.onAdsFailToLoad();
-                if (!listIdCollapseBannerTemp.isEmpty()) {
-                    listIdCollapseBannerTemp.remove(0);
-                }
-                loadCollapseBanner(context, adWidth, listIdCollapseBannerTemp, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, iOnAdsFailToLoad, collapseTypeClose, valueCountDownOrCountClick, remoteKey);
-            }
-
-            @Override
-            public void onAdImpression() {
-                super.onAdImpression();
-                Log.d(TAG, "COLLAPSE BANNER: onAdImpression. " + remoteKey);
-                EventTrackingHelper.logEvent(context, remoteKey + "_view");
-                bannerCallback.onAdImpression();
-                iOnAdsImpression.onAdsImpression();
-            }
-
-            @Override
-            public void onAdLoaded() {
-                super.onAdLoaded();
-                Log.i(TAG, "COLLAPSE BANNER: onAdLoaded. " + remoteKey);
-                bannerCallback.onAdLoaded();
-                // Replace ad container with new ad view.
-                if (adContainerView != null) {
-                    ((AppCompatActivity) context).getLifecycle().addObserver(new DefaultLifecycleObserver() {
-                        @Override
-                        public void onResume(@NonNull LifecycleOwner owner) {
-                            DefaultLifecycleObserver.super.onResume(owner);
-                            adContainerView.removeAllViews();
-                            adContainerView.addView(adView);
+        adView.loadAd(
+                bannerAdRequest,
+                new AdLoadCallback<BannerAd>() {
+                    @Override
+                    public void onAdLoaded(@NonNull BannerAd bannerAd) {
+                        Log.i(TAG, "COLLAPSE BANNER: onAdLoaded. " + remoteKey);
+                        bannerCallback.onAdLoaded();
+                        // Replace ad container with new ad view.
+                        if (adContainerView != null) {
+                            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                                @Override
+                                public void onResume(@NonNull LifecycleOwner owner) {
+                                    DefaultLifecycleObserver.super.onResume(owner);
+                                    adContainerView.removeAllViews();
+                                    adContainerView.addView(adView);
+                                }
+                            });
                         }
-                    });
-                }
-                //Tracking revenue
-                adView.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+
+                        //callback
+                        bannerAd.setAdEventCallback(
+                                new BannerAdEventCallback() {
+                                    @Override
+                                    public void onAdPaid(@NonNull AdValue value) {
+                                        BannerAdEventCallback.super.onAdPaid(value);
+                                        Log.d(TAG, "COLLAPSE BANNER: onAdPaid. " + remoteKey);
+                                        //Adjust
+                                        AdjustUtil.trackRevenue(bannerAd.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                                    }
+
+                                    @Override
+                                    public void onAdImpression() {
+                                        Log.d(TAG, "COLLAPSE BANNER: onAdImpression. " + remoteKey);
+                                        EventTrackingHelper.logEvent(context, remoteKey + "_view");
+                                        bannerCallback.onAdImpression();
+                                        iOnAdsImpression.onAdsImpression();
+                                    }
+
+                                    @Override
+                                    public void onAdClicked() {
+                                        AppOpenManager.isLastActionClickAd = true;
+                                        Log.d(TAG, "COLLAPSE BANNER: onAdClicked. " + remoteKey);
+                                        EventTrackingHelper.logEvent(context, remoteKey + "_click");
+                                        bannerCallback.onAdClicked();
+                                    }
+
+                                    @Override
+                                    public void onAdShowedFullScreenContent() {
+                                        // Banner ad showed.
+                                        Log.d(TAG, "COLLAPSE BANNER: Banner ad showed full screen content. " + remoteKey);
+                                        applyTechForCollapseBanner(collapseTypeClose, valueCountDownOrCountClick);
+                                    }
+
+                                    @Override
+                                    public void onAdDismissedFullScreenContent() {
+                                        // Banner ad dismissed.
+                                        Log.d(TAG, "COLLAPSE BANNER: Banner ad dismissed full screen content. " + remoteKey);
+                                    }
+
+                                    @Override
+                                    public void onAdFailedToShowFullScreenContent(
+                                            @NonNull FullScreenContentError fullScreenContentError) {
+                                        // Banner ad failed to show.
+                                        Log.w(TAG, "COLLAPSE BANNER: Banner ad failed to show full screen content: " + fullScreenContentError + ". " + remoteKey);
+                                    }
+                                });
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                        Log.e(TAG, "COLLAPSE BANNER: onAdFailedToLoad. " + adError + ". " + remoteKey);
+                        bannerCallback.onAdFailedToLoad();
+                        iOnAdsFailToLoad.onAdsFailToLoad();
+                        if (!listIdCollapseBannerTemp.isEmpty()) {
+                            listIdCollapseBannerTemp.remove(0);
+                        }
+                        loadCollapseBanner(context, adWidth, listIdCollapseBannerTemp, adContainerView, isGravityBottom, bannerCallback, iOnAdsImpression, iOnAdsFailToLoad, collapseTypeClose, valueCountDownOrCountClick, remoteKey);
                     }
                 });
-            }
-
-            @Override
-            public void onAdOpened() {
-                super.onAdOpened();
-                Log.d(TAG, "COLLAPSE BANNER: onAdOpened. " + remoteKey);
-                bannerCallback.onAdOpened();
-                applyTechForCollapseBanner(collapseTypeClose, valueCountDownOrCountClick);
-            }
-
-            @Override
-            public void onAdSwipeGestureClicked() {
-                super.onAdSwipeGestureClicked();
-                Log.d(TAG, "COLLAPSE BANNER: onAdSwipeGestureClicked. " + remoteKey);
-                bannerCallback.onAdSwipeGestureClicked();
-            }
-        });
         return adView;
     }
 
@@ -3313,6 +3309,81 @@ public class Admob {
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         //end log event can request ads
 
+        ArrayList<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd.NativeAdType> listNativeType = new ArrayList<>();
+        listNativeType.add(com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd.NativeAdType.NATIVE);
+        NativeAdRequest adRequest = new NativeAdRequest.Builder(listIdNativeTemp.get(0), listNativeType)
+                .build();
+
+        NativeAdLoader.load(adRequest, new NativeAdLoaderCallback() {
+            @Override
+            public void onAdFailedToLoad(@NonNull LoadAdError adError) {
+                Log.e(TAG, "NATIVE: onAdFailedToLoad. " + adError + ". " + remoteKey);
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", limitString(adError.getMessage(), 99));
+                if (adError.getResponseInfo() != null && adError.getResponseInfo().getLoadedAdSourceResponseInfo() != null && adError.getMessage().toLowerCase().contains("no fill")) {
+                    bundle.putString("no_fill_source", limitString(adError.getResponseInfo().getLoadedAdSourceResponseInfo().getName(), 99));
+                }
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
+                nativeCallback.onAdFailedToLoad(loadAdError);
+                if (!listIdNativeTemp.isEmpty()) {
+                    listIdNativeTemp.remove(0);
+                }
+                loadNativeAds(activity, listIdNativeTemp, nativeCallback, remoteKey);
+            }
+
+            @Override
+            public void onAdLoadingCompleted() {
+                NativeAdLoaderCallback.super.onAdLoadingCompleted();
+            }
+
+            @Override
+            public void onBannerAdLoaded(@NonNull BannerAd bannerAd) {
+                NativeAdLoaderCallback.super.onBannerAdLoaded(bannerAd);
+            }
+
+            @Override
+            public void onCustomNativeAdLoaded(@NonNull CustomNativeAd customNativeAd) {
+                NativeAdLoaderCallback.super.onCustomNativeAdLoaded(customNativeAd);
+            }
+
+            @Override
+            public void onNativeAdLoaded(@NonNull com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd nativeAd) {
+                Log.i(TAG, "NATIVE: onAdLoaded. " + remoteKey);
+                nativeCallback.onNativeAdLoaded(nativeAd);
+                nativeAd.setAdEventCallback(new NativeAdEventCallback() {
+                    @Override
+                    public void onAdClicked() {
+                        NativeAdEventCallback.super.onAdClicked();
+                    }
+
+                    @Override
+                    public void onAdDismissedFullScreenContent() {
+                        NativeAdEventCallback.super.onAdDismissedFullScreenContent();
+                    }
+
+                    @Override
+                    public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError fullScreenContentError) {
+                        NativeAdEventCallback.super.onAdFailedToShowFullScreenContent(fullScreenContentError);
+                    }
+
+                    @Override
+                    public void onAdImpression() {
+                        NativeAdEventCallback.super.onAdImpression();
+                    }
+
+                    @Override
+                    public void onAdPaid(@NonNull AdValue value) {
+                        //Tracking revenue
+                        AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                    }
+
+                    @Override
+                    public void onAdShowedFullScreenContent() {
+                        NativeAdEventCallback.super.onAdShowedFullScreenContent();
+                    }
+                });
+            }
+        });
         AdLoader.Builder builder = new AdLoader.Builder(activity, listIdNativeTemp.get(0));
         builder.forNativeAd(nativeAd -> {
             Log.i(TAG, "NATIVE: onAdLoaded. " + remoteKey);
@@ -3336,18 +3407,6 @@ public class Admob {
         AdLoader adLoader = builder.withAdListener(new AdListener() {
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                Log.e(TAG, "NATIVE: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                Bundle bundle = new Bundle();
-                bundle.putString("failed_message", limitString(loadAdError.getMessage(), 99));
-                if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
-                    bundle.putString("no_fill_source", limitString(loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName(), 99));
-                }
-                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_failed", bundle);
-                nativeCallback.onAdFailedToLoad(loadAdError);
-                if (!listIdNativeTemp.isEmpty()) {
-                    listIdNativeTemp.remove(0);
-                }
-                loadNativeAds(activity, listIdNativeTemp, nativeCallback, remoteKey);
             }
 
             @Override

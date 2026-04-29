@@ -12,8 +12,8 @@ import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
 import com.amazic.library.ads.admob.Admob;
-import com.amazic.library.ads.admob.admob_interface.IOnInitAdmobDone;
-import com.google.android.gms.ads.MobileAds;
+import com.google.android.libraries.ads.mobile.sdk.MobileAds;
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig;
 
 public abstract class AdsApplication extends Application implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "AdsApplication";
@@ -27,11 +27,14 @@ public abstract class AdsApplication extends Application implements Application.
         registerActivityLifecycleCallbacks(this);
     }
 
-    private void initAdmob(){
-        MobileAds.initialize(this, initializationStatus -> {
-            Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
-            Admob.getInstance().setIsInitAdmobDone(true);
-        });
+    private void initAdmob() {
+        new Thread(() -> {
+            // Initialize the SDK on a background thread.
+            MobileAds.initialize(this, new InitializationConfig.Builder(getAppID()).setNativeValidatorDisabled().build(), initializationStatus -> {
+                Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
+                Admob.getInstance().setIsInitAdmobDone(true);
+            });
+        }).start();
     }
 
     private void setUpAdjust() {
@@ -88,5 +91,6 @@ public abstract class AdsApplication extends Application implements Application.
     @NonNull
     public abstract String getFacebookID();
 
-    //public abstract Boolean buildDebug();
+    @NonNull
+    public abstract String getAppID();
 }

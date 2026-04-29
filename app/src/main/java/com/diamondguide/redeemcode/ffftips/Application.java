@@ -17,12 +17,18 @@ public class Application extends AdsApplication {
     @NonNull
     @Override
     public String getAppTokenAdjust() {
-        return null;
+        return "";
     }
 
     @NonNull
     @Override
     public String getFacebookID() {
-        return null;
+        return "";
+    }
+
+    @NonNull
+    @Override
+    public String getAppID() {
+        return "ca-app-pub-3940256099942544~3347511713";
     }
 }

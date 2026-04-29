@@ -4,17 +4,13 @@ import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.InterCallback;
-import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
 
 import java.util.HashMap;
 import java.util.Map;

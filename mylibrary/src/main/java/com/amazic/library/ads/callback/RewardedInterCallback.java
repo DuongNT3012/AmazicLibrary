@@ -1,6 +1,7 @@
 package com.amazic.library.ads.callback;
 
-import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
+
+import com.google.android.libraries.ads.mobile.sdk.rewardedinterstitial.RewardedInterstitialAd;
 
 public class RewardedInterCallback {
     public void onAdLoaded(RewardedInterstitialAd ad) {

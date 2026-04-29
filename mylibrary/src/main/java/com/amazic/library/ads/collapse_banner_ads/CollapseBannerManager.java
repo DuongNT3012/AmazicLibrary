@@ -16,7 +16,7 @@ import androidx.lifecycle.LifecycleOwner;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.admob_interface.IOnAdsFailToLoad;
 import com.amazic.library.ads.admob.admob_interface.IOnAdsImpression;
-import com.google.android.gms.ads.AdView;
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
 
 public class CollapseBannerManager implements LifecycleEventObserver {
     private static final String TAG = "CollapseBannerManager";

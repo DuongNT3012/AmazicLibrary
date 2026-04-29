@@ -1,6 +1,7 @@
 package com.amazic.library.ads.callback;
 
-import com.google.android.gms.ads.appopen.AppOpenAd;
+
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAd;
 
 public class AppOpenCallback {
     public void onAdLoaded(AppOpenAd ad) {

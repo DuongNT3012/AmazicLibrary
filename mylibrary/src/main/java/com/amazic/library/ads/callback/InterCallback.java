@@ -1,6 +1,7 @@
 package com.amazic.library.ads.callback;
 
-import com.google.android.gms.ads.interstitial.InterstitialAd;
+
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
 
 public class InterCallback {
     public void onAdLoaded(InterstitialAd interstitialAd) {

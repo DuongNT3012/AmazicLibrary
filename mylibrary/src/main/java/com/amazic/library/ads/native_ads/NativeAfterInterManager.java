@@ -12,9 +12,8 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.mylibrary.R;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.nativead.NativeAd;
-import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,9 +25,9 @@ public class NativeAfterInterManager {
     public static void preloadNativeAfterInter(Activity activity, String adsKey, String remoteKey) {
         NativeAfterInterActivity.Companion.setAdsKey(adsKey);
         NativeAfterInterActivity.Companion.setRemoteKey(remoteKey);
-        Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter - list is Empty: "+AdmobApi.getInstance().getListIDByName(adsKey).isEmpty() + ", adskey = "+mapNativeAdsAfterInter.get(adsKey));
+        Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter - list is Empty: " + AdmobApi.getInstance().getListIDByName(adsKey).isEmpty() + ", adskey = " + mapNativeAdsAfterInter.get(adsKey));
         if (mapNativeAdsAfterInter.get(adsKey) == null || !AdmobApi.getInstance().getListIDByName(adsKey).isEmpty()) {
-            Log.d(TAG, "NativeAfterInterManager: 1.preloadNativeAfterInter."+ AdmobApi.getInstance().getListIDByName(adsKey));
+            Log.d(TAG, "NativeAfterInterManager: 1.preloadNativeAfterInter." + AdmobApi.getInstance().getListIDByName(adsKey));
             Admob.getInstance().loadNativeAds(
                     activity,
                     AdmobApi.getInstance().getListIDByName(adsKey),
@@ -41,10 +40,10 @@ public class NativeAfterInterManager {
                         }
 
                         @Override
-                        public void onAdFailedToLoad(LoadAdError loadAdError) {
-                            super.onAdFailedToLoad(loadAdError);
+                        public void onAdFailedToLoad(String message) {
+                            super.onAdFailedToLoad(message);
                             mapNativeAdsAfterInter.put(adsKey, null);
-                            Log.d(TAG, "NativeAfterInterManager: 1.onAdFailedToLoad: " + loadAdError.getMessage());
+                            Log.d(TAG, "NativeAfterInterManager: 1.onAdFailedToLoad: " + message);
                         }
                     }, remoteKey
             );
@@ -63,16 +62,16 @@ public class NativeAfterInterManager {
 
             AppCompatButton btnClose = adView.findViewById(R.id.btn_close);
             btnClose.setOnClickListener(view -> {
-                if(listener != null){
+                if (listener != null) {
                     listener.onClose();
                 }
             });
             fr.removeAllViews();
             fr.addView(adView);
             Admob.getInstance().populateNativeAdView(nativeAd, adView);
-        }else {
+        } else {
             Log.d(TAG, "NativeAfterInterManager: NativeAd NULL onNext");
-            if(listener != null){
+            if (listener != null) {
                 listener.onFail();
             }
         }
@@ -83,6 +82,7 @@ public class NativeAfterInterManager {
 
     public interface OnCloseNativeListener {
         void onClose();
+
         void onFail();
     }
 }

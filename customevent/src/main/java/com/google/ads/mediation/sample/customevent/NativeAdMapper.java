@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import com.google.ads.mediation.sample.sdk.SampleNativeAd;
 import com.google.android.gms.ads.VideoController;
 import com.google.android.gms.ads.mediation.MediationNativeAdCallback;
-import com.google.android.gms.ads.nativead.MediaView;
+import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView;
 import com.google.android.gms.ads.nativead.NativeAd;
 
 import java.text.NumberFormat;

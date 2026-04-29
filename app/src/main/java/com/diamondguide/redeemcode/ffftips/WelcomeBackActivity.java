@@ -9,7 +9,6 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivityWelcomeBackBinding;
-import com.google.android.gms.ads.appopen.AppOpenAd;
 
 public class WelcomeBackActivity extends AppCompatActivity {
     private ActivityWelcomeBackBinding binding;

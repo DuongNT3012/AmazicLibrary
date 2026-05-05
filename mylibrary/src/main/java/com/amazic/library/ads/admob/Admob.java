@@ -54,6 +54,7 @@ import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
 import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.mylibrary.R;
+import com.google.android.libraries.ads.mobile.sdk.MobileAds;
 import com.google.android.libraries.ads.mobile.sdk.banner.AdSize;
 import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
 import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd;
@@ -68,6 +69,7 @@ import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback;
 import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration;
 import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo;
 import com.google.android.libraries.ads.mobile.sdk.common.VideoOptions;
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig;
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback;
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPreloader;
@@ -141,6 +143,7 @@ public class Admob {
     private AdView adViewBanner;
     private AdView adViewBannerFragment;
 
+    private String appID = "";
     public static Admob getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new Admob();
@@ -151,14 +154,13 @@ public class Admob {
     public void initAdmob(Activity activity, IOnInitAdmobDone iOnInitAdmobDone) {
         resetVariable();
         initLoadingDialog(activity);
-//        new Thread(() -> {
-//            // Initialize the Google Mobile Ads SDK on a background thread.
-//            MobileAds.initialize(activity, initializationStatus -> {
-//                Log.d(TAG, "initAdmob: " + initializationStatus.getAdapterStatusMap());
-//                setIsInitAdmobDone(true);
-//                iOnInitAdmobDone.onInitAdmobDone();
-//            });
-//        }).start();
+        new Thread(() -> {
+            // Initialize the SDK on a background thread.
+            MobileAds.initialize(activity.getApplicationContext(), new InitializationConfig.Builder(getAppID()).setNativeValidatorDisabled().build(), initializationStatus -> {
+                Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
+                Admob.getInstance().setIsInitAdmobDone(true);
+            });
+        }).start();
     }
 
     private void resetVariable() {
@@ -174,6 +176,14 @@ public class Admob {
     public boolean checkCondition(Context context, String adsKey) {
         Log.d(TAG, "checkCondition: Network_" + NetworkUtil.isNetworkActive(context) + "_UMP_" + AdsConsentManager.getConsentResult(context) + "_showAllAds_" + isShowAllAds + "_IAP_" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig_" + RemoteConfigHelper.getInstance().get_config(context, adsKey));
         return NetworkUtil.isNetworkActive(context) && AdsConsentManager.getConsentResult(context) && isShowAllAds && /*!IAPManager.getInstance().isPurchase() &&*/ RemoteConfigHelper.getInstance().get_config(context, adsKey);
+    }
+
+    public String getAppID() {
+        return appID;
+    }
+
+    public void setAppID(String appID) {
+        this.appID = appID;
     }
 
     public int getTimeDelayWaitInterHigh() {

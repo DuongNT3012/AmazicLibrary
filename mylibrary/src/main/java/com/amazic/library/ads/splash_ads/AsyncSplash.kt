@@ -81,6 +81,8 @@ class AsyncSplash {
     private var initBilling = false
     private var initTechManager = false
 
+    private var initAdmob = false
+
     //
     private var isUseIdAdsFromRemoteConfig = false
     private var isPreloadResumeAds = true
@@ -227,6 +229,7 @@ class AsyncSplash {
         this.initAdsConsentManager = false
         this.initBilling = false
         this.initTechManager = false
+        this.initAdmob = false
         this.isUseIdAdsFromRemoteConfig = false
         this.isPreloadResumeAds = true
         this.numberPreloading = 3
@@ -504,13 +507,14 @@ class AsyncSplash {
                 val bundle = Bundle()
                 bundle.putString(
                     "timeout_splash_next_screen_detail",
-                    "${initAdmobApi}_${initRemoteConfig}_${initAdsConsentManager}_${initBilling}_${initTechManager}"
+                    "${initAdmobApi}_${initRemoteConfig}_${initAdsConsentManager}_${initBilling}_${initTechManager}_${initAdmob}"
                 )
                 bundle.putString("initAdmobApi", initAdmobApi.toString())
                 bundle.putString("initRemoteConfig", initRemoteConfig.toString())
                 bundle.putString("initAdsConsentManager", initAdsConsentManager.toString())
                 bundle.putString("initBilling", initBilling.toString())
                 bundle.putString("initTechManager", initTechManager.toString())
+                bundle.putString("initAdmob", initAdmob.toString())
                 EventTrackingHelper.logEventWithMultipleParams(
                     context,
                     "timeout_splash_next_screen",
@@ -807,16 +811,16 @@ class AsyncSplash {
                     isResumed = true
                     if (it) {
                         Admob.getInstance().initAdmob(activity) {
-//                            onInitAdmobDone?.invoke()
+                            initAdmob = true
+                            continuation.resume(Unit)
+                            Log.d(TAG, "initAdmob.")
                         }
                         activity?.let { it1 ->
                             AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass)
                         }
                     }
-                    timeInitAdsConsentManager =
-                        System.currentTimeMillis() - startTimeInitAdsConsentManager
+                    timeInitAdsConsentManager = System.currentTimeMillis() - startTimeInitAdsConsentManager
                     initAdsConsentManager = true
-                    continuation.resume(Unit)
                     Log.d(TAG, "initAdsConsentManager.")
                 }
             }

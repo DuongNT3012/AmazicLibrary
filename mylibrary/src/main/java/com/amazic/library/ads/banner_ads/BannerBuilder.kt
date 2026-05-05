@@ -1,81 +1,64 @@
-package com.amazic.library.ads.banner_ads;
+package com.amazic.library.ads.banner_ads
 
-import android.app.Activity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.FrameLayout;
+import android.app.Activity
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.FrameLayout
+import com.amazic.library.ads.callback.BannerCallback
+import com.amazic.mylibrary.R
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView
 
-import com.amazic.library.ads.callback.BannerCallback;
-import com.amazic.mylibrary.R;
-import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
+class BannerBuilder {
+    var callBack: BannerCallback = BannerCallback()
+    var frContainer: FrameLayout? = null
+    var useNewAdLoading: Boolean = false
 
-import java.util.ArrayList;
-import java.util.List;
+    var bannerAdViewMain: AdView? = null
+    var bannerAdViewSecondary: AdView? = null
+    var bannerAdViewBackup: AdView? = null
 
-public class BannerBuilder {
-    private BannerCallback callBack = new BannerCallback();
-    private FrameLayout frContainer;
-    public boolean useNewAdLoading = false;
-    public AdView bannerAdViewMain;
-    public AdView bannerAdViewSecondary;
-    public AdView bannerAdViewBackup;
-    public List<String> listIdAdMain = new ArrayList<>();
-    public List<String> listIdAdSecondary = new ArrayList<>();
-    public List<String> listIdAdBackup = new ArrayList<>();
-    public View shimmerBanner;
+    val listIdAdMain: MutableList<String> = mutableListOf()
+    val listIdAdSecondary: MutableList<String> = mutableListOf()
+    val listIdAdBackup: MutableList<String> = mutableListOf()
 
-    public BannerBuilder(FrameLayout frContainer) {
-        this.frContainer = frContainer;
+    var shimmerBanner: View? = null
+
+    // Secondary constructor to match your first Java constructor
+    constructor(frContainer: FrameLayout?) {
+        this.frContainer = frContainer
     }
 
-    public BannerBuilder(Activity activity, FrameLayout frContainer, boolean useNewAdLoading) {
-        this.useNewAdLoading = useNewAdLoading;
-        this.frContainer = frContainer;
-        //Show loading shimmer
-        shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null);
-        if (frContainer != null) {
-            frContainer.addView(shimmerBanner);
-        }
+    // Secondary constructor to match your second Java constructor
+    constructor(activity: Activity, frContainer: FrameLayout?, useNewAdLoading: Boolean) {
+        this.useNewAdLoading = useNewAdLoading
+        this.frContainer = frContainer
+
+        // Show loading shimmer
+        shimmerBanner = LayoutInflater.from(activity).inflate(R.layout.layout_shimmer_banner, null)
+        frContainer?.addView(shimmerBanner)
     }
 
-    public BannerBuilder setCallBack(BannerCallback callBack) {
-        this.callBack = callBack;
-        return this;
+    // Builder-style pattern for Callback
+    fun setCallBack(callBack: BannerCallback): BannerBuilder {
+        this.callBack = callBack
+        return this
     }
 
-    public BannerCallback getCallBack() {
-        return callBack;
+    fun setListIdAdMain(listIdAdMain: MutableList<String>): BannerBuilder {
+        this.listIdAdMain.clear()
+        this.listIdAdMain.addAll(listIdAdMain)
+        return this
     }
 
-    public List<String> getListIdAdMain() {
-        return listIdAdMain;
+    fun setListIdAdSecondary(listIdAdSecondary: MutableList<String>): BannerBuilder {
+        this.listIdAdSecondary.clear()
+        this.listIdAdSecondary.addAll(listIdAdSecondary)
+        return this
     }
 
-    public void setListIdAdMain(List<String> listIdAdMain) {
-        this.listIdAdMain = listIdAdMain;
-    }
-
-    public List<String> getListIdAdSecondary() {
-        return listIdAdSecondary;
-    }
-
-    public void setListIdAdSecondary(List<String> listIdAdSecondary) {
-        this.listIdAdSecondary = listIdAdSecondary;
-    }
-
-    public List<String> getListIdAdBackup() {
-        return listIdAdBackup;
-    }
-
-    public void setListIdAdBackup(List<String> listIdAdBackup) {
-        this.listIdAdBackup = listIdAdBackup;
-    }
-
-    public FrameLayout getFrContainer() {
-        return frContainer;
-    }
-
-    public void setFrContainer(FrameLayout frContainer) {
-        this.frContainer = frContainer;
+    fun setListIdAdBackup(listIdAdBackup: MutableList<String>): BannerBuilder {
+        this.listIdAdBackup.clear()
+        this.listIdAdBackup.addAll(listIdAdBackup)
+        return this
     }
 }

@@ -1,408 +1,427 @@
-package com.amazic.library.ads.banner_ads;
+package com.amazic.library.ads.banner_ads
 
-import android.app.Activity;
-import android.content.Context;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.widget.FrameLayout;
+import android.app.Activity
+import android.content.Context
+import android.os.CountDownTimer
+import android.util.Log
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.LifecycleOwner
+import com.amazic.library.ads.admob.Admob
+import com.amazic.library.ads.admob.admob_interface.IOnAdsImpression
+import com.amazic.library.ads.callback.BannerCallback
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.Lifecycle;
-import androidx.lifecycle.LifecycleEventObserver;
-import androidx.lifecycle.LifecycleOwner;
+class BannerManager : LifecycleEventObserver {
+    private val builder: BannerBuilder
+    private var currentActivity: Activity? = null
+    private val lifecycleOwner: LifecycleOwner
+    private var isReloadAds = false
+    private var isAlwaysReloadOnResume = false
+    private var intervalReloadBanner: Long = 0
+    private var isStop = false
+    private var countDownTimer: CountDownTimer? = null
+    private var context: Context? = null
+    private var adWidth = 0
+    private var isLoadBannerFragment = false
+    private val remoteKey: String?
+    var remoteKeySecondary: String = ""
+    var remoteKeyBackup: String? = ""
+    private var isLoadedBannerMain = false
+    private var isLoadedBannerSecondary = false
 
-import com.amazic.library.ads.admob.Admob;
-import com.amazic.library.ads.callback.BannerCallback;
-
-public class BannerManager implements LifecycleEventObserver {
-    private static final String TAG = "BannerManager";
-    private final BannerBuilder builder;
-    private Activity currentActivity;
-    private final LifecycleOwner lifecycleOwner;
-    private boolean isReloadAds = false;
-    private boolean isAlwaysReloadOnResume = false;
-    private long intervalReloadBanner = 0;
-    private boolean isStop = false;
-    private CountDownTimer countDownTimer;
-    private Context context;
-    private int adWidth;
-    private boolean isLoadBannerFragment = false;
-    private final String remoteKey;
-    private String remoteKeySecondary = "";
-    private String remoteKeyBackup = "";
-    private boolean isLoadedBannerMain = false;
-    private boolean isLoadedBannerSecondary = false;
-
-    public BannerManager(@NonNull Activity currentActivity, LifecycleOwner lifecycleOwner, BannerBuilder builder, String remoteKey) {
-        this.isLoadBannerFragment = false;
-        this.builder = builder;
-        this.currentActivity = currentActivity;
-        this.remoteKey = remoteKey;
-        this.remoteKeySecondary = remoteKey;
-        this.remoteKeyBackup = remoteKey;
-        this.lifecycleOwner = lifecycleOwner;
-        this.lifecycleOwner.getLifecycle().addObserver(this);
+    constructor(
+        currentActivity: Activity,
+        lifecycleOwner: LifecycleOwner,
+        builder: BannerBuilder,
+        remoteKey: String
+    ) {
+        this.isLoadBannerFragment = false
+        this.builder = builder
+        this.currentActivity = currentActivity
+        this.remoteKey = remoteKey
+        this.remoteKeySecondary = remoteKey
+        this.remoteKeyBackup = remoteKey
+        this.lifecycleOwner = lifecycleOwner
+        this.lifecycleOwner.lifecycle.addObserver(this)
     }
 
-    public BannerManager(Context context, int adWidth, LifecycleOwner lifecycleOwner, BannerBuilder builder, String remoteKey) {
-        this.isLoadBannerFragment = true;
-        this.builder = builder;
-        this.context = context;
-        this.adWidth = adWidth;
-        this.remoteKey = remoteKey;
-        this.remoteKeySecondary = remoteKey;
-        this.remoteKeyBackup = remoteKey;
-        this.lifecycleOwner = lifecycleOwner;
-        this.lifecycleOwner.getLifecycle().addObserver(this);
+    constructor(
+        context: Context?,
+        adWidth: Int,
+        lifecycleOwner: LifecycleOwner,
+        builder: BannerBuilder,
+        remoteKey: String
+    ) {
+        this.isLoadBannerFragment = true
+        this.builder = builder
+        this.context = context
+        this.adWidth = adWidth
+        this.remoteKey = remoteKey
+        this.remoteKeySecondary = remoteKey
+        this.remoteKeyBackup = remoteKey
+        this.lifecycleOwner = lifecycleOwner
+        this.lifecycleOwner.lifecycle.addObserver(this)
     }
 
-    @Override
-    public void onStateChanged(@NonNull LifecycleOwner source, @NonNull Lifecycle.Event event) {
-        switch (event) {
-            case ON_CREATE:
-                Log.d(TAG, "onStateChanged: ON_CREATE");
-                reloadAdNow();
-                break;
-            case ON_RESUME:
+    override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
+        when (event) {
+            Lifecycle.Event.ON_CREATE -> {
+                Log.d(TAG, "onStateChanged: ON_CREATE")
+                reloadAdNow()
+            }
+
+            Lifecycle.Event.ON_RESUME -> {
                 if (countDownTimer != null && isStop) {
-                    startReloadBanner();
+                    startReloadBanner()
                 }
-                String valueLog = isStop + " && " + (isReloadAds || isAlwaysReloadOnResume);
-                Log.d(TAG, "onStateChanged: resume\n" + valueLog);
+                val valueLog = isStop.toString() + " && " + (isReloadAds || isAlwaysReloadOnResume)
+                Log.d(TAG, "onStateChanged: resume\n$valueLog")
                 if (isStop && (isReloadAds || isAlwaysReloadOnResume)) {
-                    isReloadAds = false;
-                    reloadAdNow();
+                    isReloadAds = false
+                    reloadAdNow()
                 }
-                isStop = false;
-                break;
-            case ON_PAUSE:
-                Log.d(TAG, "onStateChanged: ON_PAUSE");
-                isStop = true;
+                isStop = false
+            }
+
+            Lifecycle.Event.ON_PAUSE -> {
+                Log.d(TAG, "onStateChanged: ON_PAUSE")
+                isStop = true
                 if (countDownTimer != null) {
-                    countDownTimer.cancel();
+                    countDownTimer?.cancel()
                 }
-                break;
-            case ON_DESTROY:
-                Log.d(TAG, "onStateChanged: ON_DESTROY");
-                if (builder.getFrContainer() != null) {
-                    builder.getFrContainer().removeAllViews();
+            }
+
+            Lifecycle.Event.ON_DESTROY -> {
+                Log.d(TAG, "onStateChanged: ON_DESTROY")
+                if (builder.frContainer != null) {
+                    builder.frContainer?.removeAllViews()
                 }
                 if (builder.bannerAdViewMain != null) {
-                    builder.bannerAdViewMain.destroy();
+                    builder.bannerAdViewMain?.destroy()
                 }
                 if (builder.bannerAdViewSecondary != null) {
-                    builder.bannerAdViewSecondary.destroy();
+                    builder.bannerAdViewSecondary?.destroy()
                 }
-                this.lifecycleOwner.getLifecycle().removeObserver(this);
-                break;
+                this.lifecycleOwner.lifecycle.removeObserver(this)
+            }
+
+            else -> {}
         }
     }
 
-    private void loadBanner(FrameLayout frContainer) {
-        Log.d(TAG, "loadBanner: " + builder.getListIdAdMain());
-        if (Admob.getInstance().getShowAllAds()) {
-            Admob.getInstance().loadBannerAds(currentActivity, builder.getListIdAdMain(), frContainer, builder.getCallBack(), this::startReloadBanner, remoteKey);
+    private fun loadBanner(frContainer: FrameLayout) {
+        Log.d(TAG, "loadBanner: " + builder.listIdAdMain)
+        if (Admob.getInstance().showAllAds) {
+            Admob.getInstance().loadBannerAds(
+                currentActivity,
+                builder.listIdAdMain,
+                frContainer,
+                builder.callBack,
+                { this.startReloadBanner() },
+                remoteKey
+            )
         } else {
-            frContainer.setVisibility(View.GONE);
+            frContainer.visibility = View.GONE
         }
     }
 
-    private void loadBannerFragment(FrameLayout frContainer) {
-        Log.d(TAG, "loadBanner: " + builder.getListIdAdMain());
-        if (Admob.getInstance().getShowAllAds()) {
-            Admob.getInstance().loadBannerAds(context, adWidth, builder.getListIdAdMain(), frContainer, builder.getCallBack(), this::startReloadBanner, remoteKey);
+    private fun loadBannerFragment(frContainer: FrameLayout) {
+        Log.d(TAG, "loadBanner: " + builder.listIdAdMain)
+        if (Admob.getInstance().showAllAds) {
+            Admob.getInstance().loadBannerAds(
+                context,
+                adWidth,
+                builder.listIdAdMain,
+                frContainer,
+                builder.callBack,
+                { this.startReloadBanner() },
+                remoteKey
+            )
         } else {
-            frContainer.setVisibility(View.GONE);
+            frContainer.visibility = View.GONE
         }
     }
 
-    public void setReloadAds() {
-        isReloadAds = true;
+    fun setReloadAds() {
+        isReloadAds = true
     }
 
-    public void reloadAdNow() {
+    fun reloadAdNow() {
         if (builder.useNewAdLoading) {
-            loadNewAdFormat();
+            loadNewAdFormat()
         } else {
-            loadOldAdFormat();
+            loadOldAdFormat()
         }
     }
 
-    private void loadNewAdFormat() {
+    private fun loadNewAdFormat() {
         if (remoteKeySecondary.isEmpty()) {
             if (!Admob.getInstance().checkCondition(currentActivity, remoteKey)) {
-                if (builder.getFrContainer() != null) {
-                    builder.getFrContainer().removeAllViews();
+                if (builder.frContainer != null) {
+                    builder.frContainer?.removeAllViews()
                 }
-                return;
+                return
             }
         } else {
-            if (!Admob.getInstance().checkCondition(currentActivity, remoteKey) && !Admob.getInstance().checkCondition(currentActivity, remoteKeySecondary)) {
-                if (builder.getFrContainer() != null) {
-                    builder.getFrContainer().removeAllViews();
+            if (!Admob.getInstance()
+                    .checkCondition(currentActivity, remoteKey) && !Admob.getInstance()
+                    .checkCondition(currentActivity, remoteKeySecondary)
+            ) {
+                if (builder.frContainer != null) {
+                    builder.frContainer?.removeAllViews()
                 }
-                return;
+                return
             }
         }
-        loadMainBanner();
-        loadSecondaryBanner();
+        loadMainBanner()
+        loadSecondaryBanner()
     }
 
-    private void loadMainBanner() {
-        isLoadedBannerMain = false;
+    private fun loadMainBanner() {
+        isLoadedBannerMain = false
         if (builder.bannerAdViewMain != null) {
-            builder.bannerAdViewMain.destroy();
+            builder.bannerAdViewMain?.destroy()
         }
-        builder.bannerAdViewMain = Admob.getInstance().loadBannerAdsWithoutShow(currentActivity, builder.getListIdAdMain(), new BannerCallback() {
-            @Override
-            public void onAdLoaded() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdLoaded();
-                    isLoadedBannerMain = true;
-                    builder.getCallBack().onAdLoaded();
-                    Log.d(TAG, "onAdLoaded: Main");
-                    if (builder.getFrContainer() != null) {
-                        builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
-                        builder.getFrContainer().addView(builder.bannerAdViewMain);
-                        builder.getFrContainer().removeView(builder.shimmerBanner);
-                    }
-                });
-            }
-
-            @Override
-            public void onAdFailedToLoad() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdFailedToLoad();
-                    builder.getCallBack().onAdFailedToLoad();
-                    Log.d(TAG, "onAdFailedToLoad: Main");
-                    if (isLoadedBannerSecondary) {
-                        if (builder.getFrContainer() != null) {
-                            builder.getFrContainer().removeView(builder.shimmerBanner);
+        builder.bannerAdViewMain = Admob.getInstance().loadBannerAdsWithoutShow(
+            currentActivity,
+            builder.listIdAdMain,
+            object : BannerCallback() {
+                override fun onAdLoaded() {
+                    super.onAdLoaded()
+                    MainScope().launch {
+                        isLoadedBannerMain = true
+                        builder.callBack.onAdLoaded()
+                        Log.d(TAG, "onAdLoaded: Main")
+                        if (builder.frContainer != null) {
+                            builder.frContainer?.removeView(builder.bannerAdViewSecondary)
+                            builder.frContainer?.addView(builder.bannerAdViewMain)
+                            builder.frContainer?.removeView(builder.shimmerBanner)
                         }
                     }
-                    loadBannerBackup();
-                });
-            }
+                }
 
-            @Override
-            public void onAdImpression() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdImpression();
-                    builder.getCallBack().onAdImpression();
-                    Log.d(TAG, "onAdImpression: Main");
-                    startReloadBanner();
-                });
-            }
+                override fun onAdFailedToLoad() {
+                    super.onAdFailedToLoad()
+                    MainScope().launch {
+                        builder.callBack.onAdFailedToLoad()
+                        Log.d(TAG, "onAdFailedToLoad: Main")
+                        if (isLoadedBannerSecondary) {
+                            if (builder.frContainer != null) {
+                                builder.frContainer?.removeView(builder.shimmerBanner)
+                            }
+                        }
+                        loadBannerBackup()
+                    }
+                }
 
-            @Override
-            public void onAdClicked() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdClicked();
-                    builder.getCallBack().onAdClicked();
-                    Log.d(TAG, "onAdClicked: Main");
-                });
-            }
-        }, remoteKey);
+                override fun onAdImpression() {
+                    super.onAdImpression()
+                    MainScope().launch {
+                        builder.callBack.onAdImpression()
+                        Log.d(TAG, "onAdImpression: Main")
+                        startReloadBanner()
+                    }
+                }
+
+                override fun onAdClicked() {
+                    super.onAdClicked()
+                    MainScope().launch {
+                        builder.callBack.onAdClicked()
+                        Log.d(TAG, "onAdClicked: Main")
+                    }
+                }
+            },
+            remoteKey
+        )
     }
 
-    private void loadSecondaryBanner() {
-        isLoadedBannerSecondary = false;
+    private fun loadSecondaryBanner() {
+        isLoadedBannerSecondary = false
         if (builder.bannerAdViewSecondary != null) {
-            builder.bannerAdViewSecondary.destroy();
+            builder.bannerAdViewSecondary?.destroy()
         }
-        builder.bannerAdViewSecondary = Admob.getInstance().loadBannerAdsWithoutShow(currentActivity, builder.getListIdAdSecondary(), new BannerCallback() {
-            @Override
-            public void onAdLoaded() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdLoaded();
-                    isLoadedBannerSecondary = true;
-                    builder.getCallBack().onAdLoaded();
-                    Log.d(TAG, "onAdLoaded: Secondary");
-                    if (builder.getFrContainer() != null) {
-                        builder.getFrContainer().removeView(builder.bannerAdViewMain);
-                        builder.getFrContainer().addView(builder.bannerAdViewSecondary);
-                        builder.getFrContainer().removeView(builder.shimmerBanner);
-                    }
-                });
-            }
-
-            @Override
-            public void onAdFailedToLoad() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdFailedToLoad();
-                    builder.getCallBack().onAdFailedToLoad();
-                    Log.d(TAG, "onAdFailedToLoad: Secondary");
-                    if (isLoadedBannerMain) {
-                        if (builder.getFrContainer() != null) {
-                            builder.getFrContainer().removeView(builder.shimmerBanner);
+        builder.bannerAdViewSecondary = Admob.getInstance().loadBannerAdsWithoutShow(
+            currentActivity,
+            builder.listIdAdSecondary,
+            object : BannerCallback() {
+                override fun onAdLoaded() {
+                    super.onAdLoaded()
+                    MainScope().launch {
+                        isLoadedBannerSecondary = true
+                        builder.callBack.onAdLoaded()
+                        Log.d(TAG, "onAdLoaded: Secondary")
+                        if (builder.frContainer != null) {
+                            builder.frContainer?.removeView(builder.bannerAdViewMain)
+                            builder.frContainer?.addView(builder.bannerAdViewSecondary)
+                            builder.frContainer?.removeView(builder.shimmerBanner)
                         }
                     }
-                    loadBannerBackup();
-                });
-            }
+                }
 
-            @Override
-            public void onAdImpression() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdImpression();
-                    builder.getCallBack().onAdImpression();
-                    Log.d(TAG, "onAdImpression: Secondary");
-                    handleImpressionBannerSecondary();
-                    startReloadBanner();
-                });
-            }
+                override fun onAdFailedToLoad() {
+                    super.onAdFailedToLoad()
+                    MainScope().launch {
+                        builder.callBack.onAdFailedToLoad()
+                        Log.d(TAG, "onAdFailedToLoad: Secondary")
+                        if (isLoadedBannerMain) {
+                            if (builder.frContainer != null) {
+                                builder.frContainer?.removeView(builder.shimmerBanner)
+                            }
+                        }
+                        loadBannerBackup()
+                    }
+                }
 
-            @Override
-            public void onAdClicked() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdClicked();
-                    builder.getCallBack().onAdClicked();
-                    Log.d(TAG, "onAdClicked: Secondary");
-                });
-            }
-        }, remoteKeySecondary);
+                override fun onAdImpression() {
+                    super.onAdImpression()
+                    MainScope().launch {
+                        builder.callBack.onAdImpression()
+                        Log.d(TAG, "onAdImpression: Secondary")
+                        handleImpressionBannerSecondary()
+                        startReloadBanner()
+                    }
+                }
+
+                override fun onAdClicked() {
+                    super.onAdClicked()
+                    MainScope().launch {
+                        builder.callBack.onAdClicked()
+                        Log.d(TAG, "onAdClicked: Secondary")
+                    }
+                }
+            },
+            remoteKeySecondary
+        )
     }
 
-    private void handleImpressionBannerSecondary() {
+    private fun handleImpressionBannerSecondary() {
         try {
             if (isLoadedBannerMain) {
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    if (builder.getFrContainer() != null && builder.bannerAdViewSecondary != null) {
-                        builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
+                MainScope().launch {
+                    delay(1000)
+                    if (builder.frContainer != null && builder.bannerAdViewSecondary != null) {
+                        builder.frContainer?.removeView(builder.bannerAdViewSecondary)
                         if (builder.bannerAdViewMain != null) {
-                            ViewParent parent = builder.bannerAdViewMain.getParent();
-                            if (parent instanceof ViewGroup) {
-                                ((ViewGroup) parent).removeView(builder.bannerAdViewMain);
+                            val parent = builder.bannerAdViewMain?.parent
+                            if (parent is ViewGroup) {
+                                parent.removeView(builder.bannerAdViewMain)
                             }
-                            builder.getFrContainer().addView(builder.bannerAdViewMain);
+                            builder.frContainer?.addView(builder.bannerAdViewMain)
                         }
                     }
-                    if (builder.getFrContainer() != null && builder.shimmerBanner != null) {
-                        builder.getFrContainer().removeView(builder.shimmerBanner);
+                    if (builder.frContainer != null && builder.shimmerBanner != null) {
+                        builder.frContainer?.removeView(builder.shimmerBanner)
                     }
-                }, 1000);
+                }
             }
-        } catch (Exception e) {
-            Log.d(TAG, "handleImpressionBannerSecondary: " + e.getMessage());
+        } catch (e: Exception) {
+            Log.d(TAG, "handleImpressionBannerSecondary: " + e.message)
         }
     }
 
-    private void loadBannerBackup() {
+    private fun loadBannerBackup() {
         if (builder.bannerAdViewBackup != null) {
-            builder.bannerAdViewBackup.destroy();
+            builder.bannerAdViewBackup?.destroy()
         }
-        builder.bannerAdViewBackup = Admob.getInstance().loadBannerAdsBackupWithoutShow(currentActivity, builder.getListIdAdBackup(), new BannerCallback() {
-            @Override
-            public void onAdLoaded() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdLoaded();
-                    Log.d(TAG, "onAdLoaded: Backup");
-                    if (builder.getFrContainer() != null) {
-                        builder.getFrContainer().removeView(builder.bannerAdViewMain);
-                        builder.getFrContainer().removeView(builder.bannerAdViewSecondary);
-                        builder.getFrContainer().removeView(builder.shimmerBanner);
-                        builder.getFrContainer().addView(builder.bannerAdViewBackup);
+        builder.bannerAdViewBackup = Admob.getInstance().loadBannerAdsBackupWithoutShow(
+            currentActivity,
+            builder.listIdAdBackup,
+            object : BannerCallback() {
+                override fun onAdLoaded() {
+                    super.onAdLoaded()
+                    MainScope().launch {
+                        Log.d(TAG, "onAdLoaded: Backup")
+                        if (builder.frContainer != null) {
+                            builder.frContainer?.removeView(builder.bannerAdViewMain)
+                            builder.frContainer?.removeView(builder.bannerAdViewSecondary)
+                            builder.frContainer?.removeView(builder.shimmerBanner)
+                            builder.frContainer?.addView(builder.bannerAdViewBackup)
+                        }
                     }
-                });
-            }
+                }
 
-            @Override
-            public void onAdFailedToLoad() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdFailedToLoad();
-                    Log.d(TAG, "onAdFailedToLoad: Backup");
-                    startReloadBanner();
-                });
-            }
+                override fun onAdFailedToLoad() {
+                    super.onAdFailedToLoad()
+                    MainScope().launch {
+                        Log.d(TAG, "onAdFailedToLoad: Backup")
+                        startReloadBanner()
+                    }
+                }
 
-            @Override
-            public void onAdImpression() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdImpression();
-                    Log.d(TAG, "onAdImpression: Backup");
-                    startReloadBanner();
-                });
-            }
+                override fun onAdImpression() {
+                    super.onAdImpression()
+                    MainScope().launch {
+                        Log.d(TAG, "onAdImpression: Backup")
+                        startReloadBanner()
+                    }
+                }
 
-            @Override
-            public void onAdClicked() {
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    super.onAdClicked();
-                    Log.d(TAG, "onAdClicked: Backup");
-                });
-            }
-        }, remoteKeyBackup);
+                override fun onAdClicked() {
+                    super.onAdClicked()
+                    MainScope().launch {
+                        Log.d(TAG, "onAdClicked: Backup")
+                    }
+                }
+            },
+            remoteKeyBackup
+        )
     }
 
-    private void loadOldAdFormat() {
+    private fun loadOldAdFormat() {
         if (isLoadBannerFragment) {
-            loadBannerFragment(builder.getFrContainer());
+            loadBannerFragment(builder.frContainer!!)
         } else {
-            loadBanner(builder.getFrContainer());
+            loadBanner(builder.frContainer!!)
         }
     }
 
-    public void setAlwaysReloadOnResume(boolean isAlwaysReloadOnResume) {
-        this.isAlwaysReloadOnResume = isAlwaysReloadOnResume;
+    fun setAlwaysReloadOnResume(isAlwaysReloadOnResume: Boolean) {
+        this.isAlwaysReloadOnResume = isAlwaysReloadOnResume
     }
 
-    private void startReloadBanner() {
-        if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
-            Log.d(TAG, "startReloadBanner: ");
-            countDownTimer.cancel();
-            countDownTimer.start();
+    private fun startReloadBanner() {
+        if (countDownTimer != null && this.lifecycleOwner.lifecycle.currentState == Lifecycle.State.RESUMED) {
+            Log.d(TAG, "startReloadBanner: ")
+            countDownTimer?.cancel()
+            countDownTimer?.start()
         }
     }
 
-    public String getRemoteKeyBackup() {
-        return remoteKeyBackup;
-    }
-
-    public void setRemoteKeyBackup(String remoteKeyBackup) {
-        this.remoteKeyBackup = remoteKeyBackup;
-    }
-
-    public String getRemoteKeySecondary() {
-        return remoteKeySecondary;
-    }
-
-    public void setRemoteKeySecondary(String remoteKeySecondary) {
-        this.remoteKeySecondary = remoteKeySecondary;
-    }
-
-    public void setIntervalReloadBanner(long intervalReloadBanner) {
+    fun setIntervalReloadBanner(intervalReloadBanner: Long) {
         if (intervalReloadBanner > 0) {
-            this.intervalReloadBanner = intervalReloadBanner;
-            new Handler(Looper.getMainLooper()).post(() -> {
-                countDownTimer = new CountDownTimer(this.intervalReloadBanner, 1000) {
-                    @Override
-                    public void onTick(long l) {
-
+            this.intervalReloadBanner = intervalReloadBanner
+            MainScope().launch {
+                countDownTimer = object : CountDownTimer(intervalReloadBanner, 1000) {
+                    override fun onTick(l: Long) {
                     }
 
-                    @Override
-                    public void onFinish() {
-                        reloadAdNow();
+                    override fun onFinish() {
+                        reloadAdNow()
                     }
-                };
-            });
+                }
+            }
         }
     }
 
-    public void cancelAutoReloadBanner() {
+    fun cancelAutoReloadBanner() {
         if (countDownTimer != null) {
-            countDownTimer.cancel();
+            countDownTimer?.cancel()
         }
     }
 
-    public void resumeAutoReloadBanner() {
+    fun resumeAutoReloadBanner() {
         if (countDownTimer != null) {
-            countDownTimer.start();
+            countDownTimer?.start()
         }
+    }
+
+    companion object {
+        private const val TAG = "BannerManager"
     }
 }

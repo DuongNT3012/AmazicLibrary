@@ -13,6 +13,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
+import com.amazic.library.ads.banner_ads.BannerBuilder;
+import com.amazic.library.ads.banner_ads.BannerManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.callback.RewardedCallback;
@@ -93,19 +95,19 @@ public class MainActivity extends AppCompatActivity {
             nativeBuilder.setListIdAdSecondary(List.of("ca-app-pub-3940256099942544/2247696110"));
             nativeBuilder.setListIdAdBackup(List.of("ca-app-pub-3940256099942544/1044960115"));
         }, 20000);
-        /*BannerBuilder bannerBuilder = new BannerBuilder(this, binding.adViewContainer, true);
+        BannerBuilder bannerBuilder = new BannerBuilder(this, binding.adViewContainer, true);
         bannerBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("banner_all"));
         bannerBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("banner_all"));
         bannerBuilder.setListIdAdBackup(AdmobApi.getInstance().getListIDByName("banner_all"));
         BannerManager bannerManager = new BannerManager(this, this, bannerBuilder, "banner_all");
         bannerManager.setIntervalReloadBanner(4000);
-        bannerManager.setAlwaysReloadOnResume(true);*/
+        bannerManager.setAlwaysReloadOnResume(true);
 
-        CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder();
+        /*CollapseBannerBuilder collapseBannerBuilder = new CollapseBannerBuilder();
         collapseBannerBuilder.setListId(AdmobApi.getInstance().getListIDByName("collapse_banner"));
         CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder, "collapse_banner");
         collapseBannerManager.setIntervalReloadBanner(4000);
-        collapseBannerManager.setAlwaysReloadOnResume(true);
+        collapseBannerManager.setAlwaysReloadOnResume(true);*/
 
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {

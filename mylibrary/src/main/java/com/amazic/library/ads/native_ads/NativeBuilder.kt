@@ -1,156 +1,147 @@
-package com.amazic.library.ads.native_ads;
+package com.amazic.library.ads.native_ads
 
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.FrameLayout;
+import android.content.Context
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.FrameLayout
+import androidx.annotation.LayoutRes
+import com.amazic.library.ads.admob.AdmobApi
+import com.amazic.library.ads.callback.NativeCallback
+import com.amazic.mylibrary.R
+import com.facebook.shimmer.ShimmerFrameLayout
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 
-import androidx.annotation.LayoutRes;
-import androidx.annotation.NonNull;
+class NativeBuilder {
+    var callback: NativeCallback? = NativeCallback()
+    val listIdAdMain: MutableList<String> = mutableListOf()
+    val listIdAdSecondary: MutableList<String> = mutableListOf()
+    val listIdAdBackup: MutableList<String> = mutableListOf()
+    var nativeAdViewMain: NativeAdView? = null
+    var nativeAdViewSecondary: NativeAdView? = null
+    var nativeMetaAdView: NativeAdView? = null
+    var shimmerFrameLayout: ShimmerFrameLayout? = null
+    var flAd: FrameLayout? = null
+        private set
+    var layoutNativeAdmob: Int = 0
+        private set
+    var layoutNativeMeta: Int = 0
+        private set
+    var layoutShimmerNative: Int = 0
+        private set
+    var useNewAdLoading: Boolean = false
+    var maxRequestBackup: Int = 1
+    var maxRequest: Int = 1
+    var maxRequestReload: Int = 1
 
-import com.amazic.library.ads.admob.AdmobApi;
-import com.amazic.library.ads.callback.NativeCallback;
-import com.amazic.mylibrary.R;
-import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView;
-
-import java.util.ArrayList;
-import java.util.List;
-
-public class NativeBuilder {
-    private static final String TAG = "NativeBuilder";
-    private NativeCallback callback = new NativeCallback();
-    List<String> listIdAdMain = new ArrayList<>();
-    List<String> listIdAdSecondary = new ArrayList<>();
-    List<String> listIdAdBackup = new ArrayList<>();
-    NativeAdView nativeAdViewMain;
-    NativeAdView nativeAdViewSecondary;
-    NativeAdView nativeMetaAdView;
-    ShimmerFrameLayout shimmerFrameLayout;
-    private FrameLayout flAd;
-    private int layoutNativeAdmob;
-    private int layoutNativeMeta;
-    private int layoutShimmerNative;
-    public boolean useNewAdLoading = false;
-    public int maxRequestBackup = 1;
-    public int maxRequest = 1;
-    public int maxRequestReload = 1;
-
-    public NativeBuilder(Context context, @NonNull FrameLayout flAd, @LayoutRes int idLayoutShimmer, @LayoutRes int idLayoutNative, @LayoutRes int idLayoutNativeMeta, boolean useNewAdLoading) {
-        this.useNewAdLoading = useNewAdLoading;
-        setLayoutAds(context, flAd, idLayoutShimmer, idLayoutNative, idLayoutNativeMeta);
+    constructor(
+        context: Context?,
+        flAd: FrameLayout,
+        @LayoutRes idLayoutShimmer: Int,
+        @LayoutRes idLayoutNative: Int,
+        @LayoutRes idLayoutNativeMeta: Int,
+        useNewAdLoading: Boolean
+    ) {
+        this.useNewAdLoading = useNewAdLoading
+        setLayoutAds(context, flAd, idLayoutShimmer, idLayoutNative, idLayoutNativeMeta)
     }
 
-    public NativeBuilder(Context context, FrameLayout flAd, @LayoutRes int idLayoutShimmer, @LayoutRes int idLayoutNative, @LayoutRes int idLayoutNativeMeta) {
-        setLayoutAds(context, flAd, idLayoutShimmer, idLayoutNative, idLayoutNativeMeta);
+    constructor(
+        context: Context?,
+        flAd: FrameLayout,
+        @LayoutRes idLayoutShimmer: Int,
+        @LayoutRes idLayoutNative: Int,
+        @LayoutRes idLayoutNativeMeta: Int
+    ) {
+        setLayoutAds(context, flAd, idLayoutShimmer, idLayoutNative, idLayoutNativeMeta)
     }
 
-    private void setLayoutAds(Context context, FrameLayout flAd, @LayoutRes int idLayoutShimmer, @LayoutRes int idLayoutNative, @LayoutRes int idLayoutNativeMeta) {
-        this.flAd = flAd;
-        this.layoutNativeAdmob = idLayoutNative;
-        this.layoutNativeMeta = idLayoutNativeMeta;
-        this.layoutShimmerNative = idLayoutShimmer;
+    private fun setLayoutAds(
+        context: Context?,
+        flAd: FrameLayout,
+        @LayoutRes idLayoutShimmer: Int,
+        @LayoutRes idLayoutNative: Int,
+        @LayoutRes idLayoutNativeMeta: Int
+    ) {
+        this.flAd = flAd
+        this.layoutNativeAdmob = idLayoutNative
+        this.layoutNativeMeta = idLayoutNativeMeta
+        this.layoutShimmerNative = idLayoutShimmer
 
-        View _nativeAdView = LayoutInflater.from(context).inflate(idLayoutNative, null);
-        View _nativeMetaAdView = LayoutInflater.from(context).inflate(idLayoutNativeMeta, null);
-        View _shimmerFrameLayout = LayoutInflater.from(context).inflate(idLayoutShimmer, null);
+        val _nativeAdView = LayoutInflater.from(context).inflate(idLayoutNative, null)
+        val _nativeMetaAdView = LayoutInflater.from(context).inflate(idLayoutNativeMeta, null)
+        val _shimmerFrameLayout = LayoutInflater.from(context).inflate(idLayoutShimmer, null)
 
         //layout native admob
-        if (_nativeAdView instanceof NativeAdView) {
-            nativeAdViewMain = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNative, null);
+        if (_nativeAdView is NativeAdView) {
+            nativeAdViewMain =
+                LayoutInflater.from(context).inflate(idLayoutNative, null) as NativeAdView
         } else {
-            layoutNativeAdmob = com.amazic.mylibrary.R.layout.ads_native_large;
-            nativeAdViewMain = (NativeAdView) LayoutInflater.from(context).inflate(com.amazic.mylibrary.R.layout.ads_native_large, null);
+            layoutNativeAdmob = R.layout.ads_native_large
+            nativeAdViewMain = LayoutInflater.from(context)
+                .inflate(R.layout.ads_native_large, null) as NativeAdView
         }
         //layout native meta
-        if (_nativeMetaAdView instanceof NativeAdView) {
-            nativeMetaAdView = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNativeMeta, null);
+        if (_nativeMetaAdView is NativeAdView) {
+            nativeMetaAdView =
+                LayoutInflater.from(context).inflate(idLayoutNativeMeta, null) as NativeAdView?
         } else {
-            layoutNativeMeta = R.layout.ads_native_meta_large;
-            nativeMetaAdView = (NativeAdView) LayoutInflater.from(context).inflate(R.layout.ads_native_meta_large, null);
+            layoutNativeMeta = R.layout.ads_native_meta_large
+            nativeMetaAdView = LayoutInflater.from(context)
+                .inflate(R.layout.ads_native_meta_large, null) as NativeAdView?
         }
         //shimmer native
-        if (_shimmerFrameLayout instanceof ShimmerFrameLayout) {
-            shimmerFrameLayout = (ShimmerFrameLayout) LayoutInflater.from(context).inflate(idLayoutShimmer, null);
+        if (_shimmerFrameLayout is ShimmerFrameLayout) {
+            shimmerFrameLayout =
+                LayoutInflater.from(context).inflate(idLayoutShimmer, null) as ShimmerFrameLayout?
         } else {
-            layoutShimmerNative = R.layout.ads_shimmer_large;
-            shimmerFrameLayout = (ShimmerFrameLayout) LayoutInflater.from(context).inflate(R.layout.ads_shimmer_large, null);
+            layoutShimmerNative = R.layout.ads_shimmer_large
+            shimmerFrameLayout = LayoutInflater.from(context)
+                .inflate(R.layout.ads_shimmer_large, null) as ShimmerFrameLayout?
         }
 
         if (useNewAdLoading) {
-            flAd.removeAllViews();
-            nativeAdViewSecondary = (NativeAdView) LayoutInflater.from(context).inflate(idLayoutNativeMeta, null);
-            nativeAdViewMain.setVisibility(View.GONE);
-            nativeAdViewSecondary.setVisibility(View.GONE);
-            flAd.addView(nativeAdViewSecondary);
-            flAd.addView(nativeAdViewMain);
-            flAd.addView(shimmerFrameLayout);
+            flAd.removeAllViews()
+            nativeAdViewSecondary =
+                LayoutInflater.from(context).inflate(idLayoutNativeMeta, null) as NativeAdView
+            nativeAdViewMain?.visibility = View.GONE
+            nativeAdViewSecondary?.visibility = View.GONE
+            flAd.addView(nativeAdViewSecondary)
+            flAd.addView(nativeAdViewMain)
+            flAd.addView(shimmerFrameLayout)
         }
     }
 
-    public int getLayoutShimmerNative() {
-        return this.layoutShimmerNative;
+    fun setListIdAdMain(listIdAd: MutableList<String>) {
+        this.listIdAdMain.clear()
+        this.listIdAdMain.addAll(listIdAd)
     }
 
-    public int getLayoutNativeAdmob() {
-        return this.layoutNativeAdmob;
+    fun setListIdAdMain(nameIdAd: String) {
+        this.listIdAdMain.clear()
+        this.listIdAdMain.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd))
     }
 
-    public int getLayoutNativeMeta() {
-        return this.layoutNativeMeta;
+    fun setListIdAdSecondary(listIdAd: MutableList<String>) {
+        this.listIdAdSecondary.clear()
+        this.listIdAdSecondary.addAll(listIdAd)
     }
 
-    public FrameLayout getFlAd() {
-        return this.flAd;
+    fun setListIdAdSecondary(nameIdAd: String) {
+        this.listIdAdSecondary.clear()
+        this.listIdAdSecondary.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd))
     }
 
-    public List<String> getListIdAdMain() {
-        return this.listIdAdMain;
+    fun setListIdAdBackup(listIdAd: MutableList<String>) {
+        this.listIdAdBackup.clear()
+        this.listIdAdBackup.addAll(listIdAd)
     }
 
-    public void setListIdAdMain(List<String> listIdAd) {
-        this.listIdAdMain.clear();
-        this.listIdAdMain.addAll(listIdAd);
+    fun setListIdAdBackup(nameIdAd: String) {
+        this.listIdAdBackup.clear()
+        this.listIdAdBackup.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd))
     }
 
-    public void setListIdAdMain(String nameIdAd) {
-        this.listIdAdMain.clear();
-        this.listIdAdMain.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
-    }
-
-    public List<String> getListIdAdSecondary() {
-        return this.listIdAdSecondary;
-    }
-
-    public void setListIdAdSecondary(List<String> listIdAd) {
-        this.listIdAdSecondary.clear();
-        this.listIdAdSecondary.addAll(listIdAd);
-    }
-
-    public void setListIdAdSecondary(String nameIdAd) {
-        this.listIdAdSecondary.clear();
-        this.listIdAdSecondary.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
-    }
-
-    public List<String> getListIdAdBackup() {
-        return this.listIdAdBackup;
-    }
-
-    public void setListIdAdBackup(List<String> listIdAd) {
-        this.listIdAdBackup.clear();
-        this.listIdAdBackup.addAll(listIdAd);
-    }
-
-    public void setListIdAdBackup(String nameIdAd) {
-        this.listIdAdBackup.clear();
-        this.listIdAdBackup.addAll(AdmobApi.getInstance().getListIDByName(nameIdAd));
-    }
-
-    public NativeCallback getCallback() {
-        return callback;
-    }
-
-    public void setCallback(NativeCallback callback) {
-        this.callback = callback;
+    companion object {
+        private const val TAG = "NativeBuilder"
     }
 }

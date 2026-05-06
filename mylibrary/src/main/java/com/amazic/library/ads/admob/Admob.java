@@ -380,7 +380,7 @@ public class Admob {
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), remoteKey);
                         });
                         removeHandlerInterAds();
                     }
@@ -551,7 +551,7 @@ public class Admob {
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), remoteKeyInter);
                         });
                         removeHandlerInterAds();
                     }
@@ -801,7 +801,7 @@ public class Admob {
         if (ad != null) {
             ad.setOnPaidEventListener(
                     adValue -> {
-                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), remoteKey);
                     }
             );
 
@@ -1273,7 +1273,7 @@ public class Admob {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 ad.setOnPaidEventListener(
                         adValue -> {
-                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), "inter_splash_preloading");
                         }
                 );
 
@@ -1470,7 +1470,7 @@ public class Admob {
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), remoteKey);
                         });
                     }
 
@@ -2118,7 +2118,7 @@ public class Admob {
                             //Tracking revenue
                             interstitialAd.setOnPaidEventListener(adValue -> {
                                 //Adjust
-                                AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                                AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), "inter_splash");
                             });
                         }
 
@@ -2203,7 +2203,7 @@ public class Admob {
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0),"inter_splash");
                         });
                     }
 
@@ -2317,7 +2317,7 @@ public class Admob {
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), "inter_splash");
                         });
                     }
 
@@ -2445,7 +2445,7 @@ public class Admob {
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), "inter_splash");
                         });
                     }
 
@@ -2570,7 +2570,7 @@ public class Admob {
                 adView.setOnPaidEventListener(adValue -> {
                     //Adjust
                     if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdBannerTemp.get(0), remoteKey);
                     }
                 });
                 bannerCallback.onAdLoaded();
@@ -2684,7 +2684,7 @@ public class Admob {
                 adView.setOnPaidEventListener(adValue -> {
                     //Adjust
                     if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdBannerTemp.get(0), remoteKey);
                     }
                 });
                 bannerCallback.onAdLoaded();
@@ -2813,7 +2813,7 @@ public class Admob {
                 adView.setOnPaidEventListener(adValue -> {
                     //Adjust
                     if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdBannerTemp.get(0), remoteKey);
                     }
                 });
                 bannerCallback.onAdLoaded();
@@ -2955,7 +2955,7 @@ public class Admob {
                 adView.setOnPaidEventListener(adValue -> {
                     //Adjust
                     if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdBannerTemp.get(0), remoteKey);
                     }
                 });
                 bannerCallback.onAdLoaded();
@@ -3077,7 +3077,7 @@ public class Admob {
                 adView.setOnPaidEventListener(adValue -> {
                     //Adjust
                     if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdCollapseBannerTemp.get(0), remoteKey);
                     }
                 });
             }
@@ -3196,7 +3196,7 @@ public class Admob {
                 adView.setOnPaidEventListener(adValue -> {
                     //Adjust
                     if (adView.getResponseInfo() != null) {
-                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(adView.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdCollapseBannerTemp.get(0), remoteKey);
                     }
                 });
             }
@@ -3321,7 +3321,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdNativeTemp.get(0), remoteKey);
                 }
             });
         });
@@ -3394,7 +3394,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdNativeTemp.get(0), remoteKey);
                 }
             });
         });
@@ -3468,7 +3468,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdNativeTemp.get(0), remoteKey);
                 }
             });
         });
@@ -3540,7 +3540,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, idNative, remoteKey);
                 }
             });
         });
@@ -3638,7 +3638,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdNativeTemp.get(0), remoteKey);
                 }
             });
         });
@@ -3748,7 +3748,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdNativeTemp.get(0), remoteKey);
                 }
             });
         });
@@ -3853,7 +3853,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, idNative, remoteKey);
                 }
             });
         });
@@ -3952,7 +3952,7 @@ public class Admob {
             nativeAd.setOnPaidEventListener(adValue -> {
                 //Adjust
                 if (nativeAd.getResponseInfo() != null) {
-                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(nativeAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdNativeTemp.get(0), remoteKey);
                 }
             });
         });
@@ -4197,7 +4197,7 @@ public class Admob {
                         ad.setOnPaidEventListener(adValue -> {
                             //Adjust
                             ad.getResponseInfo();
-                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdRewardedTemp.get(0), remoteKey);
                         });
                     }
                 });
@@ -4315,7 +4315,7 @@ public class Admob {
                         ad.setOnPaidEventListener(adValue -> {
                             //Adjust
                             ad.getResponseInfo();
-                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdRewardedTemp.get(0), remoteKey);
                         });
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                             dismissLoadingDialog();
@@ -4516,7 +4516,7 @@ public class Admob {
             ad.setOnPaidEventListener(
                     adValue -> {
                         ad.getResponseInfo();
-                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdRewarded.get(0), remoteKey);
                     }
             );
 
@@ -4603,7 +4603,7 @@ public class Admob {
                         ad.setOnPaidEventListener(adValue -> {
                             //Adjust
                             ad.getResponseInfo();
-                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdRewardedInterTemp.get(0), remoteKey);
                         });
                     }
 

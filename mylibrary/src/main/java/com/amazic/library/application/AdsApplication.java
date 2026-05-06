@@ -27,7 +27,7 @@ public abstract class AdsApplication extends Application implements Application.
         registerActivityLifecycleCallbacks(this);
     }
 
-    private void initAdmob(){
+    private void initAdmob() {
         MobileAds.initialize(this, initializationStatus -> {
             Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
             Admob.getInstance().setIsInitAdmobDone(true);
@@ -36,7 +36,7 @@ public abstract class AdsApplication extends Application implements Application.
 
     private void setUpAdjust() {
         String environment;
-        environment = AdjustConfig.ENVIRONMENT_PRODUCTION;
+        environment = buildDebug() ? AdjustConfig.ENVIRONMENT_SANDBOX : AdjustConfig.ENVIRONMENT_PRODUCTION;
         AdjustConfig config = new AdjustConfig(this, getAppTokenAdjust(), environment);
         config.setLogLevel(LogLevel.VERBOSE);
         config.setFbAppId(getFacebookID());
@@ -88,5 +88,6 @@ public abstract class AdsApplication extends Application implements Application.
     @NonNull
     public abstract String getFacebookID();
 
-    //public abstract Boolean buildDebug();
+    @NonNull
+    public abstract Boolean buildDebug();
 }

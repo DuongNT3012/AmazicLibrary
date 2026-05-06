@@ -226,7 +226,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
             }
 
@@ -398,7 +398,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
             }
 
@@ -440,7 +440,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
             }
 
@@ -486,7 +486,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
             }
 
@@ -727,7 +727,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             ad.setOnPaidEventListener(
                     adValue -> {
                         ad.getResponseInfo();
-                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResume.get(0), remoteKey);
                     }
             );
 
@@ -935,7 +935,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             ad.setOnPaidEventListener(
                     adValue -> {
                         ad.getResponseInfo();
-                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResume.get(0), remoteKey);
                     }
             );
 
@@ -1350,7 +1350,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
 
                 if (handlerTimeoutSplash != null && runnable != null) {
@@ -1468,7 +1468,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue);
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResume.get(0), remoteKey);
                 });
 
                 if (handlerTimeoutSplash != null && runnable != null) {

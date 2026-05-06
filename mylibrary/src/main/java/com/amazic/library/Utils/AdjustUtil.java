@@ -13,7 +13,7 @@ import com.google.android.gms.ads.AdValue;
 import com.google.android.gms.ads.AdapterResponseInfo;
 
 public class AdjustUtil {
-    public static void trackRevenue(@Nullable AdapterResponseInfo loadedAdapterResponseInfo, AdValue adValue) {
+    public static void trackRevenue(@Nullable AdapterResponseInfo loadedAdapterResponseInfo, AdValue adValue, String adUnitId, String adFormat) {
         String adName = "";
         if (loadedAdapterResponseInfo != null)
             adName = loadedAdapterResponseInfo.getAdSourceName();
@@ -23,6 +23,10 @@ public class AdjustUtil {
         AdjustAdRevenue adRevenue = new AdjustAdRevenue("admob_sdk");
         adRevenue.setRevenue(valueMicros, adValue.getCurrencyCode());
         adRevenue.setAdRevenueNetwork(adName);
+        adRevenue.setAdRevenueUnit(adUnitId);
+        adRevenue.setAdRevenuePlacement(adFormat);
+        adRevenue.addPartnerParameter("ad_unit_id", adUnitId);
+        adRevenue.addPartnerParameter("ad_format", adFormat);
         Adjust.trackAdRevenue(adRevenue);
         Log.d("AdjustRevenue", "trackRevenue: " + adValue.getCurrencyCode());
         if (!Admob.getInstance().getTokenEventAdjust().isEmpty()) {

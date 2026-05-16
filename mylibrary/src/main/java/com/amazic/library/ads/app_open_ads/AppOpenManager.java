@@ -214,6 +214,12 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
+                //Tracking revenue
+                ad.setOnPaidEventListener(adValue -> {
+                    //Adjust
+                    ad.getResponseInfo();
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
+                });
                 Log.i(TAG, "onAdLoaded. " + remoteKey);
                 appOpenAd = ad;
                 isLoadingAd = false;
@@ -222,12 +228,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     appOpenCallback.onAdLoaded(ad);
                 }
                 showAdIfAvailableWelcomeBackLoadAndShow(activity, listIdOpenResume, appOpenCallback, remoteKey, false);
-                //Tracking revenue
-                ad.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
-                });
             }
 
             @Override
@@ -389,17 +389,17 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                Log.i(TAG, "onAdLoaded. " + remoteKey);
-                appOpenAd = ad;
-                isLoadingAd = false;
-                loadTime = (new Date()).getTime();
-                appOpenCallback.onAdLoaded(ad);
                 //Tracking revenue
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
                     AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
+                Log.i(TAG, "onAdLoaded. " + remoteKey);
+                appOpenAd = ad;
+                isLoadingAd = false;
+                loadTime = (new Date()).getTime();
+                appOpenCallback.onAdLoaded(ad);
             }
 
             @Override
@@ -432,16 +432,16 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                Log.i(TAG, "onAdLoaded. " + remoteKey);
-                appOpenAd = ad;
-                isLoadingAd = false;
-                loadTime = (new Date()).getTime();
                 //Tracking revenue
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
                     AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
+                Log.i(TAG, "onAdLoaded. " + remoteKey);
+                appOpenAd = ad;
+                isLoadingAd = false;
+                loadTime = (new Date()).getTime();
             }
 
             @Override
@@ -478,16 +478,16 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                Log.i(TAG, "onAdLoaded. " + remoteKey);
-                appOpenAd = ad;
-                isLoadingAd = false;
-                loadTime = (new Date()).getTime();
                 //Tracking revenue
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
                     AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
+                Log.i(TAG, "onAdLoaded. " + remoteKey);
+                appOpenAd = ad;
+                isLoadingAd = false;
+                loadTime = (new Date()).getTime();
             }
 
             @Override
@@ -1340,18 +1340,18 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                // Called when an app open ad has loaded.
-                Log.i(TAG, "SPLASH: Ad was loaded.");
-                appOpenAdSplash = ad;
-                isLoadingAdSplash = false;
-                appOpenCallback.onAdLoaded(ad);
-                showAdSplashIfAvailable(activity, appOpenCallback);
                 //Tracking revenue
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
                     AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
                 });
+                // Called when an app open ad has loaded.
+                Log.i(TAG, "SPLASH: Ad was loaded.");
+                appOpenAdSplash = ad;
+                isLoadingAdSplash = false;
+                appOpenCallback.onAdLoaded(ad);
+                showAdSplashIfAvailable(activity, appOpenCallback);
 
                 if (handlerTimeoutSplash != null && runnable != null) {
                     handlerTimeoutSplash.removeCallbacks(runnable);
@@ -1458,18 +1458,18 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         AppOpenAd.load(activity, idOpenResume, request, new AppOpenAd.AppOpenAdLoadCallback() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                // Called when an app open ad has loaded.
-                Log.i(TAG, "SPLASH: Ad was loaded open splash loop. " + idOpenResume);
-                appOpenAdSplash = ad;
-                isLoadingAdSplash = false;
-                appOpenCallback.onAdLoaded(ad);
-                showAdSplashIfAvailable(activity, appOpenCallback);
                 //Tracking revenue
                 ad.setOnPaidEventListener(adValue -> {
                     //Adjust
                     ad.getResponseInfo();
                     AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResume.get(0), remoteKey);
                 });
+                // Called when an app open ad has loaded.
+                Log.i(TAG, "SPLASH: Ad was loaded open splash loop. " + idOpenResume);
+                appOpenAdSplash = ad;
+                isLoadingAdSplash = false;
+                appOpenCallback.onAdLoaded(ad);
+                showAdSplashIfAvailable(activity, appOpenCallback);
 
                 if (handlerTimeoutSplash != null && runnable != null) {
                     handlerTimeoutSplash.removeCallbacks(runnable);

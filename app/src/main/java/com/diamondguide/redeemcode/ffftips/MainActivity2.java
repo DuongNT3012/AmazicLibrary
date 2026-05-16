@@ -26,17 +26,19 @@ public class MainActivity2 extends AppCompatActivity {
         binding = ActivityMain2Binding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        //ads
+        NativeSqueezeBackManager backManager = new NativeSqueezeBackManager(this, this, AdmobApi.getInstance().getListIDByName("native_all"), "native_all", true);
+        backManager.setIntervalReloadNative(7000);
+        backManager.setAlwaysReloadOnResume(true);
+
         binding.tvClose.setOnClickListener(view -> {
             finish();
         });
 
-        //
-//        BannerPictureInPictureManager banner = new BannerPictureInPictureManager(this, this, AdmobApi.getInstance().getListIDByName("banner_all"), "native_all");
-//        banner.setIntervalReloadBanner(5000);
-//        banner.setAlwaysReloadOnResume(true);
+        binding.tvShowNative.setOnClickListener(view -> {
+            backManager.showAds();
+        });
 
-        NativeSqueezeBackManager backManager = new NativeSqueezeBackManager(this, this, AdmobApi.getInstance().getListIDByName("native_all"), "native_all");
-        backManager.setIntervalReloadNative(7000);
-        backManager.setAlwaysReloadOnResume(true);
+
     }
 }

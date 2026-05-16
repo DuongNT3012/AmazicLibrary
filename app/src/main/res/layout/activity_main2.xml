@@ -7,10 +7,19 @@
 
     <TextView
         android:id="@+id/tv_close"
-        android:text="Close"
-        android:textSize="26sp"
-        android:layout_centerInParent="true"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:text="Close"
+        android:textSize="26sp" />
 
+    <TextView
+        android:id="@+id/tv_show_native"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_below="@+id/tv_close"
+        android:layout_centerInParent="true"
+        android:text="Show Native"
+        android:textSize="26sp" />
 </RelativeLayout>

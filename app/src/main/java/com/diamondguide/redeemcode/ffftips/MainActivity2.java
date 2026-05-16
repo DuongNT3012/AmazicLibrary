@@ -31,24 +31,12 @@ public class MainActivity2 extends AppCompatActivity {
         });
 
         //
-//        BannerPictureInPictureManager banner = new BannerPictureInPictureManager(this, "ca-app-pub-3940256099942544/6300978111");
-//        banner.loadAndShow();
+//        BannerPictureInPictureManager banner = new BannerPictureInPictureManager(this, this, AdmobApi.getInstance().getListIDByName("banner_all"), "native_all");
+//        banner.setIntervalReloadBanner(5000);
+//        banner.setAlwaysReloadOnResume(true);
 
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                banner.show();
-//            }
-//        }, 5000);
-
-        NativeSqueezeBackManager backManager = new NativeSqueezeBackManager(this, AdmobApi.getInstance().getListIDByName("native_all"),"native_all");
-        backManager.loadAndShow();
-//
-//        new Handler().postDelayed(new Runnable() {
-//            @Override
-//            public void run() {
-//                backManager.showAds();
-//            }
-//        }, 5000);
+        NativeSqueezeBackManager backManager = new NativeSqueezeBackManager(this, this, AdmobApi.getInstance().getListIDByName("native_all"), "native_all");
+        backManager.setIntervalReloadNative(7000);
+        backManager.setAlwaysReloadOnResume(true);
     }
 }

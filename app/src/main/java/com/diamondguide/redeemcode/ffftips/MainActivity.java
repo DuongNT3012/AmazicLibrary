@@ -157,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
                     this,
                     "inter_all",
                     "inter_all",
-                    new InterCallback(){
+                    new InterCallback() {
                         @Override
                         public void onNextAction() {
                             super.onNextAction();
@@ -231,6 +231,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         });
+
+        binding.tvPicInPic.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, MainActivity3.class);
+            startActivity(intent);
+        });
+
+        binding.tvSqueezeBack.setOnClickListener(view -> {
+            Intent intent = new Intent(MainActivity.this, MainActivity2.class);
+            startActivity(intent);
+        });
+
     }
 
     @Override

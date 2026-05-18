@@ -1,6 +1,3 @@
-//configurations.maybeCreate("default")
-//artifacts.add("default", file('noninterruptive-release.aar'))
-
 plugins {
     id 'com.android.library'
 }
@@ -12,18 +9,12 @@ android {
     defaultConfig {
         minSdk 21
     }
-    lintOptions {
-        abortOnError false
+    lint {
         checkReleaseBuilds false
-    }
-}
-tasks.whenTaskAdded { task ->
-    if (task.name.contains("bundleReleaseLocalLintAar")) {
-        task.enabled = false
+        abortOnError false
     }
 }
 
 dependencies {
-    // Nhúng file AAR vào module này
     api files('noninterruptive-release.aar')
 }

@@ -10,6 +10,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            // Dùng File để lấy đường dẫn tuyệt đối từ gốc dự án
+            dirs new File(rootDir, 'noninterruptive_lib/libs')
+        }
         maven {
             url 'https://jitpack.io'
         }

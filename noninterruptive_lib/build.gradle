@@ -1,2 +1,20 @@
-configurations.maybeCreate("default")
-artifacts.add("default", file('noninterruptive-release.aar'))
+//configurations.maybeCreate("default")
+//artifacts.add("default", file('noninterruptive-release.aar'))
+
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    namespace 'com.amazic.noninterruptive' // Đặt tên bất kỳ theo chuẩn package
+    compileSdk 35 // Khớp với bản compileSdk của mylibrary
+
+    defaultConfig {
+        minSdk 21
+    }
+}
+
+dependencies {
+    // Nhúng file AAR vào module này
+    api files('noninterruptive-release.aar')
+}

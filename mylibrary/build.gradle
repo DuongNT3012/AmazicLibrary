@@ -70,7 +70,7 @@ publishing {
 }
 
 dependencies {
-    implementation project(':noninterruptive_lib')
+    api project(':noninterruptive_lib')
     implementation("androidx.palette:palette:1.0.0")
 
     implementation 'androidx.appcompat:appcompat:1.7.1'

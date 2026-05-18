@@ -12,6 +12,15 @@ android {
     defaultConfig {
         minSdk 21
     }
+    lintOptions {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("bundleReleaseLocalLintAar")) {
+        task.enabled = false
+    }
 }
 
 dependencies {

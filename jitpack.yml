@@ -1,4 +1,4 @@
 jdk:
   - openjdk17
 install:
-  - ./gradlew :mylibrary:publishToMavenLocal ...
+  - ./gradlew :mylibrary:publishToMavenLocal -Dmaven.repo.local=$HOME/.m2/repository

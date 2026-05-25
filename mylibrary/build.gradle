@@ -63,6 +63,12 @@ tasks.withType(GenerateModuleMetadata).configureEach {
     enabled = false
 }
 
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("bundleReleaseLocalLintAar")) {
+        task.enabled = false
+    }
+}
+
 //publishing {
 //    publications {
 //        release(MavenPublication) {
@@ -135,14 +141,16 @@ afterEvaluate {
 
                 // Fix lỗi "Missing required attribute: dependency groupId"
                 pom.withXml {
-                    pom.withXml {
-                        def dependenciesNode = asNode().get('dependencies')[0]
-                        if (dependenciesNode != null) {
-                            dependenciesNode.children().findAll {
-                                def groupId = it.groupId.text()
-                                groupId == null || groupId.isEmpty() || groupId == 'unspecified'
-                            }.each {
-                                dependenciesNode.remove(it)
+                    def dependenciesNode = asNode().getAt('dependencies')[0]
+                    if (dependenciesNode != null) {
+                        // Lặp qua tất cả các dependency trong file POM được sinh ra
+                        def dependencies = dependenciesNode.getAt('dependency')
+                        dependencies.each { dep ->
+                            def groupId = dep.getAt('groupId').text()
+                            // Nếu groupId bị thiếu hoặc là 'unspecified' (do file AAR cục bộ)
+                            if (groupId == null || groupId == "" || groupId == "unspecified") {
+                                // XÓA NÓ ĐI khỏi file POM
+                                dependenciesNode.remove(dep)
                             }
                         }
                     }

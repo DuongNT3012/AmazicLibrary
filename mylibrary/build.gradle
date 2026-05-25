@@ -59,24 +59,29 @@ android {
     }
 }
 
-publishing {
-    publications {
-        release(MavenPublication) {
-            groupId = 'com.github.DuongNT3012'
-            artifactId = 'com.amazic.mylibrary'
-            version = '1.0.0'
-
-            afterEvaluate {
-                from components.release
-            }
-        }
+tasks.whenTaskAdded { task ->
+    if (task.name.contains("bundleReleaseLocalLintAar")) {
+        task.enabled = false
     }
 }
 
-dependencies {
-    api project(':noninterruptive_lib')
-    implementation("androidx.palette:palette:1.0.0")
+//publishing {
+//    publications {
+//        release(MavenPublication) {
+//            groupId = 'com.github.DuongNT3012'
+//            artifactId = 'com.amazic.mylibrary'
+//            version = '1.0.0'
+//
+//            afterEvaluate {
+//                from components.release
+//            }
+//        }
+//    }
+//}
 
+dependencies {
+    implementation(name: 'noninterruptive-release', ext: 'aar')
+//    implementation("androidx.palette:palette:1.0.0")
     implementation 'androidx.appcompat:appcompat:1.7.1'
     implementation 'com.google.android.material:material:1.12.0'
     implementation 'androidx.lifecycle:lifecycle-process:2.9.1'
@@ -114,4 +119,22 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.10.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0'
     implementation 'com.airbnb.android:lottie:6.7.1'
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                // components.release chứa toàn bộ file .aar và dependencies của module này
+                from components.release
+
+                // GroupId: Thường là com.github.User
+                groupId = 'com.github.DuongNT3012'
+                // ArtifactId: Phải là AmazicLibrary để gọi được implementation ngắn gọn
+                artifactId = 'AmazicLibrary'
+                // Version: Lấy theo Git Tag, ở đây set cứng để Gradle đồng bộ local
+                version = '2.4.0'
+            }
+        }
+    }
 }

@@ -11,8 +11,7 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         flatDir {
-            // Dùng File để lấy đường dẫn tuyệt đối từ gốc dự án
-            dirs new File(rootDir, 'noninterruptive_lib/libs')
+            dirs new File(rootDir, 'mylibrary/libs')
         }
         maven {
             url 'https://jitpack.io'
@@ -25,4 +24,3 @@ include ':app'
 include ':mylibrary'
 include ':customevent'
 include ':sdk'
-include ':noninterruptive_lib'

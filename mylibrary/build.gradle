@@ -59,10 +59,8 @@ android {
     }
 }
 
-tasks.whenTaskAdded { task ->
-    if (task.name.contains("bundleReleaseLocalLintAar")) {
-        task.enabled = false
-    }
+tasks.withType(GenerateModuleMetadata).configureEach {
+    enabled = false
 }
 
 //publishing {
@@ -137,14 +135,15 @@ afterEvaluate {
 
                 // Fix lỗi "Missing required attribute: dependency groupId"
                 pom.withXml {
-                    def dependenciesNode = asNode().get('dependencies')[0]
-                    if (dependenciesNode != null) {
-                        dependenciesNode.children().findAll {
-                            // Tìm những thằng thiếu groupId (thường là file AAR cục bộ)
-                            it.groupId.text() == null || it.groupId.text().isEmpty() || it.groupId.text() == 'unspecified'
-                        }.each {
-                            // Xóa chúng khỏi file POM để App sử dụng không bị crash khi parse
-                            dependenciesNode.remove(it)
+                    pom.withXml {
+                        def dependenciesNode = asNode().get('dependencies')[0]
+                        if (dependenciesNode != null) {
+                            dependenciesNode.children().findAll {
+                                def groupId = it.groupId.text()
+                                groupId == null || groupId.isEmpty() || groupId == 'unspecified'
+                            }.each {
+                                dependenciesNode.remove(it)
+                            }
                         }
                     }
                 }

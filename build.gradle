@@ -21,10 +21,7 @@ ext {
     playServicesAds = "com.google.android.gms:play-services-ads:$play"
 }
 allprojects {
-    tasks.withType(com.android.build.gradle.internal.tasks.factory.TaskFactory).configureEach {
-        // Nếu có task liên quan đến lintVital, tắt nó đi
-        if (name.contains("lintVital")) {
-            enabled = false
-        }
+    tasks.matching { it.name.contains("lintVital") }.configureEach {
+        enabled = false
     }
 }

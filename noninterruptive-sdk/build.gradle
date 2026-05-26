@@ -1,0 +1,29 @@
+plugins {
+    id 'com.android.library'
+    id 'maven-publish'
+}
+
+android {
+    namespace 'com.amazic.noninterruptive'
+    compileSdk 35
+    defaultConfig { minSdk 24 }
+}
+
+dependencies {
+    // Nhúng file AAR vào module này
+    api files('libs/noninterruptive-release.aar')
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                artifact("$projectDir/libs/noninterruptive-release.aar")
+
+                groupId = 'com.github.DuongNT3012'
+                artifactId = 'noninterruptive-sdk'
+                version = '2.4.0'
+            }
+        }
+    }
+}

@@ -14,7 +14,6 @@ dependencyResolutionManagement {
 //        flatDir {
 //            dirs new File(rootDir, 'mylibrary/libs')
 //        }
-        maven { url "file://${rootDir}/local-repo" }
         maven {
             url 'https://jitpack.io'
         }
@@ -26,3 +25,4 @@ include ':app'
 include ':mylibrary'
 include ':customevent'
 include ':sdk'
+include ':noninterruptive-sdk'

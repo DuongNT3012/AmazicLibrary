@@ -37,6 +37,7 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
     private long intervalReloadBanner = 0;
     private final LifecycleOwner lifecycleOwner;
     private boolean isPause = false;
+    private PictureInPictureAd.AdPosition positionPIP = PictureInPictureAd.AdPosition.BOTTOM_RIGHT;
 
 
     public BannerPictureInPictureManager(@NonNull Activity activity, LifecycleOwner lifecycleOwner, List<String> listId, String remoteKey) {
@@ -79,7 +80,10 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
         }
     }
 
-    private void setReloadAds() {
+    public void setPosition(PictureInPictureAd.AdPosition position){
+        this.positionPIP = position;
+    }
+    public void setReloadAds() {
         isReloadAds = true;
     }
 
@@ -219,7 +223,7 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
                     @Override
                     public void onAdLoaded() {
                         Log.d(TAG, "Picture In Picture Ad loaded.");
-                        pipAd.show(currentActivity, PictureInPictureAd.AdPosition.BOTTOM_RIGHT);
+                        pipAd.show(currentActivity, positionPIP);
                     }
 
                     @Override

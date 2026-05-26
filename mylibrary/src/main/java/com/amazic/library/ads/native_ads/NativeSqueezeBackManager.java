@@ -229,6 +229,22 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
         }
     }
 
+    public void hideAds(){
+        Log.d(TAG, "Native Squeeze Back: Call HideAds.");
+        if(backAd != null){
+            backAd.hide();
+            cancelAutoReloadNative();
+        }
+    }
+
+    public void destroyAds(){
+        Log.d(TAG, "Native Squeeze Back: Call DestroyAds.");
+        if(backAd != null){
+            backAd.destroy();
+            cancelAutoReloadNative();
+        }
+    }
+
     private void loadAndShow() {
         Log.d(TAG, "Native Squeeze Back: USE loadAndShow.");
         if (backAd != null) {

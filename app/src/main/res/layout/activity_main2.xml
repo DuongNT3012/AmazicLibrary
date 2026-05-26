@@ -22,4 +22,14 @@
         android:layout_centerInParent="true"
         android:text="Show Native"
         android:textSize="26sp" />
+
+    <TextView
+        android:id="@+id/tv_hide_native"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_below="@+id/tv_show_native"
+        android:layout_centerInParent="true"
+        android:text="Hide Native"
+        android:textSize="26sp" />
 </RelativeLayout>

@@ -39,6 +39,10 @@ public class MainActivity2 extends AppCompatActivity {
             backManager.showAds();
         });
 
+        binding.tvHideNative.setOnClickListener(view -> {
+            backManager.hideAds();
+        });
+
 
     }
 }

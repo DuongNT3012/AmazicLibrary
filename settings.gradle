@@ -11,9 +11,10 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        flatDir {
-            dirs new File(rootDir, 'mylibrary/libs')
-        }
+//        flatDir {
+//            dirs new File(rootDir, 'mylibrary/libs')
+//        }
+        maven { url "file://${rootDir}/local-repo" }
         maven {
             url 'https://jitpack.io'
         }

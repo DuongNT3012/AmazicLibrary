@@ -85,7 +85,8 @@ tasks.whenTaskAdded { task ->
 
 dependencies {
 //    implementation(name: 'noninterruptive-release', ext: 'aar')
-    api(name: 'noninterruptive-release', ext: 'aar')
+//    api(name: 'noninterruptive-release', ext: 'aar')
+    api 'com.github.DuongNT3012:noninterruptive-sdk:1.0.0'
     //support Native SqueezeBack
     implementation 'androidx.palette:palette:1.0.0'
 
@@ -144,19 +145,19 @@ afterEvaluate {
 
                 // Fix lỗi "Missing required attribute: dependency groupId"
                 pom.withXml {
-                    def dependenciesNode = asNode().getAt('dependencies')[0]
-                    if (dependenciesNode != null) {
-                        // Lặp qua tất cả các dependency trong file POM được sinh ra
-                        def dependencies = dependenciesNode.getAt('dependency')
-                        dependencies.each { dep ->
-                            def groupId = dep.getAt('groupId').text()
-                            // Nếu groupId bị thiếu hoặc là 'unspecified' (do file AAR cục bộ)
-                            if (groupId == null || groupId == "" || groupId == "unspecified") {
-                                // XÓA NÓ ĐI khỏi file POM
-                                dependenciesNode.remove(dep)
-                            }
-                        }
-                    }
+//                    def dependenciesNode = asNode().getAt('dependencies')[0]
+//                    if (dependenciesNode != null) {
+//                        // Lặp qua tất cả các dependency trong file POM được sinh ra
+//                        def dependencies = dependenciesNode.getAt('dependency')
+//                        dependencies.each { dep ->
+//                            def groupId = dep.getAt('groupId').text()
+//                            // Nếu groupId bị thiếu hoặc là 'unspecified' (do file AAR cục bộ)
+//                            if (groupId == null || groupId == "" || groupId == "unspecified") {
+//                                // XÓA NÓ ĐI khỏi file POM
+//                                dependenciesNode.remove(dep)
+//                            }
+//                        }
+//                    }
                 }
             }
         }

@@ -98,6 +98,14 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                 Log.d(TAG, "onStateChanged: ON_PAUSE");
                 isPause = true;
                 cancelAutoReloadNative();
+
+                if (currentActivity.isFinishing()) {
+                    if (currentSqueezeBack != null) {
+                        currentSqueezeBack.destroy();
+                        currentSqueezeBack = null;
+                    }
+                    preloadedSqueezeBack = null;
+                }
                 break;
             case ON_DESTROY:
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
@@ -246,14 +254,19 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                 new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        //check Nếu activity đã chết trong 800ms qua thì THOÁT NGAY
+                        if (currentActivity == null || currentActivity.isFinishing() || currentActivity.isDestroyed()) {
+                            Log.d(TAG, "Activity đã chết, hủy bỏ lệnh Show Ad.");
+                            return;
+                        }
+                        if (preloadedSqueezeBack == null) return;
+
                         currentSqueezeBack = preloadedSqueezeBack;
                         preloadedSqueezeBack = null;
-
                         if (lifecycleOwner.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
                             currentSqueezeBack.show();
                             Log.d(TAG, "Native Squeeze Back: Đã tráo đổi và hiển thị Ad mới.");
                         }
-
                         loadAds();
                     }
                 }, 800);

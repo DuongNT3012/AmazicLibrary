@@ -38,6 +38,7 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
     private final LifecycleOwner lifecycleOwner;
     private boolean isPause = false;
     private PictureInPictureAd.AdPosition positionPIP = PictureInPictureAd.AdPosition.BOTTOM_RIGHT;
+    private boolean isLoading = false; // Flag check state load
 
 
     public BannerPictureInPictureManager(@NonNull Activity activity, LifecycleOwner lifecycleOwner, List<String> listId, String remoteKey) {
@@ -59,7 +60,7 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
             case ON_RESUME:
                 String valueLog = isPause + " && " + (isReloadAds || isAlwaysReloadOnResume);
                 Log.d(TAG, "onStateChanged: ON_RESUME\n" + valueLog);
-                if(isPause && (isReloadAds || isAlwaysReloadOnResume)){
+                if (isPause && (isReloadAds || isAlwaysReloadOnResume)) {
                     isReloadAds = false;
                     loadAndShow();
                 }
@@ -72,7 +73,7 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
                 break;
             case ON_DESTROY:
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
-                if(pipAd != null){
+                if (pipAd != null) {
                     pipAd.destroy();
                 }
                 this.lifecycleOwner.getLifecycle().removeObserver(this);
@@ -80,9 +81,10 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
         }
     }
 
-    public void setPosition(PictureInPictureAd.AdPosition position){
+    public void setPosition(PictureInPictureAd.AdPosition position) {
         this.positionPIP = position;
     }
+
     public void setReloadAds() {
         isReloadAds = true;
     }
@@ -129,80 +131,11 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
         }
     }
 
-//    public void loadBanner() {
-//        if (!NetworkUtil.isNetworkActive(currentActivity) || listId.isEmpty() || !AdsConsentManager.getConsentResult(currentActivity) || !Admob.getInstance().getShowAllAds() || !RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey)) {
-//            Log.d(TAG, "Picture In Picture: loadAndShow Check Condition. Network: " + NetworkUtil.isNetworkActive(currentActivity) + "_IsEmpty: " + listId.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(currentActivity) + "_showAll:" + Admob.getInstance().getShowAllAds() + "_remoteKey:" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
-//            Bundle bundle = new Bundle();
-//            bundle.putString("failed_message", "network_" + NetworkUtil.isNetworkActive(currentActivity) + "_isId_" + listId.isEmpty() + "_ump_" + listId.isEmpty() + "_isshowads_" + Admob.getInstance().getShowAllAds() + "_remote_" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
-//
-//            EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_fail", bundle);
-//            return;
-//        }
-//        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_true");
-//        pipAd.load(listId.get(0),
-//                new AdRequest.Builder().build(),
-//                new PictureInPictureAdLoadCallback() {
-//                    @Override
-//                    public void onAdLoaded() {
-//                        Log.d(TAG, "Picture In Picture Ad loaded.");
-//                    }
-//
-//                    @Override
-//                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-//                        Log.d(TAG, "Picture In Picture Failed to load: " +
-//                                loadAdError.getMessage());
-//                        Bundle bundle = new Bundle();
-//                        bundle.putString("failed_message", loadAdError.getMessage());
-//                        EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_loadfail", bundle);
-//                    }
-//                },
-//                new PictureInPictureAdEventCallback() {
-//                    @Override
-//                    public void onAdHidden() {
-//                        Log.d(TAG, "Picture In Picture Ad hidden.");
-//                    }
-//
-//                    @Override
-//                    public void onAdDestroyed() {
-//                        Log.d(TAG, "Picture In Picture Ad destroyed.");
-//                    }
-//
-//                    @Override
-//                    public void onAdClicked() {
-//                        Log.d(TAG, "Picture In Picture Ad clicked.");
-//                    }
-//
-//                    @Override
-//                    public void onAdOpened() {
-//                        Log.d(TAG, "Picture In Picture Ad opened.");
-//                    }
-//
-//                    @Override
-//                    public void onAdClosed() {
-//                        Log.d(TAG, "Picture In Picture Ad closed.");
-//                    }
-//
-//                    @Override
-//                    public void onAdImpression() {
-//                        Log.d(TAG, "Picture In Picture Ad impression.");
-//                        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_view");
-//                    }
-//
-//                    @Override
-//                    public void onAdPaid(AdValue value) {
-//                        Log.d(TAG, "Picture In Picture Ad Paid with: " +
-//                                value.getValueMicros() + " " + value.getCurrencyCode());
-//                        //Adjust
-//                        AdjustUtil.trackRevenue(null, value, listId.get(0), remoteKey);
-//                    }
-//                });
-//    }
-//
-//    public void show() {
-//        pipAd.show(currentActivity, PictureInPictureAd.AdPosition.BOTTOM_RIGHT);
-//    }
-
     private void loadAndShow() {
+        if (isLoading) {
+            Log.d(TAG, "Picture In Picture: loadAndShow - Ad is already loading, ignore this request ");
+            return;
+        }
         if (pipAd != null) {
             pipAd.destroy();
         }
@@ -216,18 +149,24 @@ public class BannerPictureInPictureManager implements LifecycleEventObserver {
             EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_fail", bundle);
             return;
         }
+        isLoading = true;
+        Log.d(TAG, "Picture In Picture: loadAndShow - start Load request true");
         EventTrackingHelper.logEvent(currentActivity, remoteKey + "_true");
         pipAd.load(listId.get(0),
                 new AdRequest.Builder().build(),
                 new PictureInPictureAdLoadCallback() {
                     @Override
                     public void onAdLoaded() {
+                        isLoading = false;
                         Log.d(TAG, "Picture In Picture Ad loaded.");
-                        pipAd.show(currentActivity, positionPIP);
+                        if (lifecycleOwner.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+                            pipAd.show(currentActivity, positionPIP);
+                        }
                     }
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        isLoading = false;
                         Log.d(TAG, "Picture In Picture Failed to load: " +
                                 loadAdError.getMessage());
 

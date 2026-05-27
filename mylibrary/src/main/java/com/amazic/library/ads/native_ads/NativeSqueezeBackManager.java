@@ -33,7 +33,7 @@ import java.util.List;
 public class NativeSqueezeBackManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
 
-    private SqueezeBackAd backAd;
+    //    private SqueezeBackAd backAd;
     private Activity currentActivity;
     private String remoteKey;
     private List<String> listId;
@@ -44,7 +44,10 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
     private long intervalReloadNative = 0;
     private boolean isPause = false;
     private boolean isUsePreload = false;
+    private SqueezeBackAd currentSqueezeBack; // Ad đang hiển thị trên màn hình
+    private SqueezeBackAd preloadedSqueezeBack;     // Ad đã load xong, nằm chờ đến lượt
     private boolean isShowAdsPreload = false; //check first show preload
+    private boolean isLoading = false; // Flag check state load
 
 
     public NativeSqueezeBackManager(@NonNull Activity activity, LifecycleOwner lifecycleOwner, List<String> listId, String remoteKey) {
@@ -98,8 +101,8 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                 break;
             case ON_DESTROY:
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
-                if (backAd != null) {
-                    backAd.destroy();
+                if (currentSqueezeBack != null) {
+                    currentSqueezeBack.destroy();
                 }
                 this.lifecycleOwner.getLifecycle().removeObserver(this);
                 break;
@@ -117,7 +120,11 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
 
                 @Override
                 public void onFinish() {
-                    loadAndShow();
+                    if (isUsePreload) {
+                        showAds();
+                    } else {
+                        loadAndShow();
+                    }
                 }
             };
         }
@@ -147,18 +154,20 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
     }
 
     public void loadAds() {
-        Log.d(TAG, "Native Squeeze Back: USE loadAds preload.");
-        if (backAd != null) {
-            backAd.destroy();
+        if (isLoading) {
+            Log.d(TAG, "Native Squeeze Back: Ad is already loading, ignore this request ");
+            return;
         }
         if (!NetworkUtil.isNetworkActive(currentActivity) || listId.isEmpty() || !AdsConsentManager.getConsentResult(currentActivity) || !Admob.getInstance().getShowAllAds() || !RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey)) {
-            Log.d(TAG, "Native Squeeze Back: loadAndShow Check Condition. Network: " + NetworkUtil.isNetworkActive(currentActivity) + "_IsEmpty: " + listId.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(currentActivity) + "_showAll:" + Admob.getInstance().getShowAllAds() + "_remoteKey:" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
+            Log.d(TAG, "Native Squeeze Back: load Ads Check Condition. Network: " + NetworkUtil.isNetworkActive(currentActivity) + "_IsEmpty: " + listId.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(currentActivity) + "_showAll:" + Admob.getInstance().getShowAllAds() + "_remoteKey:" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
             Bundle bundle = new Bundle();
             bundle.putString("failed_message", "network_" + NetworkUtil.isNetworkActive(currentActivity) + "_isId_" + listId.isEmpty() + "_ump_" + listId.isEmpty() + "_isshowads_" + Admob.getInstance().getShowAllAds() + "_remote_" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
 
             EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_fail", bundle);
             return;
         }
+        isLoading = true;
+        Log.d(TAG, "Native Squeeze Back: start load request true");
         EventTrackingHelper.logEvent(currentActivity, remoteKey + "_true");
         SqueezeBackAd.load(
                 this.currentActivity,
@@ -169,12 +178,16 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                     @Override
                     public void onAdLoaded(@NonNull SqueezeBackAd squeezeBackAd) {
                         Log.d(TAG, "Native Squeeze Back: Ad loaded.");
-                        backAd = squeezeBackAd;
+                        isLoading = false;
+                        preloadedSqueezeBack = squeezeBackAd;
                     }
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         Log.d(TAG, "Native Squeeze Back: failed to load.");
+                        isLoading = false;
+                        preloadedSqueezeBack = null;
+
                         Bundle bundle = new Bundle();
                         bundle.putString("failed_message", loadAdError.getMessage());
                         EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_loadfail", bundle);
@@ -206,6 +219,7 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                     public void onAdImpression() {
                         Log.d(TAG, "Native Squeeze Back: Ad Impression.");
                         EventTrackingHelper.logEvent(currentActivity, remoteKey + "_view");
+                        startReloadNative();
                     }
 
                     @Override
@@ -221,34 +235,56 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
     public void showAds() {
         Log.d(TAG, "Native Squeeze Back: Call ShowAds.");
         isShowAdsPreload = true;
-        if (backAd != null) {
-            backAd.show();
-            startReloadNative();
-        } else {
-            loadAndShow();
+
+        if (this.isUsePreload) {
+            if (preloadedSqueezeBack != null) {
+                if (currentSqueezeBack != null) {
+                    currentSqueezeBack.destroy();
+                    currentSqueezeBack = null;
+                }
+
+                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        currentSqueezeBack = preloadedSqueezeBack;
+                        preloadedSqueezeBack = null;
+
+                        if (lifecycleOwner.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+                            currentSqueezeBack.show();
+                            Log.d(TAG, "Native Squeeze Back: Đã tráo đổi và hiển thị Ad mới.");
+                        }
+
+                        loadAds();
+                    }
+                }, 800);
+            }
         }
     }
 
-    public void hideAds(){
+    public void hideAds() {
         Log.d(TAG, "Native Squeeze Back: Call HideAds.");
-        if(backAd != null){
-            backAd.hide();
+        if (currentSqueezeBack != null) {
+            currentSqueezeBack.hide();
             cancelAutoReloadNative();
         }
     }
 
-    public void destroyAds(){
+    public void destroyAds() {
         Log.d(TAG, "Native Squeeze Back: Call DestroyAds.");
-        if(backAd != null){
-            backAd.destroy();
+        if (currentSqueezeBack != null) {
+            currentSqueezeBack.destroy();
             cancelAutoReloadNative();
         }
     }
 
     private void loadAndShow() {
         Log.d(TAG, "Native Squeeze Back: USE loadAndShow.");
-        if (backAd != null) {
-            backAd.destroy();
+        if (isLoading) {
+            Log.d(TAG, "Native Squeeze Back: loadAndShow - Ad is already loading, ignore this request ");
+            return;
+        }
+        if (currentSqueezeBack != null) {
+            currentSqueezeBack.destroy();
         }
         if (!NetworkUtil.isNetworkActive(currentActivity) || listId.isEmpty() || !AdsConsentManager.getConsentResult(currentActivity) || !Admob.getInstance().getShowAllAds() || !RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey)) {
             Log.d(TAG, "Native Squeeze Back: loadAndShow Check Condition. Network: " + NetworkUtil.isNetworkActive(currentActivity) + "_IsEmpty: " + listId.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(currentActivity) + "_showAll:" + Admob.getInstance().getShowAllAds() + "_remoteKey:" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
@@ -263,6 +299,8 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
             );
             return;
         }
+        isLoading = true;
+        Log.d(TAG, "Native Squeeze Back: loadAndShow - start load request true");
         EventTrackingHelper.logEvent(currentActivity, remoteKey + "_true");
         SqueezeBackAd.load(
                 this.currentActivity,
@@ -272,13 +310,17 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                 new SqueezeBackAdLoadCallback() {
                     @Override
                     public void onAdLoaded(@NonNull SqueezeBackAd squeezeBackAd) {
+                        isLoading = false;
                         Log.d(TAG, "Native Squeeze Back: onAdLoaded. " + remoteKey);
-                        backAd = squeezeBackAd;
-                        backAd.show();
+                        currentSqueezeBack = squeezeBackAd;
+                        if (lifecycleOwner.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
+                            currentSqueezeBack.show();
+                        }
                     }
 
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
+                        isLoading = false;
                         Log.e(TAG, "Native Squeeze Back: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
                         Bundle bundle = new Bundle();
                         bundle.putString("failed_message", limitString(loadAdError.getMessage(), 99));

@@ -237,6 +237,7 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
         isShowAdsPreload = true;
 
         if (this.isUsePreload) {
+            Log.d(TAG, "Native Squeeze Back: preloadedSqueezeBack = " + preloadedSqueezeBack);
             if (preloadedSqueezeBack != null) {
                 if (currentSqueezeBack != null) {
                     currentSqueezeBack.destroy();
@@ -257,6 +258,9 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                         loadAds();
                     }
                 }, 800);
+            } else {
+                loadAds();
+                startReloadNative();
             }
         }
     }

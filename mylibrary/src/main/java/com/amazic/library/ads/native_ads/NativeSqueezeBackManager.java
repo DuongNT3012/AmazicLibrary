@@ -259,6 +259,7 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                     }
                 }, 800);
             } else {
+                isLoading = false;
                 loadAds();
                 startReloadNative();
             }

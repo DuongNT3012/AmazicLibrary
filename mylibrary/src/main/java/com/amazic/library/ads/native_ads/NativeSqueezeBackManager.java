@@ -101,9 +101,8 @@ public class NativeSqueezeBackManager implements LifecycleEventObserver {
                 break;
             case ON_DESTROY:
                 Log.d(TAG, "onStateChanged: ON_DESTROY");
-                if (currentSqueezeBack != null) {
-                    currentSqueezeBack.destroy();
-                }
+                currentSqueezeBack = null;
+                preloadedSqueezeBack = null;
                 this.lifecycleOwner.getLifecycle().removeObserver(this);
                 break;
         }

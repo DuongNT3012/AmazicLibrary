@@ -222,11 +222,11 @@ public class Admob {
         this.timeOutCallSplashAds = timeOutCallSplashAds;
     }
 
-    public int getTimeDelayAdsSplash() {
+    public int getTimeDelayNativeSplash() {
         return timeDelayAdsSplash;
     }
 
-    public void setTimeDelayAdsSplash(int timeDelay) {
+    public void setTimeDelayNativeSplash(int timeDelay) {
         this.timeDelayAdsSplash = timeDelay;
     }
 
@@ -1122,14 +1122,19 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //delay ads splash
-        timerDelayRunnable = new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "AdsSplash Inter preload: Đã đủ 7 giây đếm ngược.");
-                isTimerDelayFinished = true;
-                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
-            }
-        };
+        if(AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
+            timerDelayRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "AdsSplash Inter preload: Đã đủ 7 giây đếm ngược.");
+                    isTimerDelayFinished = true;
+                    checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
+                }
+            };
+        }else{
+            Log.d(TAG, "AdsSplash Inter preload: không dùng chờ 7 giây đếm ngược.");
+            isTimerDelayFinished = true;
+        }
         handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end
 
@@ -2257,14 +2262,19 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //delay ads splash
-        timerDelayRunnable = new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, "Đã đủ 7 giây đếm ngược.");
-                isTimerDelayFinished = true;
-                checkConditionAdsSplash(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
-            }
-        };
+        if(AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
+            timerDelayRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    Log.d(TAG, "Đã đủ 7 giây đếm ngược.");
+                    isTimerDelayFinished = true;
+                    checkConditionAdsSplash(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+                }
+            };
+        }else {
+            Log.d(TAG, "Không dùng chờ 7 giây đếm ngược.");
+            isTimerDelayFinished = true;
+        }
         handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end
 

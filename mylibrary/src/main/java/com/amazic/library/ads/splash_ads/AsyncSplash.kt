@@ -93,6 +93,8 @@ class AsyncSplash {
 
     private var isShowNativeAfterInter = false
 
+    private var isUseNativeSplash = false
+
     //1.end
     //2.use for log event
     private var timeStartSplash = System.currentTimeMillis()
@@ -243,6 +245,7 @@ class AsyncSplash {
         this.keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
         this.keyNativeAfterInter = "native_after_inter"
         this.isShowNativeAfterInter = false
+        this.isUseNativeSplash = false
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
@@ -352,6 +355,14 @@ class AsyncSplash {
 
     fun getShowNativeAfterInter(): Boolean {
         return this.isShowNativeAfterInter
+    }
+
+    fun setUseNativeSplash(isUse: Boolean){
+        this.isUseNativeSplash = isUse
+    }
+
+    fun getUseNativeSplash(): Boolean{
+        return  this.isUseNativeSplash
     }
 
     fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)

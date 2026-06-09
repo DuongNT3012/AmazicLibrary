@@ -199,7 +199,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onNextAction() {
                             super.onNextAction();
-                            onNextAction();
+                            Toast.makeText(MainActivity.this, "Show Reward Preload.", Toast.LENGTH_SHORT).show();
                         }
 
                         @Override

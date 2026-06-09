@@ -105,6 +105,7 @@ public class Admob {
     private String tokenEventAdjust = "";
     private final Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
     private final Handler handlerTimeoutInter = new Handler(Looper.getMainLooper());
+    private final Handler handlerTimeoutReward = new Handler(Looper.getMainLooper());
     private Runnable runnable;
     private boolean isSplashResume = true;
     private boolean openActivityAfterShowInterAds = true;
@@ -113,11 +114,13 @@ public class Admob {
     private NativeAd myNativeAd = null;
     private int timeOutCallSplashAds = 12000;
     private int timeOutCallInterAds = 12000;
+    private int timeOutCallRewardAds = 12000;
     //Log event 26/04/2025
     private long timeSplashLoadingAdShow = 0;
     //fix event time_splash_loading_show
     private boolean isLoadInterSplashIdTimeout = false;
     private boolean isLoadInterAdsIdTimeout = false;
+    private boolean isLoadRewardAdsIdTimeout = false;
     public int timeHttpInter = -1;
     public int timeHttpNative = -1;
     public int timeHttpBanner = -1;
@@ -307,6 +310,13 @@ public class Admob {
             handlerTimeoutSplash.removeCallbacks(runnable);
             handlerTimeoutSplash.removeCallbacksAndMessages(null);
             //handlerTimeoutSplash = null;
+        }
+    }
+
+    public void removeHandlerRewardAds(){
+        if(handlerTimeoutReward != null && runnable != null){
+            handlerTimeoutReward.removeCallbacks(runnable);
+            handlerTimeoutReward.removeCallbacksAndMessages(null);
         }
     }
 
@@ -4409,13 +4419,28 @@ public class Admob {
             String remoteKey
     ) {
         if (listIdRewarded.isEmpty()) {
+            Log.d(TAG, "REWARD Ad Preload - listIdRewarded: empty");
             rewardedCallback.onNextAction();
             return;
         }
 
+        //timeout
+        isLoadRewardAdsIdTimeout = false;
+        runnable = () -> {
+            Log.d(TAG, "REWARD Ad Preload - timeout: "+remoteKey);
+            EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.reward_ads_id_timeout, "remoteKey", remoteKey);
+            if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
+                dismissLoadingDialog();
+                rewardedCallback.onNextAction();
+                removeHandlerRewardAds();
+            }
+        };
+        handlerTimeoutReward.postDelayed(runnable, timeOutCallRewardAds);
+        //
         if (RewardedAdPreloader.isAdAvailable(listIdRewarded.get(0))) {
             Log.d(TAG, "REWARD Ad Preload - loadAndShow: HAVE DATA");
             rewardedCallback.onAdLoaded(null);
+            removeHandlerRewardAds();
         } else {
             Log.d(TAG, "REWARD Ad Preload - loadAndShow: NO DATA");
             ArrayList<String> listIdRewardedTemp = new ArrayList<>(listIdRewarded);
@@ -4424,6 +4449,7 @@ public class Admob {
                 Log.d(TAG, "REWARD Ad Preload - loadAndShow: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
                 rewardedCallback.onAdFailedToLoad();
                 rewardedCallback.onNextAction();
+                removeHandlerRewardAds();
                 return;
             }
             //log event can request ads
@@ -4447,6 +4473,7 @@ public class Admob {
                         dismissLoadingDialog();
                     }
                     rewardedCallback.onNextAction();
+                    removeHandlerRewardAds();
                 }
 
                 @Override
@@ -4458,6 +4485,7 @@ public class Admob {
 
                     if (isFirstLoadAd.getAndSet(false)) {
                         rewardedCallback.onAdLoaded(null);
+                        removeHandlerRewardAds();
                     }
                 }
 

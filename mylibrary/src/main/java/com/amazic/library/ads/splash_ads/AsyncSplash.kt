@@ -325,7 +325,8 @@ class AsyncSplash {
     }
 
     fun setKeyNumberPreloading(keyNumber: String) {
-        var number: Int = RemoteConfigHelper.getInstance().get_config_long(activity, keyNumber).toInt()
+        var number: Int =
+            RemoteConfigHelper.getInstance().get_config_long(activity, keyNumber).toInt()
         this.numberPreloading = number
     }
 
@@ -333,11 +334,11 @@ class AsyncSplash {
         return this.numberPreloading
     }
 
-    fun setNumberPreloadingSplash(number: Int){
+    fun setNumberPreloadingSplash(number: Int) {
         this.numberPreloadingSplash = number
     }
 
-    fun getNumberPreloadingSplash(): Int{
+    fun getNumberPreloadingSplash(): Int {
         return this.numberPreloadingSplash
     }
 
@@ -357,12 +358,12 @@ class AsyncSplash {
         return this.isShowNativeAfterInter
     }
 
-    fun setUseNativeSplash(isUse: Boolean){
+    fun setUseNativeSplash(isUse: Boolean) {
         this.isUseNativeSplash = isUse
     }
 
-    fun getUseNativeSplash(): Boolean{
-        return  this.isUseNativeSplash
+    fun getUseNativeSplash(): Boolean {
+        return this.isUseNativeSplash
     }
 
     fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
@@ -818,7 +819,9 @@ class AsyncSplash {
                     isResumed = true
                     if (it) {
                         Admob.getInstance().initAdmob(activity) {
-//                            onInitAdmobDone?.invoke()
+                            if (isUseAdPreloading) { // Do AdPreloading cần chờ khởi tạo Admob xong mới load & show đc ads
+                                continuation.resume(Unit)
+                            }
                         }
                         activity?.let { it1 ->
                             AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass)
@@ -827,7 +830,9 @@ class AsyncSplash {
                     timeInitAdsConsentManager =
                         System.currentTimeMillis() - startTimeInitAdsConsentManager
                     initAdsConsentManager = true
-                    continuation.resume(Unit)
+                    if (!isUseAdPreloading) { // TH k dùng AdPreloading có thể load ads luôn k cần chờ khởi tạo Admob
+                        continuation.resume(Unit)
+                    }
                     Log.d(TAG, "initAdsConsentManager.")
                 }
             }
@@ -1009,7 +1014,7 @@ class AsyncSplash {
         }
     }
 
-    private fun loadAdPreloadResume(){
+    private fun loadAdPreloadResume() {
         if (isUseAdPreloading) {
             val listIdResume = mutableListOf<String>()
             if (keyAdsOpenResume.isNotEmpty()) {

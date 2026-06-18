@@ -14,7 +14,8 @@ import com.amazic.library.ads.callback.InterCallback;
 import java.util.Random;
 
 public class AdsSplash {
-    private static final String TAG = "AdsSplash";
+//    private static final String TAG = "AdsSplash";
+    private static final String TAG = "Admob";
     private STATE state = STATE.INTER;
 
     enum STATE {INTER, OPEN}

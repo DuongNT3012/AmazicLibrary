@@ -144,6 +144,7 @@ public class Admob {
     private AdView adViewBannerFragment;
 
     private String appID = "";
+
     public static Admob getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new Admob();
@@ -1617,7 +1618,10 @@ public class Admob {
                     @Override
                     public void onAdPaid(@NonNull AdValue value) {
                         //Tracking revenue
-                        AdjustUtil.trackRevenue(mInterstitialAdSplash.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                        Log.d(TAG, "onAdPaid: ");
+                        if (mInterstitialAdSplash != null) {
+                            AdjustUtil.trackRevenue(mInterstitialAdSplash.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                        }
                     }
 
                     @Override
@@ -3616,8 +3620,10 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedCallback.onAdFailedToLoad();
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdFailedToLoad();
+                rewardedCallback.onNextAction();
+            });
             return;
         }
         //log event can request ads
@@ -3629,7 +3635,9 @@ public class Admob {
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         Log.e(TAG, "REWARD: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                        rewardedCallback.onAdFailedToLoad();
+                        activity.runOnUiThread(() -> {
+                            rewardedCallback.onAdFailedToLoad();
+                        });
                         if (!listIdRewardedTemp.isEmpty()) {
                             listIdRewardedTemp.remove(0);
                         }
@@ -3639,7 +3647,9 @@ public class Admob {
                     @Override
                     public void onAdLoaded(@NonNull RewardedAd ad) {
                         Log.i(TAG, "REWARD: onAdLoaded. " + remoteKey);
-                        rewardedCallback.onAdLoaded(ad);
+                        activity.runOnUiThread(() -> {
+                            rewardedCallback.onAdLoaded(ad);
+                        });
                     }
                 });
     }
@@ -3648,14 +3658,18 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedCallback.onAdFailedToLoad();
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdFailedToLoad();
+                rewardedCallback.onNextAction();
+            });
             return;
         }
         if (rewardedAd == null) {
             Log.d(TAG, "REWARD: The rewarded ad wasn't ready yet.");
-            rewardedCallback.onAdFailedToShowFullScreenContent();
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdFailedToShowFullScreenContent();
+                rewardedCallback.onNextAction();
+            });
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -3669,15 +3683,19 @@ public class Admob {
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "REWARD: onAdClicked. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                rewardedCallback.onAdClicked();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdClicked();
+                });
             }
 
             @Override
             public void onAdDismissedFullScreenContent() {
                 RewardedAdEventCallback.super.onAdDismissedFullScreenContent();
                 Log.d(TAG, "REWARD: onAdDismissedFullScreenContent. " + remoteKey);
-                rewardedCallback.onAdDismissedFullScreenContent();
-                rewardedCallback.onNextAction();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdDismissedFullScreenContent();
+                    rewardedCallback.onNextAction();
+                });
                 isInterOrRewardedShowing = false;
             }
 
@@ -3685,8 +3703,10 @@ public class Admob {
             public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError fullScreenContentError) {
                 RewardedAdEventCallback.super.onAdFailedToShowFullScreenContent(fullScreenContentError);
                 Log.e(TAG, "REWARD: onAdFailedToShowFullScreenContent. " + remoteKey);
-                rewardedCallback.onAdFailedToShowFullScreenContent();
-                rewardedCallback.onNextAction();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdFailedToShowFullScreenContent();
+                    rewardedCallback.onNextAction();
+                });
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     dismissLoadingDialog();
                 }
@@ -3697,7 +3717,9 @@ public class Admob {
                 RewardedAdEventCallback.super.onAdImpression();
                 Log.d(TAG, "REWARD: onAdImpression. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                rewardedCallback.onAdImpression();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdImpression();
+                });
             }
 
             @Override
@@ -3710,7 +3732,9 @@ public class Admob {
             public void onAdShowedFullScreenContent() {
                 RewardedAdEventCallback.super.onAdShowedFullScreenContent();
                 Log.d(TAG, "REWARD: onAdShowedFullScreenContent. " + remoteKey);
-                rewardedCallback.onAdShowedFullScreenContent();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdShowedFullScreenContent();
+                });
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     dismissLoadingDialog();
                 }
@@ -3719,7 +3743,9 @@ public class Admob {
         });
         rewardedAd.show(activity, rewardItem -> {
             Log.d(TAG, "REWARD: The user earned the reward. " + remoteKey);
-            rewardedCallback.onUserEarnedReward();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onUserEarnedReward();
+            });
         });
     }
 
@@ -3728,8 +3754,10 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedCallback.onAdFailedToLoad();
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdFailedToLoad();
+                rewardedCallback.onNextAction();
+            });
             return;
         }
         //log event can request ads
@@ -3746,7 +3774,9 @@ public class Admob {
                     @Override
                     public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                         Log.e(TAG, "REWARD: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                        rewardedCallback.onAdFailedToLoad();
+                        activity.runOnUiThread(() -> {
+                            rewardedCallback.onAdFailedToLoad();
+                        });
                         if (!listIdRewardedTemp.isEmpty()) {
                             listIdRewardedTemp.remove(0);
                         }
@@ -3759,7 +3789,9 @@ public class Admob {
                     @Override
                     public void onAdLoaded(@NonNull RewardedAd ad) {
                         Log.i(TAG, "REWARD: onAdLoaded. " + remoteKey);
-                        rewardedCallback.onAdLoaded(ad);
+                        activity.runOnUiThread(() -> {
+                            rewardedCallback.onAdLoaded(ad);
+                        });
                         if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                             dismissLoadingDialog();
                         }
@@ -3772,14 +3804,18 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedCallback.onAdFailedToLoad();
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdFailedToLoad();
+                rewardedCallback.onNextAction();
+            });
             return;
         }
         if (rewardedAd == null) {
             Log.d(TAG, "REWARD: The rewarded ad wasn't ready yet.");
-            rewardedCallback.onAdFailedToShowFullScreenContent();
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdFailedToShowFullScreenContent();
+                rewardedCallback.onNextAction();
+            });
             return;
         }
         rewardedAd.setAdEventCallback(new RewardedAdEventCallback() {
@@ -3794,14 +3830,18 @@ public class Admob {
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "REWARD: onAdClicked. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                rewardedCallback.onAdClicked();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdClicked();
+                });
             }
 
             @Override
             public void onAdDismissedFullScreenContent() {
                 Log.d(TAG, "REWARD: onAdDismissedFullScreenContent. " + remoteKey);
-                rewardedCallback.onAdDismissedFullScreenContent();
-                rewardedCallback.onNextAction();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdDismissedFullScreenContent();
+                    rewardedCallback.onNextAction();
+                });
                 isInterOrRewardedShowing = false;
             }
 
@@ -3809,8 +3849,10 @@ public class Admob {
             public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError fullScreenContentError) {
                 RewardedAdEventCallback.super.onAdFailedToShowFullScreenContent(fullScreenContentError);
                 Log.e(TAG, "REWARD: onAdFailedToShowFullScreenContent. " + remoteKey);
-                rewardedCallback.onAdFailedToShowFullScreenContent();
-                rewardedCallback.onNextAction();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdFailedToShowFullScreenContent();
+                    rewardedCallback.onNextAction();
+                });
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     dismissLoadingDialog();
                 }
@@ -3820,7 +3862,9 @@ public class Admob {
             public void onAdImpression() {
                 Log.d(TAG, "REWARD: onAdImpression. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                rewardedCallback.onAdImpression();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdImpression();
+                });
             }
 
             @Override
@@ -3835,7 +3879,9 @@ public class Admob {
         });
         rewardedAd.show(activity, rewardItem -> {
             Log.d(TAG, "REWARD: The user earned the reward. " + remoteKey);
-            rewardedCallback.onUserEarnedReward();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onUserEarnedReward();
+            });
         });
     }
 
@@ -3847,21 +3893,27 @@ public class Admob {
             String remoteKey
     ) {
         if (listIdRewarded.isEmpty()) {
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onNextAction();
+            });
             return;
         }
 
         if (RewardedAdPreloader.isAdAvailable(listIdRewarded.get(0))) {
             Log.d(TAG, "REWARD Ad Preload - loadAndShow: HAVE DATA");
-            rewardedCallback.onAdLoaded(null);
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdLoaded(null);
+            });
         } else {
             Log.d(TAG, "REWARD Ad Preload - loadAndShow: NO DATA");
             ArrayList<String> listIdRewardedTemp = new ArrayList<>(listIdRewarded);
             //Check condition
             if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
                 Log.d(TAG, "REWARD Ad Preload - loadAndShow: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-                rewardedCallback.onAdFailedToLoad();
-                rewardedCallback.onNextAction();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onAdFailedToLoad();
+                    rewardedCallback.onNextAction();
+                });
                 return;
             }
             //log event can request ads
@@ -3884,7 +3936,9 @@ public class Admob {
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
                     }
-                    rewardedCallback.onNextAction();
+                    activity.runOnUiThread(() -> {
+                        rewardedCallback.onNextAction();
+                    });
                 }
 
                 @Override
@@ -3895,7 +3949,9 @@ public class Admob {
                     }
 
                     if (isFirstLoadAd.getAndSet(false)) {
-                        rewardedCallback.onAdLoaded(null);
+                        activity.runOnUiThread(() -> {
+                            rewardedCallback.onAdLoaded(null);
+                        });
                     }
                 }
 
@@ -3913,7 +3969,9 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewarded.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedCallback.onAdFailedToLoad();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onAdFailedToLoad();
+            });
             return;
         }
         //log event can request ads
@@ -3949,7 +4007,9 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onNextAction();
+            });
             return;
         }
 
@@ -3972,22 +4032,28 @@ public class Admob {
                     AppOpenManager.isLastActionClickAd = true;
                     Log.d(TAG, "REWARD Ad Preload: onAdClicked. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                    rewardedCallback.onAdClicked();
+                    activity.runOnUiThread(() -> {
+                        rewardedCallback.onAdClicked();
+                    });
                 }
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     Log.d(TAG, "REWARD Ad Preload: onAdDismissedFullScreenContent. " + remoteKey);
-                    rewardedCallback.onAdDismissedFullScreenContent();
-                    rewardedCallback.onNextAction();
+                    activity.runOnUiThread(() -> {
+                        rewardedCallback.onAdDismissedFullScreenContent();
+                        rewardedCallback.onNextAction();
+                    });
                     isInterOrRewardedShowing = false;
                 }
 
                 @Override
                 public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError fullScreenContentError) {
                     Log.e(TAG, "REWARD Ad Preload: onAdFailedToShowFullScreenContent. " + remoteKey);
-                    rewardedCallback.onAdFailedToShowFullScreenContent();
-                    rewardedCallback.onNextAction();
+                    activity.runOnUiThread(() -> {
+                        rewardedCallback.onAdFailedToShowFullScreenContent();
+                        rewardedCallback.onNextAction();
+                    });
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
                     }
@@ -3997,13 +4063,17 @@ public class Admob {
                 public void onAdImpression() {
                     Log.d(TAG, "REWARD Ad Preload: onAdImpression. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                    rewardedCallback.onAdImpression();
+                    activity.runOnUiThread(() -> {
+                        rewardedCallback.onAdImpression();
+                    });
                 }
 
                 @Override
                 public void onAdShowedFullScreenContent() {
                     Log.d(TAG, "REWARD Ad Preload: onAdShowedFullScreenContent. " + remoteKey);
-                    rewardedCallback.onAdShowedFullScreenContent();
+                    activity.runOnUiThread(() -> {
+                        rewardedCallback.onAdShowedFullScreenContent();
+                    });
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
                     }
@@ -4013,11 +4083,15 @@ public class Admob {
 
             ad.show(activity, rewardItem -> {
                 Log.d(TAG, "REWARD Ad Preload: The user earned the reward. " + remoteKey);
-                rewardedCallback.onUserEarnedReward();
+                activity.runOnUiThread(() -> {
+                    rewardedCallback.onUserEarnedReward();
+                });
             });
 
         } else {
-            rewardedCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedCallback.onNextAction();
+            });
         }
     }
 
@@ -4031,8 +4105,10 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdRewardedInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD INTER: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedInterTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedInterCallback.onAdFailedToLoad();
-            rewardedInterCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedInterCallback.onAdFailedToLoad();
+                rewardedInterCallback.onNextAction();
+            });
             return;
         }
         //log event can request ads
@@ -4043,13 +4119,17 @@ public class Admob {
             @Override
             public void onAdLoaded(@NonNull RewardedInterstitialAd ad) {
                 Log.i(TAG, "REWARD INTER: onAdLoaded. " + remoteKey);
-                rewardedInterCallback.onAdLoaded(ad);
+                activity.runOnUiThread(() -> {
+                    rewardedInterCallback.onAdLoaded(ad);
+                });
             }
 
             @Override
             public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
                 Log.e(TAG, "REWARD INTER: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                rewardedInterCallback.onAdFailedToLoad();
+                activity.runOnUiThread(() -> {
+                    rewardedInterCallback.onAdFailedToLoad();
+                });
                 if (!listIdRewardedInterTemp.isEmpty()) {
                     listIdRewardedInterTemp.remove(0);
                 }
@@ -4062,14 +4142,18 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD INTER: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
-            rewardedInterCallback.onAdFailedToLoad();
-            rewardedInterCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedInterCallback.onAdFailedToLoad();
+                rewardedInterCallback.onNextAction();
+            });
             return;
         }
         if (rewardedInterstitialAd == null) {
             Log.d(TAG, "REWARD INTER: The rewarded inter ad wasn't ready yet.");
-            rewardedInterCallback.onAdFailedToShowFullScreenContent();
-            rewardedInterCallback.onNextAction();
+            activity.runOnUiThread(() -> {
+                rewardedInterCallback.onAdFailedToShowFullScreenContent();
+                rewardedInterCallback.onNextAction();
+            });
             return;
         }
         loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -4088,22 +4172,28 @@ public class Admob {
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "REWARD INTER: onAdClicked. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                rewardedInterCallback.onAdClicked();
+                activity.runOnUiThread(() -> {
+                    rewardedInterCallback.onAdClicked();
+                });
             }
 
             @Override
             public void onAdDismissedFullScreenContent() {
                 Log.d(TAG, "REWARD INTER: onAdDismissedFullScreenContent. " + remoteKey);
-                rewardedInterCallback.onAdDismissedFullScreenContent();
-                rewardedInterCallback.onNextAction();
+                activity.runOnUiThread(() -> {
+                    rewardedInterCallback.onAdDismissedFullScreenContent();
+                    rewardedInterCallback.onNextAction();
+                });
                 isInterOrRewardedShowing = false;
             }
 
             @Override
             public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError fullScreenContentError) {
                 Log.e(TAG, "REWARD INTER: onAdFailedToShowFullScreenContent. " + remoteKey);
-                rewardedInterCallback.onAdFailedToShowFullScreenContent();
-                rewardedInterCallback.onNextAction();
+                activity.runOnUiThread(() -> {
+                    rewardedInterCallback.onAdFailedToShowFullScreenContent();
+                    rewardedInterCallback.onNextAction();
+                });
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     dismissLoadingDialog();
                 }
@@ -4113,13 +4203,17 @@ public class Admob {
             public void onAdImpression() {
                 Log.d(TAG, "REWARD INTER: onAdImpression. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                rewardedInterCallback.onAdImpression();
+                activity.runOnUiThread(() -> {
+                    rewardedInterCallback.onAdImpression();
+                });
             }
 
             @Override
             public void onAdShowedFullScreenContent() {
                 Log.d(TAG, "REWARD INTER: onAdShowedFullScreenContent. " + remoteKey);
-                rewardedInterCallback.onAdShowedFullScreenContent();
+                activity.runOnUiThread(() -> {
+                    rewardedInterCallback.onAdShowedFullScreenContent();
+                });
                 if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                     dismissLoadingDialog();
                 }
@@ -4128,7 +4222,9 @@ public class Admob {
         });
         rewardedInterstitialAd.show(activity, rewardItem -> {
             Log.d(TAG, "REWARD INTER: The user earned the reward. " + remoteKey);
-            rewardedInterCallback.onUserEarnedReward();
+            activity.runOnUiThread(() -> {
+                rewardedInterCallback.onUserEarnedReward();
+            });
         });
     }
     //================================End reward inter================================

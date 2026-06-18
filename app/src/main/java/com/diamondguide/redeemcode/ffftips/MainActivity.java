@@ -185,32 +185,32 @@ public class MainActivity extends AppCompatActivity {
                     }, true);
                 }
             }, true);*/
-//            RewardManager.loadAndShowRewardAds(this, "rewarded", new RewardedCallback() {
-//                @Override
-//                public void onNextAction() {
-//                    super.onNextAction();
-//                    Toast.makeText(MainActivity.this, "Show Reward Ads On next action.", Toast.LENGTH_SHORT).show();
-//                }
-//            }, "rewarded");
+            RewardManager.loadAndShowRewardAds(this, "rewarded", new RewardedCallback() {
+                @Override
+                public void onNextAction() {
+                    super.onNextAction();
+                    Toast.makeText(MainActivity.this, "Show Reward Ads On next action.", Toast.LENGTH_SHORT).show();
+                }
+            }, "rewarded");
 
-            RewardManager.loadAndShowRewardAdsPreload(
-                    this,
-                    "rewarded",
-                    "rewarded",
-                    new RewardedCallback() {
-                        @Override
-                        public void onNextAction() {
-                            super.onNextAction();
-                            onNextAction();
-                        }
-
-                        @Override
-                        public void onUserEarnedReward() {
-                            super.onUserEarnedReward();
-
-                        }
-                    }
-            );
+//            RewardManager.loadAndShowRewardAdsPreload(
+//                    this,
+//                    "rewarded",
+//                    "rewarded",
+//                    new RewardedCallback() {
+//                        @Override
+//                        public void onNextAction() {
+//                            super.onNextAction();
+//
+//                        }
+//
+//                        @Override
+//                        public void onUserEarnedReward() {
+//                            super.onUserEarnedReward();
+//
+//                        }
+//                    }
+//            );
         });
         RewardInterManager.loadRewardInterAds(this, "rewarded_inter", "rewarded_inter");
         binding.tvShowRewardInter.setOnClickListener(view -> {

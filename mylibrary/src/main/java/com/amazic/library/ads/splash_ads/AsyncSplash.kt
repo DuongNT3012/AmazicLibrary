@@ -44,7 +44,8 @@ import kotlin.coroutines.suspendCoroutine
 import kotlin.system.measureTimeMillis
 
 class AsyncSplash {
-    private val TAG = "AsyncSplash"
+//    private val TAG = "AsyncSplash"
+    private val TAG = "Admob"
     private var isTech = false
     private var adsSplash: AdsSplash? = null
     private var jsonIdAdsDefault = ""
@@ -544,6 +545,7 @@ class AsyncSplash {
             return@launch
         }
         if (NetworkUtil.isNetworkActive(activity)) {
+            Log.d(TAG, "isNetworkActive: true")
             logEventStep("AsyncInternet")
             EventTrackingHelper.logEvent(activity, "splash_have_internet_original")
             measureDownloadSpeed(urlCheckInternetSpeed) { speedMbps ->
@@ -575,6 +577,7 @@ class AsyncSplash {
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
+                    Log.d(TAG, "handleAsync: finally")
                     logEventStep("DoneAsyncInit")
                     lifecycleCoroutineScope.launch {
                         loadBannerSplash(
@@ -617,6 +620,7 @@ class AsyncSplash {
                                 .get_config(activity, keyAdsOpenSplash)
                             val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance()
                                 .get_config(activity, keyAdsInterSplash)
+                            Log.d(TAG, "handleAsync: rate - $rateAoaInterSplash - $isShowOpenSplash - $isShowInterSplash")
                             adsSplash = AdsSplash.init(
                                 isShowOpenSplash,
                                 isShowInterSplash,
@@ -812,7 +816,7 @@ class AsyncSplash {
                     if (it) {
                         Admob.getInstance().initAdmob(activity) {
                             initAdmob = true
-                            continuation.resume(Unit)
+//                            continuation.resume(Unit)
                             Log.d(TAG, "initAdmob.")
                         }
                         activity?.let { it1 ->
@@ -821,6 +825,7 @@ class AsyncSplash {
                     }
                     timeInitAdsConsentManager = System.currentTimeMillis() - startTimeInitAdsConsentManager
                     initAdsConsentManager = true
+                    continuation.resume(Unit)
                     Log.d(TAG, "initAdsConsentManager.")
                 }
             }

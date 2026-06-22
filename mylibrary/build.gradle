@@ -91,7 +91,7 @@ dependencies {
     implementation 'com.squareup.retrofit2:converter-gson:3.0.0'
     implementation 'com.squareup.okhttp3:logging-interceptor:5.3.2'
     //ads
-    implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.0.0'
+    implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.2.1'
     //implementation 'com.google.android.gms:play-services-ads:25.0.0'
     //implementation 'com.google.android.gms:play-services-ads-identifier:18.2.0'
     implementation 'com.google.android.gms:play-services-appset:16.1.0'

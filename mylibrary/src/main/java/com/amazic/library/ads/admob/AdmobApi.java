@@ -132,6 +132,47 @@ public class AdmobApi {
         return INSTANCE;
     }
 
+    public void init(Context context, String linkServerRelease, ApiCallback callBack) {
+        this.context = context;
+        listAds.clear();
+        isSetId = false;
+        this.packageName = context.getPackageName();
+        if (linkServerRelease != null) {
+            if (!linkServerRelease.trim().isEmpty()
+                    && (linkServerRelease.contains("http://")
+                    || linkServerRelease.contains("https://"))) {
+                this.linkServer = linkServerRelease.trim();
+                this.appIDRelease = "";
+            }
+        }
+
+        String baseURL = linkServer + "/api/";
+        apiService = new Retrofit.Builder()
+                .baseUrl(baseURL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build()
+                .create(ApiService.class);
+
+        Log.i(TAG, "link Server:" + baseURL);
+
+        if (NetworkUtil.isNetworkActive(context)) {
+            fetchData(callBack);
+            //after 12s, if cannot call api -> set list id default
+            new Handler().postDelayed(() -> {
+                if (!isSetId) { //if not set id from api -> set list id default
+                    convertJsonIdAdsDefaultToList(jsonIdAdsDefault);
+                    isSetId = true;
+                    Log.d(TAG, "convertJsonIdAdsDefaultToList: timeout: isSetId = true");
+                    callBack.onReady();
+                } else {
+                    Log.d(TAG, "xxxxxx1");
+                }
+            }, timeOutCallApi);
+        } else {
+            callBack.onReady();
+        }
+    }
+
     public void init(Context context, String linkServerRelease, String AppID, ApiCallback callBack) {
         this.context = context;
         listAds.clear();
@@ -207,9 +248,16 @@ public class AdmobApi {
     private void fetchData(ApiCallback callBack) {
         Log.e(TAG, "fetchData: ");
         try {
-            String appID_package = appIDRelease + "+" + packageName;
-            Log.i(TAG, "link Server query :" + linkServer + "/api/getidv2/" + appID_package);
-            apiService.callAds(appID_package).enqueue(new Callback<List<AdsModel>>() {
+            Call<List<AdsModel>> callApi;
+            if (appIDRelease.isEmpty()) {
+                callApi = apiService.callAdsWithPkg(packageName);
+                Log.i(TAG, "link Server query :" + linkServer + "/api/getidv4/" + packageName);
+            } else {
+                String appID_package = appIDRelease + "+" + packageName;
+                callApi = apiService.callAdsWithId(appID_package);
+                Log.i(TAG, "link Server query :" + linkServer + "/api/getidv2/" + appID_package);
+            }
+            callApi.enqueue(new Callback<List<AdsModel>>() {
                 @Override
                 public void onResponse(@NonNull Call<List<AdsModel>> call, @NonNull Response<List<AdsModel>> response) {
                     Log.d(TAG, "onResponse: isSetId: " + isSetId);

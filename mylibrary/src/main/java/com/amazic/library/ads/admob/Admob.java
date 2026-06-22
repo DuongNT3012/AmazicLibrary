@@ -91,6 +91,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Admob {
@@ -153,6 +154,7 @@ public class Admob {
     }
 
     public void initAdmob(Activity activity, IOnInitAdmobDone iOnInitAdmobDone) {
+        if (Objects.equals(appID, "")) return;
         resetVariable();
         initLoadingDialog(activity);
         new Thread(() -> {
@@ -160,6 +162,7 @@ public class Admob {
             MobileAds.initialize(activity.getApplicationContext(), new InitializationConfig.Builder(getAppID()).setNativeValidatorDisabled().build(), initializationStatus -> {
                 Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
                 Admob.getInstance().setIsInitAdmobDone(true);
+                iOnInitAdmobDone.onInitAdmobDone();
             });
         }).start();
     }
@@ -2384,11 +2387,12 @@ public class Admob {
         String idInterSplash = listIdInter.get(0);
 
         // If have action startActivity by timeout or no internet in splash, do not load ads.
-        if (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000 || AsyncSplash.Companion.getInstance().getTimeout() || AsyncSplash.Companion.getInstance().getNoInternetAction()) {
+        if (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000 || AsyncSplash.Companion.getInstance().isTimeout() || AsyncSplash.Companion.getInstance().isNoInternetAction()) {
             Bundle bundle = new Bundle();
             bundle.putString("failed_message", "time_out_lib");
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_loop_failed", bundle);
-            Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
+            Log.d(TAG,
+                    "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().isTimeout() + "_" + AsyncSplash.Companion.getInstance().isNoInternetAction());
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout_8s);
             interCallback.onNextAction();
             removeHandlerSplashAds();
@@ -2499,20 +2503,20 @@ public class Admob {
 
                         //DetectTestAd
                         //Reset TechManager to false
-                        if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                        if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
                             TechManager.getInstance().detectedTech(activity, false);
                         }
                         if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                                && !AsyncSplash.Companion.getInstance().getDebug()
-                                && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                                && !AsyncSplash.Companion.getInstance().isDebug()
+                                && AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                         ) {
                             boolean isTestAd = detectTestAd(adViewBanner);
                             Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                             TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                            if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                            if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                                     && TechManager.getInstance().isTech(activity)
-                                    && !AsyncSplash.Companion.getInstance().getDebug()) {
+                                    && !AsyncSplash.Companion.getInstance().isDebug()) {
                                 AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
                             }
                         }
@@ -2597,20 +2601,20 @@ public class Admob {
 
                         //DetectTestAd
                         //Reset TechManager to false
-                        if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                        if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
                             TechManager.getInstance().detectedTech(activity, false);
                         }
                         if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                                && !AsyncSplash.Companion.getInstance().getDebug()
-                                && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                                && !AsyncSplash.Companion.getInstance().isDebug()
+                                && AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                         ) {
                             boolean isTestAd = detectTestAd(adViewBanner);
                             Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                             TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                            if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                            if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                                     && TechManager.getInstance().isTech(activity)
-                                    && !AsyncSplash.Companion.getInstance().getDebug()) {
+                                    && !AsyncSplash.Companion.getInstance().isDebug()) {
                                 AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
                             }
                         }
@@ -2725,20 +2729,20 @@ public class Admob {
 
                         //DetectTestAd
                         //Reset TechManager to false
-                        if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                        if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
                             TechManager.getInstance().detectedTech(activity, false);
                         }
                         if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                                && !AsyncSplash.Companion.getInstance().getDebug()
-                                && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                                && !AsyncSplash.Companion.getInstance().isDebug()
+                                && AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                         ) {
                             boolean isTestAd = detectTestAd(adViewBanner);
                             Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                             TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                            if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                            if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                                     && TechManager.getInstance().isTech(activity)
-                                    && !AsyncSplash.Companion.getInstance().getDebug()) {
+                                    && !AsyncSplash.Companion.getInstance().isDebug()) {
                                 AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
                             }
                         }
@@ -2865,20 +2869,20 @@ public class Admob {
 
                         //DetectTestAd
                         //Reset TechManager to false
-                        if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                        if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
                             TechManager.getInstance().detectedTech(context, false);
                         }
                         if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                                && !AsyncSplash.Companion.getInstance().getDebug()
-                                && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                                && !AsyncSplash.Companion.getInstance().isDebug()
+                                && AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                         ) {
                             boolean isTestAd = detectTestAd(adViewBannerFragment);
                             Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                             TechManager.getInstance().detectedTech(context, isTestAd);
 
-                            if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                            if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
                                     && TechManager.getInstance().isTech(context)
-                                    && !AsyncSplash.Companion.getInstance().getDebug()) {
+                                    && !AsyncSplash.Companion.getInstance().isDebug()) {
                                 AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);
                             }
                         }

@@ -4,7 +4,6 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
@@ -18,7 +17,7 @@ public class AdsSplash {
     private static final String TAG = "Admob";
     private STATE state = STATE.INTER;
 
-    enum STATE {INTER, OPEN}
+    public enum STATE {INTER, OPEN}
 
     private boolean isLoopAdsSplash = false;
     private String keyAdsInterSplash = "inter_splash";
@@ -84,7 +83,7 @@ public class AdsSplash {
 
     public void showAdsSplashApi(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "state show: " + getState());
-        if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {
+        if (AsyncSplash.Companion.getInstance().isUseAdPreloading()) {
             Log.d(TAG, "AdsSplash preload: USE Preload " +getState());
             if (getState() == STATE.OPEN) {
                 AdmobApi.getInstance().loadAndShowAppOpenAdPreloadingSplash(activity,keyAdsOpenSplash, appOpenCallback);

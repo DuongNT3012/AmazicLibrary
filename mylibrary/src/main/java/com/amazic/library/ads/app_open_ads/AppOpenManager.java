@@ -1397,8 +1397,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         String idOpenResume = listIdOpenResume.get(0);
 
         // If have action startActivity by timeout or no internet in splash, do not load ads.
-        if (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000 || AsyncSplash.Companion.getInstance().getTimeout() || AsyncSplash.Companion.getInstance().getNoInternetAction()) {
-            Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
+        if (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000 || AsyncSplash.Companion.getInstance().isTimeout() || AsyncSplash.Companion.getInstance().isNoInternetAction()) {
+            Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().isTimeout() + "_" + AsyncSplash.Companion.getInstance().isNoInternetAction());
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout_8s);
             activity.runOnUiThread(() -> {
                 appOpenCallback.onNextAction();
@@ -1541,7 +1541,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
         Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
-        if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {
+        if (AsyncSplash.Companion.getInstance().isUseAdPreloading()) {
             if (Admob.getInstance().getIsInitAdmobDone()) {
                 Log.d(TAG, "APP Open Preload: initAdmob Done have data preload -> show ads preload");
                 showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);
@@ -1550,7 +1550,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 loadAndShowAdsResumeCheckDisableAppOpen(currentActivity, listIdOpenResumeAd, null, remoteKey);
             }
         } else {
-            if (AsyncSplash.Companion.getInstance().getPreloadResumeAds()) {
+            if (AsyncSplash.Companion.getInstance().isPreloadResumeAds()) {
                 showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, remoteKey);
             } else {
                 showAdIfAvailableWelcomeBackLoadAndShow(currentActivity, listIdOpenResumeAd, null, remoteKey, true);

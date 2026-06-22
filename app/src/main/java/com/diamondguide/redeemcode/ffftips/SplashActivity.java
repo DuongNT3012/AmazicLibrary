@@ -134,7 +134,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private void handleAsyncSplashJustOnce() {
         if (!isHandleAsyncSplash) {
-            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "ca-app-pub-3940256099942544~3347511713", jsonIdAdsDefault);
+            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "http://45.76.182.146","", jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
             AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");

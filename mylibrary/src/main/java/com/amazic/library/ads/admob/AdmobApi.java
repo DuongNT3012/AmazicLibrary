@@ -37,7 +37,7 @@ public class AdmobApi {
     private ApiService apiService;
     private String linkServer = "http://language-master.top";
     private String packageName = "";
-    public String appIDRelease = "ca-app-pub-4973559944609228~2346710863";
+    private String appIDRelease = "ca-app-pub-4973559944609228~2346710863";
     private static volatile AdmobApi INSTANCE;
     private Context context;
     private String jsonIdAdsDefault = "";
@@ -45,8 +45,8 @@ public class AdmobApi {
     private int timeOutCallApi = 12000;
 
     public int getListAdsSize() {
-        if (listAds != null) {
-            return listAds.size();
+        if (mapIdAds != null) {
+            return mapIdAds.size();
         } else {
             return 0;
         }
@@ -68,7 +68,7 @@ public class AdmobApi {
         this.timeOutCallApi = timeOutCallApi;
     }
 
-    LinkedHashMap<String, List<String>> listAds = new LinkedHashMap<>();
+    LinkedHashMap<String, List<String>> mapIdAds = new LinkedHashMap<>();
 
     public List<String> getListIDOpenSplash() {
         return getListIDByName("open_splash");
@@ -116,8 +116,8 @@ public class AdmobApi {
 
     public List<String> getListIDByName(String nameAds) {
         List<String> list = new ArrayList<>();
-        if (listAds.get(nameAds.trim()) != null)
-            list.addAll(Objects.requireNonNull(listAds.get(nameAds)));
+        if (mapIdAds.get(nameAds.trim()) != null)
+            list.addAll(Objects.requireNonNull(mapIdAds.get(nameAds)));
         return list;
     }
 
@@ -133,53 +133,20 @@ public class AdmobApi {
     }
 
     public void init(Context context, String linkServerRelease, ApiCallback callBack) {
-        this.context = context;
-        listAds.clear();
-        isSetId = false;
-        this.packageName = context.getPackageName();
-        if (linkServerRelease != null) {
-            if (!linkServerRelease.trim().isEmpty()
-                    && (linkServerRelease.contains("http://")
-                    || linkServerRelease.contains("https://"))) {
-                this.linkServer = linkServerRelease.trim();
-                this.appIDRelease = "";
-            }
-        }
+        init(context, linkServerRelease, "", callBack);
+    }
 
-        String baseURL = linkServer + "/api/";
-        apiService = new Retrofit.Builder()
-                .baseUrl(baseURL)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build()
-                .create(ApiService.class);
-
-        Log.i(TAG, "link Server:" + baseURL);
-
-        if (NetworkUtil.isNetworkActive(context)) {
-            fetchData(callBack);
-            //after 12s, if cannot call api -> set list id default
-            new Handler().postDelayed(() -> {
-                if (!isSetId) { //if not set id from api -> set list id default
-                    convertJsonIdAdsDefaultToList(jsonIdAdsDefault);
-                    isSetId = true;
-                    Log.d(TAG, "convertJsonIdAdsDefaultToList: timeout: isSetId = true");
-                    callBack.onReady();
-                } else {
-                    Log.d(TAG, "xxxxxx1");
-                }
-            }, timeOutCallApi);
-        } else {
-            callBack.onReady();
-        }
+    public String getAppId() {
+        return appIDRelease;
     }
 
     public void init(Context context, String linkServerRelease, String AppID, ApiCallback callBack) {
         this.context = context;
-        listAds.clear();
+        mapIdAds.clear();
         isSetId = false;
         this.packageName = context.getPackageName();
         if (linkServerRelease != null && AppID != null) {
-            if (!linkServerRelease.trim().equals("")
+            if (!linkServerRelease.trim().isEmpty()
                     && (linkServerRelease.contains("http://")
                     || linkServerRelease.contains("https://"))) {
                 this.linkServer = linkServerRelease.trim();
@@ -215,7 +182,7 @@ public class AdmobApi {
     }
 
     public void convertJsonIdAdsDefaultToList(String jsonIdAds) {
-        listAds.clear();
+        mapIdAds.clear();
         try {
             JSONArray jsonArray = new JSONArray(jsonIdAds);
 
@@ -224,20 +191,16 @@ public class AdmobApi {
 
                 String name = jsonObject.getString("name").trim();
                 String ads_id = jsonObject.getString("ads_id");
-
+                appIDRelease = jsonObject.getString("app_id");
                 // check if 'name' exists
-                List<String> listIDAds = listAds.get(name);
-                if (listIDAds == null) {
-                    listIDAds = new ArrayList<>();
-                    listAds.put(name, listIDAds);
-                }
+                List<String> listIDAds = mapIdAds.computeIfAbsent(name, k -> new ArrayList<>());
 
                 // add ads_id
                 listIDAds.add(ads_id);
             }
-            Log.d(TAG, "convertJsonIdAdsDefaultToList: " + listAds.size());
+            Log.d(TAG, "convertJsonIdAdsDefaultToList: " + mapIdAds.size());
 
-            for (Map.Entry<String, List<String>> entry : listAds.entrySet()) {
+            for (Map.Entry<String, List<String>> entry : mapIdAds.entrySet()) {
                 Log.d(TAG, "Key: " + entry.getKey() + ", Value: " + entry.getValue());
             }
         } catch (Exception e) {
@@ -266,21 +229,22 @@ public class AdmobApi {
                             callBack.onReady();
                             return;
                         }
-                        Log.d(TAG, "onResponse: " + listAds.size());
+                        Log.d(TAG, "onResponse: " + mapIdAds.size());
                         for (AdsModel ads : response.body()) {
                             List<String> listIDAds = null;
-                            if (listAds.containsKey(ads.getName())) {
-                                listIDAds = listAds.get(ads.getName());
+                            if (mapIdAds.containsKey(ads.getName())) {
+                                listIDAds = mapIdAds.get(ads.getName());
                             }
                             if (listIDAds == null) {
                                 listIDAds = new ArrayList<>();
                             }
+                            appIDRelease = ads.getAppId();
                             listIDAds.add(ads.getAds_id());
-                            listAds.put(ads.getName().trim(), listIDAds);
+                            mapIdAds.put(ads.getName().trim(), listIDAds);
                             Log.d(TAG, ads.getName().trim() + "_" + ads.getAds_id());
                         }
                         isSetId = true;
-                        Log.d(TAG, "isSetId = true2, listAds size = " + listAds.size());
+                        Log.d(TAG, "isSetId = true2, listAds size = " + mapIdAds.size());
                         callBack.onReady();
                     } else {
                         Log.d(TAG, "xxxxxx2");

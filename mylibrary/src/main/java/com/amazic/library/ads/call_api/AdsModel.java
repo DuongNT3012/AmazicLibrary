@@ -20,4 +20,7 @@ public class AdsModel {
     public String getAds_id() {
         return ads_id;
     }
+    public String getAppId() {
+        return app_id;
+    }
 }

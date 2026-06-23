@@ -1,7 +1,6 @@
 package com.amazic.library.ads.splash_ads
 
 import android.content.Context
-import android.util.Log
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.amazic.library.Utils.RemoteConfigHelper
@@ -13,14 +12,18 @@ import com.amazic.library.ads.callback.InterCallback
  * Extracted from AsyncSplash to keep the main class lean.
  */
 open class AsyncSplashConfig {
+    companion object {
+        const val INIT_ADMOB_IN_FIREBASE = "firebase"
+        const val INIT_ADMOB_INT_API = "api"
+    }
 
+    var initAdmobType = INIT_ADMOB_INT_API
     var isTech = false
     var adsSplash: AdsSplash? = null
     var jsonIdAdsDefault = ""
     var timeOutCallApi = 4000
     var adjustKey = ""
     var linkServer = ""
-    var appId = ""
     var isShowAdsSplash = false
     var isTimeout = false
     var isNoInternetAction = false
@@ -97,7 +100,6 @@ open class AsyncSplashConfig {
         jsonIdAdsDefault = ""
         adjustKey = ""
         linkServer = ""
-        appId = ""
         isShowAdsSplash = false
         isTimeout = false
         isNoInternetAction = false

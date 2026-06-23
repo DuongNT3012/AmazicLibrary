@@ -5,25 +5,18 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwnerKt;
 
-import com.amazic.library.Utils.RemoteConfigHelper;
-import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
-import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
-import com.amazic.library.ads.inter_ads.InterManager;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
-/*import com.amazic.library.iap.IAPManager;
-import com.amazic.library.iap.ProductDetailCustom;*/
+import com.amazic.library.ads.splash_ads.AsyncSplashConfig;
 import com.amazic.library.update_app.UpdateApplicationManager;
 import com.diamondguide.redeemcode.ffftips.databinding.ActivitySplashBinding;
 import com.google.android.play.core.appupdate.AppUpdateManager;
-import com.google.android.play.core.install.InstallState;
 import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.InstallStatus;
 
@@ -134,7 +127,14 @@ public class SplashActivity extends AppCompatActivity {
 
     private void handleAsyncSplashJustOnce() {
         if (!isHandleAsyncSplash) {
-            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "http://45.76.182.146","", jsonIdAdsDefault);
+            AsyncSplash.Companion.getInstance().init(
+                    this,
+                    appOpenCallback,
+                    interCallback,
+                    "c193nrau3dhc",
+                    "",
+                    AsyncSplashConfig.INIT_ADMOB_INT_API,
+                    jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
             AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");

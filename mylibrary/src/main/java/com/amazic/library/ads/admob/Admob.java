@@ -69,6 +69,7 @@ import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback;
 import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration;
 import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo;
 import com.google.android.libraries.ads.mobile.sdk.common.VideoOptions;
+import com.google.android.libraries.ads.mobile.sdk.initialization.AdapterStatus;
 import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig;
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
 import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback;
@@ -91,6 +92,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -157,12 +159,28 @@ public class Admob {
         if (Objects.equals(appID, "")) return;
         resetVariable();
         initLoadingDialog(activity);
+        Log.d("Admob", "initAdmob: application start");
         new Thread(() -> {
             // Initialize the SDK on a background thread.
             MobileAds.initialize(activity.getApplicationContext(), new InitializationConfig.Builder(getAppID()).setNativeValidatorDisabled().build(), initializationStatus -> {
-                Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
-                Admob.getInstance().setIsInitAdmobDone(true);
-                iOnInitAdmobDone.onInitAdmobDone();
+                Map<String, AdapterStatus> statusMap = initializationStatus.getAdapterStatusMap();
+                boolean isAdMobReady = false;
+
+                for (String adapterClass : statusMap.keySet()) {
+                    AdapterStatus status = statusMap.get(adapterClass);
+
+                    if ((status != null ? status.getInitializationState() : null) != null &&
+                            status.getInitializationState() == AdapterStatus.InitializationState.COMPLETE) {
+                        Log.d("Admob_INIT", String.format("Thành công: Adapter %s đã khởi tạo.", status.getInitializationState()));
+
+                        isAdMobReady = true;
+                    } else {
+                        Log.e("Admob_INIT", String.format("Thất bại: Adapter %s bị lỗi: %s", adapterClass, status.getDescription()));
+                    }
+                }
+
+                Admob.getInstance().setIsInitAdmobDone(isAdMobReady);
+                iOnInitAdmobDone.onInitAdmobDone(isAdMobReady);
             });
         }).start();
     }
@@ -2692,6 +2710,10 @@ public class Admob {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
+        if (!isInitAdmobDone) {
+            bannerCallback.onAdFailedToLoad();
+            return;
+        }
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "BANNER: Check condition: RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
@@ -3329,7 +3351,7 @@ public class Admob {
             }
 
             @Override
-            public void onNativeAdLoaded(@NonNull com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd nativeAd) {
+            public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
                 Log.i(TAG, "NATIVE: onAdLoaded. " + remoteKey);
                 nativeCallback.onNativeAdLoaded(nativeAd);
                 nativeAd.setAdEventCallback(new NativeAdEventCallback() {
@@ -3435,7 +3457,7 @@ public class Admob {
             }
 
             @Override
-            public void onNativeAdLoaded(@NonNull com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd nativeAd) {
+            public void onNativeAdLoaded(@NonNull NativeAd nativeAd) {
                 Log.i(TAG, "NATIVE: onAdLoaded. " + remoteKey);
                 nativeCallback.onNativeAdLoaded(nativeAd);
                 nativeAd.setAdEventCallback(new NativeAdEventCallback() {

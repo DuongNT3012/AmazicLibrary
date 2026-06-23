@@ -28,7 +28,7 @@ public class Application extends AdsApplication {
 
     @NonNull
     @Override
-    public String getAppID() {
-        return "ca-app-pub-3940256099942544~3347511713";
+    public Boolean isReleaseVersion() {
+        return true;
     }
 }

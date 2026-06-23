@@ -177,6 +177,7 @@ public class RemoteConfigHelper {
         return pre.getLong(name_config, 0);
     }
 
+    public static String app_id_ads = "app_id_ads";
     public static String id_ads = "id_ads";
     public static String show_all_ads = "show_all_ads";
     public static String interval_between_interstitial = "interval_between_interstitial";

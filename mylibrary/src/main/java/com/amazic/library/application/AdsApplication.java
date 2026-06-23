@@ -22,7 +22,6 @@ public abstract class AdsApplication extends Application implements Application.
     public void onCreate() {
         super.onCreate();
         Admob.getInstance().setTimeStart(System.currentTimeMillis());
-        Admob.getInstance().setAppID(getAppID());
         setUpAdjust();
         registerActivityLifecycleCallbacks(this);
     }
@@ -82,5 +81,5 @@ public abstract class AdsApplication extends Application implements Application.
     public abstract String getFacebookID();
 
     @NonNull
-    public abstract String getAppID();
+    public abstract Boolean isReleaseVersion();
 }

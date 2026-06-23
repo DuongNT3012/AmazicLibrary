@@ -2,6 +2,7 @@ package com.amazic.library.Utils;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -10,6 +11,7 @@ public class EventTrackingHelper {
         if (context == null) {
             return;
         }
+        Log.d("EventTrackingHelper", "logEvent: " + eventName);
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         Bundle bundle = new Bundle();
         firebaseAnalytics.logEvent(eventName, bundle);

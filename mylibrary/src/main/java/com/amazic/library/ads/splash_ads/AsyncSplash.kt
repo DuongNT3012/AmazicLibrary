@@ -37,7 +37,7 @@ import kotlinx.coroutines.launch
  */
 class AsyncSplash : AsyncSplashConfig() {
 
-    private val TAG = "Admob"
+    private val TAG = "AsyncSplash"
 
     companion object {
         const val TECH_MANAGER = "TechManager"
@@ -64,7 +64,7 @@ class AsyncSplash : AsyncSplashConfig() {
         interCallback: InterCallback,
         adjustKey: String,
         linkServer: String,
-        appId: String,
+        type: String,
         jsonIdAdsDefault: String
     ) {
         resetVarToDefault()
@@ -75,9 +75,12 @@ class AsyncSplash : AsyncSplashConfig() {
         this.adjustKey = adjustKey
         this.jsonIdAdsDefault = jsonIdAdsDefault
         this.linkServer = linkServer
-        this.appId = appId
+        this.initAdmobType = type
         this.appOpenCallback = appOpenCallback
         this.interCallback = interCallback
+        if (type != INIT_ADMOB_INT_API && type != INIT_ADMOB_IN_FIREBASE) {
+            throw IllegalAccessException("type: $type must be INIT_ADMOB_INT_API or INIT_ADMOB_IN_FIREBASE")
+        }
     }
 
     fun handleAsync(

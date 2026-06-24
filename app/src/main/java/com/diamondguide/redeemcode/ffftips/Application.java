@@ -25,10 +25,4 @@ public class Application extends AdsApplication {
     public String getFacebookID() {
         return "";
     }
-
-    @NonNull
-    @Override
-    public Boolean isReleaseVersion() {
-        return true;
-    }
 }

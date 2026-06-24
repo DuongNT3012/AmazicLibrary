@@ -133,7 +133,7 @@ public class SplashActivity extends AppCompatActivity {
                     interCallback,
                     "c193nrau3dhc",
                     "",
-                    AsyncSplashConfig.INIT_ADMOB_INT_API,
+                    AsyncSplashConfig.INIT_ADMOB_IN_FIREBASE,
                     jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
             AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd

@@ -50,9 +50,16 @@ dependencies {
     implementation 'com.google.android.play:app-update:2.1.0'
     implementation 'androidx.activity:activity:1.10.1'
     implementation 'com.google.android.libraries.ads.mobile.sdk:ads-mobile-sdk:1.2.1'
+    
+    // Firebase
+    implementation platform('com.google.firebase:firebase-bom:34.12.0')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-config'
+
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
+
     implementation project(path: ':mylibrary')
     //implementation project(path: ':customevent')
     //implementation project(path: ':sdk')

@@ -21,7 +21,56 @@ import kotlin.coroutines.suspendCoroutine
 private const val TAG = "AsyncSplash"
 
 // ---------------------------------------------------------------------------
-// Suspend initialiser functions — extracted from AsyncSplash
+// Shared helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Gọi Admob.initAdmob nếu consent đã xong nhưng admob chưa được init.
+ * Trả về ngay nếu điều kiện không thoả.
+ */
+private fun AsyncSplash.initAdmobIfNeeded(
+    activity: AppCompatActivity?,
+    eventSuffix: String,
+) {
+    if (!initAdsConsentManager || initAdmob) return
+    Admob.getInstance().initAdmob(activity) { isSuccessfully ->
+        initAdmob = isSuccessfully
+        if (eventSuffix.isNotEmpty()) {
+            EventTrackingHelper.logEvent(activity, "initAdmob_${eventSuffix}_$isSuccessfully")
+        }
+        Log.d(TAG, "initAdmob.")
+    }
+}
+
+/**
+ * Đợi Admob init xong rồi gọi initWelcomeBack, sau đó thực thi [onReady].
+ * Dùng trong lifecycleScope của activity.
+ */
+private fun AsyncSplash.waitAdmobThenProceed(
+    activity: AppCompatActivity,
+    onReady: () -> Unit,
+) {
+    activity.lifecycleScope.launch {
+        while (!Admob.getInstance().isInitAdmobDone) {
+            delay(200)
+        }
+        Log.d(TAG, "admob isInitAdmobDone = true")
+        initWelcomeBack(activity)
+        onReady()
+    }
+}
+
+/**
+ * Đo thời gian thực thi của [block] và lưu vào [setter].
+ */
+private inline fun measureElapsed(setter: (Long) -> Unit, block: () -> Unit) {
+    val start = System.currentTimeMillis()
+    block()
+    setter(System.currentTimeMillis() - start)
+}
+
+// ---------------------------------------------------------------------------
+// Suspend initialiser functions
 // ---------------------------------------------------------------------------
 
 internal suspend fun AsyncSplash.initBilling() = suspendCoroutine<Unit> { continuation ->
@@ -45,103 +94,92 @@ internal suspend fun AsyncSplash.initBilling() = suspendCoroutine<Unit> { contin
 }
 
 internal suspend fun AsyncSplash.initAdsConsentManager(activity: AppCompatActivity?) =
-    suspendCoroutine { continuation ->
+    suspendCoroutine<Unit> { continuation ->
         timeInitAdsConsentManager = 0L
-        val startTime = System.currentTimeMillis()
-        val adsConsentManager = AdsConsentManager(activity)
         var isResumed = false
-        adsConsentManager.requestUMP {
-            if (!isResumed) {
-                isResumed = true
-                if (it) {
-                    Admob.getInstance().initAdmob(activity) { isSuccessfully ->
-                        initAdmob = isSuccessfully
-                        Log.d(TAG, "initAdmob.")
-                    }
-                    activity?.let { act ->
-                        AppOpenManager.getInstance().disableAppResumeWithActivity(act.javaClass)
-                    }
+        val startTime = System.currentTimeMillis()
+
+        AdsConsentManager(activity).requestUMP { granted ->
+            if (isResumed) return@requestUMP
+            isResumed = true
+
+            if (granted) {
+                Admob.getInstance().initAdmob(activity) { isSuccessfully ->
+                    initAdmob = isSuccessfully
+                    Log.d(TAG, "initAdmob.")
                 }
-                timeInitAdsConsentManager = System.currentTimeMillis() - startTime
-                initAdsConsentManager = true
-                continuation.resume(Unit)
-                Log.d(TAG, "initAdsConsentManager.")
+                activity?.let {
+                    AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass)
+                }
             }
+
+            timeInitAdsConsentManager = System.currentTimeMillis() - startTime
+            initAdsConsentManager = true
+            continuation.resume(Unit)
+            Log.d(TAG, "initAdsConsentManager.")
         }
     }
 
 internal suspend fun AsyncSplash.initTechManager(activity: AppCompatActivity?) =
     suspendCoroutine<Unit> { continuation ->
-        var isResumed = false
         timeInitTechManager = 0L
         val startTime = System.currentTimeMillis()
-        if (useTechManagerOrDetectTestAd == AsyncSplash.TECH_MANAGER) {
-            TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
-                if (it) {
-                    isTech = true
-                    AppOpenManager.getInstance().isEnableResume = false
-                }
-                timeInitTechManager = System.currentTimeMillis() - startTime
-                if (!isResumed) {
-                    isResumed = true
-                    continuation.resume(Unit)
-                    initTechManager = true
-                    Log.d(TAG, "initTechManager.")
-                }
-            }
-        } else {
+
+        fun resume(tag: String) {
             timeInitTechManager = System.currentTimeMillis() - startTime
             continuation.resume(Unit)
             initTechManager = true
-            Log.d(TAG, "initTechManager else.")
+            Log.d(TAG, tag)
+        }
+
+        if (useTechManagerOrDetectTestAd == AsyncSplash.TECH_MANAGER) {
+            TechManager.getInstance().getResult(isDebug, activity, adjustKey) { success ->
+                if (success) {
+                    isTech = true
+                    AppOpenManager.getInstance().isEnableResume = false
+                }
+                resume("initTechManager.")
+            }
+        } else {
+            resume("initTechManager else.")
         }
     }
 
 internal suspend fun AsyncSplash.initAdmobApi(activity: AppCompatActivity?) =
     suspendCoroutine<Unit> { continuation ->
-        if (!isUseIdAdsFromRemoteConfig && activity != null) {
-            val startTime = System.currentTimeMillis()
-            AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-            AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
-            AdmobApi.getInstance().init(activity, linkServer, object : ApiCallback() {
-                private var isResumed = false
+        if (isUseIdAdsFromRemoteConfig || activity == null) {
+            continuation.resume(Unit)
+            return@suspendCoroutine
+        }
+
+        val startTime = System.currentTimeMillis()
+
+        AdmobApi.getInstance().apply {
+            jsonIdAdsDefault = this@initAdmobApi.jsonIdAdsDefault
+            timeOutCallApi = this@initAdmobApi.timeOutCallApi
+            init(activity, linkServer, object : ApiCallback() {
                 override fun onReady() {
                     super.onReady()
                     if (initAdmobType == AsyncSplashConfig.INIT_ADMOB_INT_API) {
                         Admob.getInstance().appID = AdmobApi.getInstance().appId
-                        if (initAdsConsentManager && !initAdmob) {
-                            Admob.getInstance().initAdmob(activity) { isSuccessfully ->
-                                EventTrackingHelper.logEvent(activity, "initAdmob_Api_$isSuccessfully")
-                                initAdmob = isSuccessfully
-                                Log.d(TAG, "initAdmob.")
-                            }
-                        }
+                        initAdmobIfNeeded(activity, eventSuffix = "Api")
                     }
-                    activity.lifecycleScope.launch {
-                        while (!Admob.getInstance().isInitAdmobDone) {
-                            delay(200)
-                        }
-                        Log.d(TAG, "initAdmobApi onReady: ${Admob.getInstance().isInitAdmobDone}")
-                        initWelcomeBack(activity)
-                        if (!isResumed) {
-                            isResumed = true
-                            continuation.resume(Unit)
-                            initAdmobApi = true
-                            Log.d(TAG, "initAdmobApi.")
-                        }
+                    waitAdmobThenProceed(activity) {
+                        continuation.resume(Unit)
+                        initAdmobApi = true
+                        Log.d(TAG, "initAdmobApi.")
                     }
                 }
             })
-            timeInitAdmobApi = System.currentTimeMillis() - startTime
-        } else {
-            continuation.resume(Unit)
         }
+        timeInitAdmobApi = System.currentTimeMillis() - startTime
     }
 
 internal suspend fun AsyncSplash.initRemoteConfig(
-    activity: AppCompatActivity?
+    activity: AppCompatActivity?,
 ) = suspendCoroutine<Unit> { continuation ->
     timeInitRemoteConfig = 0L
+
     if (isUseAppUpdateManager) {
         continuation.resume(Unit)
         return@suspendCoroutine
@@ -150,83 +188,71 @@ internal suspend fun AsyncSplash.initRemoteConfig(
     val startTime = System.currentTimeMillis()
     EventTrackingHelper.logEvent(activity, "initRemoteConfig")
 
-    // Fallback timeout handler
+    var isResumed = false
+    fun resumeOnce(tag: String) {
+        if (isResumed) return
+        isResumed = true
+        timeInitRemoteConfig = System.currentTimeMillis() - startTime
+        continuation.resume(Unit)
+        initRemoteConfig = true
+        Log.d(TAG, tag)
+    }
+
     Handler(Looper.getMainLooper()).postDelayed({
         if (isUseIdAdsFromRemoteConfig && !isSetId) {
-            AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-            AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
+            AdmobApi.getInstance().run {
+                jsonIdAdsDefault = this@initRemoteConfig.jsonIdAdsDefault
+                convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
+            }
             isSetId = true
             Log.d(TAG, "Timeout Remote Config: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
             EventTrackingHelper.logEvent(activity, "timeout_call_id_remote_config")
             initWelcomeBack(activity)
-            timeInitRemoteConfig = System.currentTimeMillis() - startTime
+            resumeOnce("initRemoteConfig timeout.")
         }
     }, timeOutCallIdRemoteConfig)
 
-    var isResumed = false
     RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
         if (initAdmobType == AsyncSplashConfig.INIT_ADMOB_IN_FIREBASE) {
             Admob.getInstance().appID = RemoteConfigHelper.getInstance()
-                .get_config_string(activity, RemoteConfigHelper.id_ads)
-            if (initAdsConsentManager && !initAdmob) {
-                Admob.getInstance().initAdmob(activity) { isSuccessfully ->
-                    initAdmob = isSuccessfully
-                    EventTrackingHelper.logEvent(activity, "initAdmob_Remote_$isSuccessfully")
-                    Log.d(TAG, "initAdmob.")
-                }
+                .get_config_string(activity, RemoteConfigHelper.app_id_ads)
+            Log.d(TAG, "initRemoteConfig appID = ${Admob.getInstance().appID}")
+            initAdmobIfNeeded(activity, eventSuffix = "Remote")
+        }
+
+        RemoteConfigHelper.getInstance().run {
+            Admob.getInstance().apply {
+                showAllAds = get_config(activity, RemoteConfigHelper.show_all_ads)
+                Log.d(TAG, "show_all_ads = $showAllAds")
+                setTimeInterval(
+                    get_config_long(activity, RemoteConfigHelper.interval_between_interstitial) * 1000,
+                    true
+                )
+                setTimeIntervalFromStart(
+                    get_config_long(activity, RemoteConfigHelper.interval_interstitial_from_start) * 1000
+                )
             }
         }
-        activity?.lifecycleScope?.launch {
-            while (!Admob.getInstance().isInitAdmobDone) {
-                delay(200)
-            }
-            Log.d(TAG, "initAdmobApi onReady: ${Admob.getInstance().isInitAdmobDone}")
-            initWelcomeBack(activity)
-            if (!isResumed) {
-                isResumed = true
-                continuation.resume(Unit)
-                initAdmobApi = true
-                Log.d(TAG, "initAdmobApi.")
-            }
-        }
+
         if (isUseIdAdsFromRemoteConfig && !isSetId) {
-            val jsonFromRemote = RemoteConfigHelper.getInstance()
+            val remoteJson = RemoteConfigHelper.getInstance()
                 .get_config_string(activity, RemoteConfigHelper.id_ads)
-            if (jsonFromRemote.contains("app_id") && isSuccess) {
-                AdmobApi.getInstance().jsonIdAdsDefault = jsonFromRemote
-                AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonFromRemote)
-                isSetId = true
-                Log.d(TAG, "Set id ads from remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
-                EventTrackingHelper.logEvent(activity, "set_id_remote_config")
+            val (json, logTag, event) = if (remoteJson.contains("app_id") && isSuccess) {
+                Triple(remoteJson, "Set id ads from remote", "set_id_remote_config")
             } else {
-                AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-                AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
-                isSetId = true
-                Log.d(TAG, "Set id ads default case fail remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
-                EventTrackingHelper.logEvent(activity, "set_id_default_case_fail_remote")
+                Triple(jsonIdAdsDefault, "Set id ads default case fail remote", "set_id_default_case_fail_remote")
             }
-
+            AdmobApi.getInstance().run {
+                jsonIdAdsDefault = json
+                convertJsonIdAdsDefaultToList(json)
+            }
+            isSetId = true
+            Log.d(TAG, "$logTag: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
+            EventTrackingHelper.logEvent(activity, event)
         }
 
-        Log.d(TAG, "show_all_ads = ${RemoteConfigHelper.getInstance().get_config(activity, RemoteConfigHelper.show_all_ads)}")
-        Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance()
-            .get_config(activity, RemoteConfigHelper.show_all_ads)
-        Admob.getInstance().setTimeInterval(
-            RemoteConfigHelper.getInstance().get_config_long(
-                activity, RemoteConfigHelper.interval_between_interstitial
-            ) * 1000, true
-        )
-        Admob.getInstance().setTimeIntervalFromStart(
-            RemoteConfigHelper.getInstance().get_config_long(
-                activity, RemoteConfigHelper.interval_interstitial_from_start
-            ) * 1000
-        )
-        timeInitRemoteConfig = System.currentTimeMillis() - startTime
-        if (!isResumed) {
-            isResumed = true
-            continuation.resume(Unit)
-            initRemoteConfig = true
-            Log.d(TAG, "initRemoteConfig.")
-        }
+        activity?.let {
+            waitAdmobThenProceed(it) { resumeOnce("initAdmobApi (via RemoteConfig).") }
+        } ?: resumeOnce("initRemoteConfig (no activity).")
     }
 }

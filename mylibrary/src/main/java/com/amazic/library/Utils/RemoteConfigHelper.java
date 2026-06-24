@@ -31,6 +31,7 @@ public class RemoteConfigHelper {
     }
 
     public void fetchAllKeysAndTypes(Context context, IOnFetchDone iOnFetchDone) {
+        Log.d(TAG, "fetchAllKeysAndTypes");
         FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         firebaseRemoteConfig.reset();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()

@@ -2518,64 +2518,65 @@ public class Admob {
                     @Override
                     public void onAdLoaded(BannerAd ad) {
                         Log.i(TAG, "BANNER: onAdLoaded. " + remoteKey);
-
-                        //DetectTestAd
-                        //Reset TechManager to false
-                        if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
-                            TechManager.getInstance().detectedTech(activity, false);
-                        }
-                        if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                                && !AsyncSplash.Companion.getInstance().isDebug()
-                                && AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                        ) {
-                            boolean isTestAd = detectTestAd(adViewBanner);
-                            Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
-                            TechManager.getInstance().detectedTech(activity, isTestAd);
-
-                            if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                                    && TechManager.getInstance().isTech(activity)
-                                    && !AsyncSplash.Companion.getInstance().isDebug()) {
-                                AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                        activity.runOnUiThread(() -> {
+                            //DetectTestAd
+                            //Reset TechManager to false
+                            if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                                TechManager.getInstance().detectedTech(activity, false);
                             }
-                        }
-                        bannerCallback.onAdLoaded();
+                            if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+                                    && !AsyncSplash.Companion.getInstance().isDebug()
+                                    && AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                            ) {
+                                boolean isTestAd = detectTestAd(adViewBanner);
+                                Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
+                                TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                        ad.setAdEventCallback(new BannerAdEventCallback() {
-                            @Override
-                            public void onAdClicked() {
-                                AppOpenManager.isLastActionClickAd = true;
-                                Log.d(TAG, "BANNER: onAdClicked. " + remoteKey);
-                                EventTrackingHelper.logEvent(activity, remoteKey + "_click");
-                                bannerCallback.onAdClicked();
+                                if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                                        && TechManager.getInstance().isTech(activity)
+                                        && !AsyncSplash.Companion.getInstance().isDebug()) {
+                                    AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                                }
                             }
+                            bannerCallback.onAdLoaded();
 
-                            @Override
-                            public void onAdDismissedFullScreenContent() {
-                                BannerAdEventCallback.super.onAdDismissedFullScreenContent();
-                            }
+                            ad.setAdEventCallback(new BannerAdEventCallback() {
+                                @Override
+                                public void onAdClicked() {
+                                    AppOpenManager.isLastActionClickAd = true;
+                                    Log.d(TAG, "BANNER: onAdClicked. " + remoteKey);
+                                    EventTrackingHelper.logEvent(activity, remoteKey + "_click");
+                                    bannerCallback.onAdClicked();
+                                }
 
-                            @Override
-                            public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError fullScreenContentError) {
-                                BannerAdEventCallback.super.onAdFailedToShowFullScreenContent(fullScreenContentError);
-                            }
+                                @Override
+                                public void onAdDismissedFullScreenContent() {
+                                    BannerAdEventCallback.super.onAdDismissedFullScreenContent();
+                                }
 
-                            @Override
-                            public void onAdImpression() {
-                                Log.d(TAG, "BANNER: onAdImpression. " + remoteKey);
-                                EventTrackingHelper.logEvent(activity, remoteKey + "_view");
-                                bannerCallback.onAdImpression();
-                            }
+                                @Override
+                                public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError fullScreenContentError) {
+                                    BannerAdEventCallback.super.onAdFailedToShowFullScreenContent(fullScreenContentError);
+                                }
 
-                            @Override
-                            public void onAdPaid(@NonNull AdValue value) {
-                                //Tracking revenue
-                                AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
-                            }
+                                @Override
+                                public void onAdImpression() {
+                                    Log.d(TAG, "BANNER: onAdImpression. " + remoteKey);
+                                    EventTrackingHelper.logEvent(activity, remoteKey + "_view");
+                                    bannerCallback.onAdImpression();
+                                }
 
-                            @Override
-                            public void onAdShowedFullScreenContent() {
-                                BannerAdEventCallback.super.onAdShowedFullScreenContent();
-                            }
+                                @Override
+                                public void onAdPaid(@NonNull AdValue value) {
+                                    //Tracking revenue
+                                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdSourceResponseInfo(), value);
+                                }
+
+                                @Override
+                                public void onAdShowedFullScreenContent() {
+                                    BannerAdEventCallback.super.onAdShowedFullScreenContent();
+                                }
+                            });
                         });
                     }
 
@@ -2744,10 +2745,12 @@ public class Admob {
                     public void onAdLoaded(@NonNull BannerAd bannerAd) {
                         Log.i(TAG, "BANNER: onAdLoaded. " + remoteKey);
                         // Replace ad container with new ad view.
+                        activity.runOnUiThread(() -> {
                         if (adContainerView != null) {
                             adContainerView.removeAllViews();
                             adContainerView.addView(adViewBanner);
                         }
+                        });
 
                         //DetectTestAd
                         //Reset TechManager to false

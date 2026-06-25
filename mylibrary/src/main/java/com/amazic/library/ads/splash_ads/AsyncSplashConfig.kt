@@ -23,6 +23,7 @@ open class AsyncSplashConfig {
     var jsonIdAdsDefault = ""
     var timeOutCallApi = 4000
     var adjustKey = ""
+    var appIdAds = RemoteConfigHelper.app_id_ads_debug;
     var linkServer = ""
     var isShowAdsSplash = false
     var isTimeout = false

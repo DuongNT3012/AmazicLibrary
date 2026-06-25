@@ -215,7 +215,7 @@ internal suspend fun AsyncSplash.initRemoteConfig(
     RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
         if (initAdmobType == AsyncSplashConfig.INIT_ADMOB_IN_FIREBASE) {
             Admob.getInstance().appID = RemoteConfigHelper.getInstance()
-                .get_config_string(activity, RemoteConfigHelper.app_id_ads)
+                .get_config_string(activity, appIdAds)
             Log.d(TAG, "initRemoteConfig appID = ${Admob.getInstance().appID}")
             initAdmobIfNeeded(activity, eventSuffix = "Remote")
         }

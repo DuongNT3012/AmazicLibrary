@@ -2754,6 +2754,9 @@ public class Admob {
                         if (AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
                             TechManager.getInstance().detectedTech(activity, false);
                         }
+                        Log.d(TAG, "BANNER: onAdLoaded: " + (remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+                                + " && " + !AsyncSplash.Companion.getInstance().isDebug()
+                                + " && " + AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD));
                         if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
                                 && !AsyncSplash.Companion.getInstance().isDebug()
                                 && AsyncSplash.Companion.getInstance().getUseTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)

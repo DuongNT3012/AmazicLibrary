@@ -1246,20 +1246,22 @@ public class Admob {
 
     public void showInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
         countClickInterSplashAds = 0;
-        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
-            @Override
-            public void onResume(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onResume(owner);
-                isSplashResume = true;
-                Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + true);
-            }
+        activity.runOnUiThread(() -> {
+            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                @Override
+                public void onResume(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onResume(owner);
+                    isSplashResume = true;
+                    Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + true);
+                }
 
-            @Override
-            public void onStop(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onStop(owner);
-                isSplashResume = false;
-                Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + false);
-            }
+                @Override
+                public void onStop(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onStop(owner);
+                    isSplashResume = false;
+                    Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + false);
+                }
+            });
         });
 
         InterstitialAd ad = InterstitialAdPreloader.pollAd(listIdInter.get(0));
@@ -1600,20 +1602,22 @@ public class Admob {
 
     public void showInterAdsSplashDelay(AppCompatActivity activity, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
         countClickInterSplashAds = 0;
-        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
-            @Override
-            public void onResume(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onResume(owner);
-                isSplashResume = true;
-                Log.d(TAG, "SPLASH: onSplashResume: " + true);
-            }
+        activity.runOnUiThread(() -> {
+            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                @Override
+                public void onResume(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onResume(owner);
+                    isSplashResume = true;
+                    Log.d(TAG, "SPLASH: onSplashResume: " + true);
+                }
 
-            @Override
-            public void onStop(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onStop(owner);
-                isSplashResume = false;
-                Log.d(TAG, "SPLASH: onSplashResume: " + false);
-            }
+                @Override
+                public void onStop(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onStop(owner);
+                    isSplashResume = false;
+                    Log.d(TAG, "SPLASH: onSplashResume: " + false);
+                }
+            });
         });
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "SPLASH: The interstitial ad wasn't ready yet.");
@@ -1795,20 +1799,23 @@ public class Admob {
 
     public void showInterAdsSplash(AppCompatActivity activity, InterCallback interCallback) {
         countClickInterSplashAds = 0;
-        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
-            @Override
-            public void onResume(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onResume(owner);
-                isSplashResume = true;
-                Log.d(TAG, "SPLASH: onSplashResume: " + true);
-            }
 
-            @Override
-            public void onStop(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onStop(owner);
-                isSplashResume = false;
-                Log.d(TAG, "SPLASH: onSplashResume: " + false);
-            }
+        activity.runOnUiThread(()-> {
+            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                @Override
+                public void onResume(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onResume(owner);
+                    isSplashResume = true;
+                    Log.d(TAG, "SPLASH: onSplashResume: " + true);
+                }
+
+                @Override
+                public void onStop(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onStop(owner);
+                    isSplashResume = false;
+                    Log.d(TAG, "SPLASH: onSplashResume: " + false);
+                }
+            });
         });
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "SPLASH: The interstitial ad wasn't ready yet.");
@@ -1934,20 +1941,23 @@ public class Admob {
 
     public void showInterAdsSplashAsync(InterstitialAd interSplash, AppCompatActivity activity, InterCallback interCallback) {
         countClickInterSplashAds = 0;
-        activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
-            @Override
-            public void onResume(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onResume(owner);
-                isSplashResume = true;
-                Log.d(TAG, "SPLASH: onSplashResume: " + true);
-            }
 
-            @Override
-            public void onStop(@NonNull LifecycleOwner owner) {
-                DefaultLifecycleObserver.super.onStop(owner);
-                isSplashResume = false;
-                Log.d(TAG, "SPLASH: onSplashResume: " + false);
-            }
+        activity.runOnUiThread(()-> {
+            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                @Override
+                public void onResume(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onResume(owner);
+                    isSplashResume = true;
+                    Log.d(TAG, "SPLASH: onSplashResume: " + true);
+                }
+
+                @Override
+                public void onStop(@NonNull LifecycleOwner owner) {
+                    DefaultLifecycleObserver.super.onStop(owner);
+                    isSplashResume = false;
+                    Log.d(TAG, "SPLASH: onSplashResume: " + false);
+                }
+            });
         });
         if (interSplash == null) {
             Log.d(TAG, "SPLASH: The interstitial ad wasn't ready yet.");
@@ -2746,10 +2756,10 @@ public class Admob {
                         Log.i(TAG, "BANNER: onAdLoaded. " + remoteKey);
                         // Replace ad container with new ad view.
                         activity.runOnUiThread(() -> {
-                        if (adContainerView != null) {
-                            adContainerView.removeAllViews();
-                            adContainerView.addView(adViewBanner);
-                        }
+                            if (adContainerView != null) {
+                                adContainerView.removeAllViews();
+                                adContainerView.addView(adViewBanner);
+                            }
                         });
 
                         //DetectTestAd
@@ -3023,13 +3033,16 @@ public class Admob {
                         bannerCallback.onAdLoaded();
                         // Replace ad container with new ad view.
                         if (adContainerView != null) {
-                            activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
-                                @Override
-                                public void onResume(@NonNull LifecycleOwner owner) {
-                                    DefaultLifecycleObserver.super.onResume(owner);
-                                    adContainerView.removeAllViews();
-                                    adContainerView.addView(adView);
-                                }
+
+                            activity.runOnUiThread(()-> {
+                                activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
+                                    @Override
+                                    public void onResume(@NonNull LifecycleOwner owner) {
+                                        DefaultLifecycleObserver.super.onResume(owner);
+                                        adContainerView.removeAllViews();
+                                        adContainerView.addView(adView);
+                                    }
+                                });
                             });
                         }
 

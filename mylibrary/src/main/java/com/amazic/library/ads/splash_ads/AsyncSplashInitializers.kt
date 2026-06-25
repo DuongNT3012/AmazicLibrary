@@ -15,6 +15,7 @@ import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
 
@@ -31,12 +32,18 @@ private const val TAG = "AsyncSplash"
 private fun AsyncSplash.initAdmobIfNeeded(
     activity: AppCompatActivity?,
     eventSuffix: String,
+    startTime: Long
 ) {
     if (!initAdsConsentManager || initAdmob) return
     Admob.getInstance().initAdmob(activity) { isSuccessfully ->
         initAdmob = isSuccessfully
         if (eventSuffix.isNotEmpty()) {
-            EventTrackingHelper.logEvent(activity, "initAdmob_${eventSuffix}_$isSuccessfully")
+            EventTrackingHelper.logEventWithAParam(
+                activity,
+                "initAdmob_${eventSuffix}_$isSuccessfully",
+                "time_init",
+                String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime)/1000f)
+            )
         }
         Log.d(TAG, "initAdmob.")
     }
@@ -162,7 +169,7 @@ internal suspend fun AsyncSplash.initAdmobApi(activity: AppCompatActivity?) =
                     super.onReady()
                     if (initAdmobType == AsyncSplashConfig.INIT_ADMOB_INT_API) {
                         Admob.getInstance().appID = AdmobApi.getInstance().appId
-                        initAdmobIfNeeded(activity, eventSuffix = "Api")
+                        initAdmobIfNeeded(activity, eventSuffix = "Api", startTime)
                     }
                     waitAdmobThenProceed(activity) {
                         continuation.resume(Unit)
@@ -217,7 +224,7 @@ internal suspend fun AsyncSplash.initRemoteConfig(
             Admob.getInstance().appID = RemoteConfigHelper.getInstance()
                 .get_config_string(activity, appIdAds)
             Log.d(TAG, "initRemoteConfig appID = ${Admob.getInstance().appID}")
-            initAdmobIfNeeded(activity, eventSuffix = "Remote")
+            initAdmobIfNeeded(activity, eventSuffix = "Remote", startTime)
         }
 
         RemoteConfigHelper.getInstance().run {

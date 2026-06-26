@@ -14,6 +14,7 @@ import com.amazic.library.Utils.SharePreferenceHelper
 import com.amazic.library.ads.admob.Admob
 import com.amazic.library.ads.callback.AppOpenCallback
 import com.amazic.library.ads.callback.InterCallback
+import com.amazic.library.application.AdsApplication
 import com.amazic.library.organic.TechManager
 import com.amazic.mylibrary.R
 import kotlinx.coroutines.async
@@ -98,6 +99,9 @@ class AsyncSplash : AsyncSplashConfig() {
         lifecycleCoroutineScope.launch {
             delay(timeOutInitAdmobInSplash)
             if (!initAdmob && activity != null) {
+                if (Admob.getInstance().appID.isEmpty()) {
+                    Admob.getInstance().appID = (activity!!.application as AdsApplication).getAppAdsIDDefault()
+                }
                 Admob.getInstance().initAdmob(activity) {
                     initAdmob = it
                 }

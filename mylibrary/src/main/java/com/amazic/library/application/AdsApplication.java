@@ -79,4 +79,5 @@ public abstract class AdsApplication extends Application implements Application.
 
     @NonNull
     public abstract String getFacebookID();
+    public abstract String getAppAdsIDDefault();
 }

@@ -60,6 +60,8 @@ public class AdsConsentManager {
                 loadAndShowError -> {
                     if (loadAndShowError != null)
                         Log.e(TAG, "onConsentInfoUpdateSuccess: " + loadAndShowError.getMessage());
+                    else
+                        Log.e(TAG, "onConsentInfoUpdateSuccess: message null");
                     if (!auAtomicBoolean.getAndSet(true)) {
                         umpResultListener.onCheckUMPSuccess(getConsentResult(activity));
                     }
@@ -69,8 +71,8 @@ public class AdsConsentManager {
         ConsentInformation.OnConsentInfoUpdateFailureListener onConsentInfoUpdateFailureListener = new ConsentInformation.OnConsentInfoUpdateFailureListener() {
             @Override
             public void onConsentInfoUpdateFailure(@NonNull FormError formError) {
+                Log.e(TAG, "onConsentInfoUpdateFailure: " + formError.getMessage());
                 if (!auAtomicBoolean.getAndSet(true)) {
-                    Log.e(TAG, "onConsentInfoUpdateFailure: " + formError.getMessage());
                     umpResultListener.onCheckUMPSuccess(getConsentResult(activity));
                 }
             }
@@ -82,13 +84,6 @@ public class AdsConsentManager {
                 onConsentInfoUpdateSuccessListener,
                 onConsentInfoUpdateFailureListener);
 
-        // Check if you can initialize the Google Mobile Ads SDK in parallel
-        // while checking for new consent information. Consent obtained in
-        // the previous session can be used to request ads.
-        /*if (consentInformation.canRequestAds() && !auAtomicBoolean.getAndSet(true)) {
-            umpResultListener.onCheckUMPSuccess(getConsentResult(activity));
-            Log.d(TAG, "requestUMP: ");
-        }*/
     }
 
     public void showPrivacyOption(Activity activity, UMPResultListener umpResultListener) {

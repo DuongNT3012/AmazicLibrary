@@ -42,7 +42,18 @@ open class AsyncSplashConfig {
     var isDebug = false
     var isUseBilling = false
 
+    var timeOutInitAdmobInSplash = 12000L
+        set(value) {
+            if (timeOutSplash >= value)
+                field = value
+            else throw (IllegalArgumentException("timeOutInitAdmobInSplash must be less than timeOutSplash"))
+        }
     var timeOutSplash = 12000L
+        set(value) {
+            if (timeOutInitAdmobInSplash <= value)
+                field = value
+            else throw (IllegalArgumentException("timeOutSplash must be greater than timeOutInitAdmobInSplash"))
+        }
     var isLoopAdsSplash = false
     var useTechManagerOrDetectTestAd = AsyncSplash.DETECT_TEST_AD
 

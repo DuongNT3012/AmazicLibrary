@@ -96,7 +96,13 @@ class AsyncSplash : AsyncSplashConfig() {
 
         // --- Timeout watchdog ---
         lifecycleCoroutineScope.launch {
-            delay(timeOutSplash)
+            delay(timeOutInitAdmobInSplash)
+            if (!initAdmob && activity != null) {
+                Admob.getInstance().initAdmob(activity) {
+                    initAdmob = it
+                }
+            }
+            delay(timeOutSplash - timeOutInitAdmobInSplash)
             Log.d(TAG, "Timeout check $isShowAdsSplash $isNoInternetAction")
             logEventStep("AsyncTimeout")
 
@@ -144,10 +150,11 @@ class AsyncSplash : AsyncSplashConfig() {
 
                 try {
                     if (!isAsyncSplashAds) {
-                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
+                        awaitAll(asyncRemoteConfig, /*asyncUMP,*/ asyncBilling, asyncTechManager)
                         if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
                             turnOffSomeRemoteKeys(activity)
                         }
+                        asyncUMP.await()
                     } else {
                         awaitAll(asyncUMP)
                     }

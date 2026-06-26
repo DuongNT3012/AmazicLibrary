@@ -157,6 +157,20 @@ public class Admob {
 
     public void initAdmob(Activity activity, IOnInitAdmobDone iOnInitAdmobDone) {
         if (Objects.equals(appID, "")) return;
+        Map<String, AdapterStatus> statusMapMobile = MobileAds.getInitializationStatus().getAdapterStatusMap();
+        boolean isAllowInitAdMob = true;
+
+        for (String adapterClass : statusMapMobile.keySet()) {
+            AdapterStatus status = statusMapMobile.get(adapterClass);
+
+            if ((status != null ? status.getInitializationState() : null) != null &&(
+                    status.getInitializationState() == AdapterStatus.InitializationState.COMPLETE||
+                    status.getInitializationState() == AdapterStatus.InitializationState.INITIALIZING)) {
+                Log.d("Admob_INIT", String.format("Thành công: Adapter %s đã khởi tạo.", status.getInitializationState()));
+                isAllowInitAdMob = false;
+            }
+        }
+        if (!isAllowInitAdMob) return;
         resetVariable();
         initLoadingDialog(activity);
         Log.d("Admob", "initAdmob: application start");
@@ -172,7 +186,6 @@ public class Admob {
                     if ((status != null ? status.getInitializationState() : null) != null &&
                             status.getInitializationState() == AdapterStatus.InitializationState.COMPLETE) {
                         Log.d("Admob_INIT", String.format("Thành công: Adapter %s đã khởi tạo.", status.getInitializationState()));
-
                         isAdMobReady = true;
                     } else {
                         Log.e("Admob_INIT", String.format("Thất bại: Adapter %s bị lỗi: %s", adapterClass, status.getDescription()));
@@ -360,7 +373,7 @@ public class Admob {
 
     //================================Start inter ads================================
     public void loadInterAdsLoadAndShow(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             interCallback.onAdFailedToLoad();
             return;
         }
@@ -439,7 +452,7 @@ public class Admob {
 
     public void showInterAdsLoadAndShow(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, String remoteKey) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds ||
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds ||
                 /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             interCallback.onNextAction();
@@ -519,7 +532,7 @@ public class Admob {
     }
 
     public void loadInterAdsLoadAndShowWithNativeAfterInter(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKeyInter, String remoteKeyNative, String adsKeyNative) {
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             interCallback.onAdFailedToLoad();
             interCallback.onNextAction();
             return;
@@ -614,7 +627,7 @@ public class Admob {
 
     public void showInterAdsLoadAndShowWithNativeAfterInter(Activity activity, InterstitialAd mInterstitialAd, InterCallback interCallback, String adsKeyNative, String remoteKeyInter, boolean isShowNativeAfterInter) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKeyInter)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKeyInter)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKeyInter + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKeyInter));
             interCallback.onNextAction();
             return;
@@ -760,7 +773,7 @@ public class Admob {
     //Inter Preload
     public void loadInterAdPreload(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds ||
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(context) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds ||
                 /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
             Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdInter.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
             interCallback.onAdFailedToLoad();
@@ -798,7 +811,7 @@ public class Admob {
 
     public void showInterAdPreload(Activity activity, List<String> listIdInter, InterCallback interCallback, boolean isShowLoading, String remoteKey, String adsKeyNative, boolean isShowNativeAfterInter) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds ||
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdInter.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds ||
                 /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "INTER Ad Preload: Check condition. RemoteKey:" + remoteKey + ". Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty: " + listIdInter.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             interCallback.onNextAction();
@@ -985,7 +998,7 @@ public class Admob {
 
     /// use load and show first ad preloading
     public void loadInterAdPreloadWithHandleTimeOut(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey, String remoteKeyNativeAfterInter, String adsKeyNativeAfterInter) {
-        if (!isInitAdmobDone || listIdInter.isEmpty()) {
+        if (!getIsInitAdmobDone() || listIdInter.isEmpty()) {
             interCallback.onNextAction();
             return;
         }
@@ -1116,7 +1129,7 @@ public class Admob {
     }
 
     public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             interCallback.onAdFailedToLoad();
             interCallback.onNextAction();
             return;
@@ -1487,7 +1500,7 @@ public class Admob {
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(context) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(context) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
             Log.d(TAG, "INTER: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdInterTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
             interCallback.onNextAction();
             return;
@@ -2104,7 +2117,7 @@ public class Admob {
 
     //load all id inter splash once
     public void loadAndShowIdInterAdSplashAsync(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             interCallback.onNextAction();
             return;
         }
@@ -2210,7 +2223,7 @@ public class Admob {
     }
 
     public void loadAndShowInterAdSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             interCallback.onNextAction();
             return;
         }
@@ -2282,7 +2295,7 @@ public class Admob {
     }
 
     public void loadAndShowInterAdSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             interCallback.onNextAction();
             return;
         }
@@ -2420,7 +2433,7 @@ public class Admob {
     }
 
     public void loadAndShowInterAdSplashLoop(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             interCallback.onNextAction();
             return;
         }
@@ -2541,7 +2554,7 @@ public class Admob {
     public AdView loadBannerAdsBackupWithoutShow(Activity activity, List<String> listIdBanner, BannerCallback bannerCallback, String remoteKey) {
         ArrayList<String> listIdBannerTemp = new ArrayList<>(listIdBanner);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "BANNER: Check condition: RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             bannerCallback.onAdFailedToLoad();
             return null;
@@ -2640,7 +2653,7 @@ public class Admob {
     public AdView loadBannerAdsWithoutShow(Activity activity, List<String> listIdBanner, BannerCallback bannerCallback, String remoteKey) {
         ArrayList<String> listIdBannerTemp = new ArrayList<>(listIdBanner);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "BANNER: Check condition: RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             bannerCallback.onAdFailedToLoad();
             return null;
@@ -2754,7 +2767,7 @@ public class Admob {
         if (adContainerView != null) {
             adContainerView.removeAllViews();
         }
-        if (!isInitAdmobDone) {
+        if (!getIsInitAdmobDone()) {
             bannerCallback.onAdFailedToLoad();
             return;
         }
@@ -2904,7 +2917,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(context) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(context) || listIdBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
             Log.d(TAG, "BANNER: Check condition: RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
             bannerCallback.onAdFailedToLoad();
             return;
@@ -3029,7 +3042,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdCollapseBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdCollapseBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "COLLAPSE BANNER: Check condition. RemoteKey:" + remoteKey + "_Network: " + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdCollapseBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             bannerCallback.onAdFailedToLoad();
             return null;
@@ -3148,7 +3161,7 @@ public class Admob {
             adContainerView.removeAllViews();
         }
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(context) || listIdCollapseBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(context) || listIdCollapseBannerTemp.isEmpty() || !AdsConsentManager.getConsentResult(context) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(context, remoteKey)) {
             Log.d(TAG, "COLLAPSE BANNER: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(context) + "_IdEmpty:" + listIdCollapseBannerTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(context) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(context, remoteKey));
             bannerCallback.onAdFailedToLoad();
             return null;
@@ -3350,7 +3363,7 @@ public class Admob {
     public void loadNativeAds(Context activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "NATIVE: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdNativeTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             nativeCallback.onAdFailedToLoad("NATIVE: Check condition");
             return;
@@ -3456,7 +3469,7 @@ public class Admob {
     public void loadNativeAdsBackup(Context activity, List<String> listIdNative, NativeCallback nativeCallback, String remoteKey) {
         ArrayList<String> listIdNativeTemp = new ArrayList<>(listIdNative);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdNativeTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "NATIVE: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdNativeTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             nativeCallback.onAdFailedToLoad("NATIVE: Check condition");
             return;
@@ -3696,7 +3709,7 @@ public class Admob {
     public void loadRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback, String remoteKey) {
         ArrayList<String> listIdRewardedTemp = new ArrayList<>(listIdRewarded);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdRewardedTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdRewardedTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedCallback.onAdFailedToLoad();
@@ -3734,7 +3747,7 @@ public class Admob {
 
     public void showReward(Activity activity, RewardedAd rewardedAd, RewardedCallback rewardedCallback, String remoteKey) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedCallback.onAdFailedToLoad();
@@ -3830,7 +3843,7 @@ public class Admob {
     public void loadAndShowRewardAds(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback, String remoteKey) {
         ArrayList<String> listIdRewardedTemp = new ArrayList<>(listIdRewarded);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdRewardedTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdRewardedTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedCallback.onAdFailedToLoad();
@@ -3880,7 +3893,7 @@ public class Admob {
 
     public void showRewardLoadAndShow(Activity activity, RewardedAd rewardedAd, RewardedCallback rewardedCallback, String remoteKey) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedCallback.onAdFailedToLoad();
@@ -3970,7 +3983,7 @@ public class Admob {
             RewardedCallback rewardedCallback,
             String remoteKey
     ) {
-        if (!isInitAdmobDone || listIdRewarded.isEmpty()) {
+        if (!getIsInitAdmobDone() || listIdRewarded.isEmpty()) {
             activity.runOnUiThread(rewardedCallback::onNextAction);
             return;
         }
@@ -4043,7 +4056,7 @@ public class Admob {
 
     public void loadRewardAdPreload(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback, String remoteKey) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdRewarded.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewarded.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedCallback.onAdFailedToLoad();
@@ -4081,7 +4094,7 @@ public class Admob {
 
     public void showRewardAdPreload(Activity activity, List<String> listIdRewarded, RewardedCallback rewardedCallback, String remoteKey) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD Ad Preload: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedCallback.onNextAction();
@@ -4179,7 +4192,7 @@ public class Admob {
     public void loadRewardInterAds(Activity activity, List<String> listIdRewardedInter, RewardedInterCallback rewardedInterCallback, String remoteKey) {
         ArrayList<String> listIdRewardedInterTemp = new ArrayList<>(listIdRewardedInter);
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || listIdRewardedInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || listIdRewardedInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD INTER: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_IdEmpty:" + listIdRewardedInterTemp.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedInterCallback.onAdFailedToLoad();
@@ -4216,7 +4229,7 @@ public class Admob {
 
     public void showRewardInterAds(Activity activity, RewardedInterstitialAd rewardedInterstitialAd, RewardedInterCallback rewardedInterCallback, String remoteKey) {
         //Check condition
-        if (!isInitAdmobDone || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+        if (!getIsInitAdmobDone() || !NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds || /*IAPManager.getInstance().isPurchase() ||*/ !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
             Log.d(TAG, "REWARD INTER: Check condition. RemoteKey:" + remoteKey + "_Network:" + NetworkUtil.isNetworkActive(activity) + "_UMP:" + AdsConsentManager.getConsentResult(activity) + "_ShowAllAds:" + isShowAllAds + "_IAP:" + /*IAPManager.getInstance().isPurchase() +*/ "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
             activity.runOnUiThread(() -> {
                 rewardedInterCallback.onAdFailedToLoad();

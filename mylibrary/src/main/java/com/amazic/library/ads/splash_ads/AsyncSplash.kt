@@ -154,11 +154,10 @@ class AsyncSplash : AsyncSplashConfig() {
 
                 try {
                     if (!isAsyncSplashAds) {
-                        awaitAll(asyncRemoteConfig, /*asyncUMP,*/ asyncBilling, asyncTechManager)
+                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
                         if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
                             turnOffSomeRemoteKeys(activity)
                         }
-                        asyncUMP.await()
                     } else {
                         awaitAll(asyncUMP)
                     }

@@ -122,6 +122,7 @@ open class AsyncSplashConfig {
         listTurnOffRemoteKeys.clear()
         isDebug = false
         isUseBilling = false
+        timeOutInitAdmobInSplash = 12000L
         timeOutSplash = 12000L
         isLoopAdsSplash = false
         useTechManagerOrDetectTestAd = AsyncSplash.DETECT_TEST_AD

@@ -170,7 +170,11 @@ public class Admob {
                 isAllowInitAdMob = false;
             }
         }
-        if (!isAllowInitAdMob) return;
+        if (!isAllowInitAdMob) {
+            Admob.getInstance().setIsInitAdmobDone(true);
+            iOnInitAdmobDone.onInitAdmobDone(true);
+            return;
+        }
         resetVariable();
         initLoadingDialog(activity);
         Log.d("Admob", "initAdmob: application start");

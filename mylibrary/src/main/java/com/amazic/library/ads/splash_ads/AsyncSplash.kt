@@ -325,7 +325,8 @@ class AsyncSplash {
     }
 
     fun setKeyNumberPreloading(keyNumber: String) {
-        var number: Int = RemoteConfigHelper.getInstance().get_config_long(activity, keyNumber).toInt()
+        var number: Int =
+            RemoteConfigHelper.getInstance().get_config_long(activity, keyNumber).toInt()
         this.numberPreloading = number
     }
 
@@ -333,11 +334,11 @@ class AsyncSplash {
         return this.numberPreloading
     }
 
-    fun setNumberPreloadingSplash(number: Int){
+    fun setNumberPreloadingSplash(number: Int) {
         this.numberPreloadingSplash = number
     }
 
-    fun getNumberPreloadingSplash(): Int{
+    fun getNumberPreloadingSplash(): Int {
         return this.numberPreloadingSplash
     }
 
@@ -357,12 +358,12 @@ class AsyncSplash {
         return this.isShowNativeAfterInter
     }
 
-    fun setUseNativeSplash(isUse: Boolean){
+    fun setUseNativeSplash(isUse: Boolean) {
         this.isUseNativeSplash = isUse
     }
 
-    fun getUseNativeSplash(): Boolean{
-        return  this.isUseNativeSplash
+    fun getUseNativeSplash(): Boolean {
+        return this.isUseNativeSplash
     }
 
     fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
@@ -720,6 +721,7 @@ class AsyncSplash {
         }
     }
 
+    private val PREF_REMOTE_FETCHED_FLAG = "remote_fetched_once"
     private var timeInitRemoteConfig = 0L
     private suspend fun initRemoteConfig(
         activity: AppCompatActivity?
@@ -727,9 +729,16 @@ class AsyncSplash {
         timeInitRemoteConfig = 0L
         if (isUseAppUpdateManager) {
             continuation.resume(Unit)
+            return@suspendCoroutine
         } else {
             val startTimeInitRemoteConfig = System.currentTimeMillis()
             EventTrackingHelper.logEvent(activity, "initRemoteConfig")
+
+            // check flag trong cùng SharedPreferences "remote_fill"
+            val prefs = activity?.getSharedPreferences("remote_fill", Context.MODE_PRIVATE)
+            val hasBeenFetchedBefore = prefs?.getBoolean(PREF_REMOTE_FETCHED_FLAG, false) ?: false
+
+
             //Handle remote config id ads timeout
             Handler(Looper.getMainLooper()).postDelayed({
                 if (isUseIdAdsFromRemoteConfig && !isSetId) {
@@ -745,62 +754,127 @@ class AsyncSplash {
                     timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
                 }
             }, timeOutCallIdRemoteConfig)
-            var isResumed = false
-            RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
-                //Handle remote config id ads
+
+            if (hasBeenFetchedBefore) {
+                Log.d(TAG, "initRemoteConfig: using SharedPreferences cache")
+
+                // apply config từ SP ngay (get_config đọc từ SP → instant)
+                Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance()
+                    .get_config(activity, RemoteConfigHelper.show_all_ads)
+                Admob.getInstance().setTimeInterval(
+                    RemoteConfigHelper.getInstance().get_config_long(
+                        activity, keyIntervalBetweenInterstitial
+                    ) * 1000, true
+                )
+                Admob.getInstance().setTimeIntervalFromStart(
+                    RemoteConfigHelper.getInstance().get_config_long(
+                        activity, keyIntervalInterstitialFromStart
+                    ) * 1000
+                )
                 if (isUseIdAdsFromRemoteConfig && !isSetId) {
-                    val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance()
+                    // get_config_string cũng đọc từ SP → instant
+                    val jsonFromSP = RemoteConfigHelper.getInstance()
                         .get_config_string(activity, RemoteConfigHelper.id_ads)
-                    if (jsonIdAdsFromRemoteConfig.contains("app_id") && isSuccess) { //get id ads from remote config successfully
-                        AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
-                        AdmobApi.getInstance()
-                            .convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
+                    if (jsonFromSP.contains("app_id")) {
+                        AdmobApi.getInstance().jsonIdAdsDefault = jsonFromSP
+                        AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonFromSP)
                         isSetId = true
-                        Log.d(
-                            TAG,
-                            "Set id ads from remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}"
-                        )
                         EventTrackingHelper.logEvent(activity, "set_id_remote_config")
                     } else {
                         AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
                         AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
                         isSetId = true
-                        Log.d(
-                            TAG,
-                            "Set id ads default case fail remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}"
-                        )
-                        EventTrackingHelper.logEvent(activity, "set_id_default_case_fail_remote")
                     }
-                    initWelcomeBack(activity)//17.09.2025
+                    initWelcomeBack(activity)
+                    EventTrackingHelper.logEvent(
+                        activity,
+                        "set_id_default_case_fail_remote"
+                    )
                 }
-                //Handle General
+
+                timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
+                initRemoteConfig = true
+                continuation.resume(Unit) // resume ngay
                 Log.d(
                     TAG,
-                    "show_all_ads = ${
-                        RemoteConfigHelper.getInstance()
-                            .get_config(activity, RemoteConfigHelper.show_all_ads)
-                    }"
+                    "initRemoteConfig: END using SharedPreferences cache - ${timeInitRemoteConfig/1000}"
                 )
-                Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance()
-                    .get_config(activity, RemoteConfigHelper.show_all_ads)
-                Admob.getInstance().setTimeInterval(
-                    RemoteConfigHelper.getInstance().get_config_long(
-                        activity,
-                        RemoteConfigHelper.interval_between_interstitial
-                    ) * 1000, true
-                )
-                Admob.getInstance().setTimeIntervalFromStart(
-                    RemoteConfigHelper.getInstance().get_config_long(
-                        activity,
-                        RemoteConfigHelper.interval_interstitial_from_start
-                    ) * 1000
-                )
-                timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
-                if (!isResumed) {
-                    isResumed = true
-                    continuation.resume(Unit)
-                    initRemoteConfig = true
-                    Log.d(TAG, "initRemoteConfig.")
+                // Fetch ngầm để update SP cho session sau
+                CoroutineScope(Dispatchers.Main).launch {
+                    RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
+                        Log.d(TAG, "initRemoteConfig: background fetch done, isSuccess=$it")
+                    }
+                }
+            } else {
+                Log.d(TAG, "initRemoteConfig: first time, fetching from Firebase")
+                var isResumed = false
+                RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
+                    if (isSuccess) {
+                        prefs?.edit()?.putBoolean(PREF_REMOTE_FETCHED_FLAG, true)?.apply()
+                    }
+                    //Handle remote config id ads
+                    if (isUseIdAdsFromRemoteConfig && !isSetId) {
+                        val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance()
+                            .get_config_string(activity, RemoteConfigHelper.id_ads)
+                        if (jsonIdAdsFromRemoteConfig.contains("app_id") && isSuccess) { //get id ads from remote config successfully
+                            AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
+                            AdmobApi.getInstance()
+                                .convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
+                            isSetId = true
+                            Log.d(
+                                TAG,
+                                "Set id ads from remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}"
+                            )
+                            EventTrackingHelper.logEvent(activity, "set_id_remote_config")
+                        } else {
+                            AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
+                            AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
+                            isSetId = true
+                            Log.d(
+                                TAG,
+                                "Set id ads default case fail remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}"
+                            )
+                            EventTrackingHelper.logEvent(
+                                activity,
+                                "set_id_default_case_fail_remote"
+                            )
+                        }
+                        initWelcomeBack(activity)//17.09.2025
+                    }
+                    //Handle General
+                    Log.d(
+                        TAG,
+                        "show_all_ads = ${
+                            RemoteConfigHelper.getInstance()
+                                .get_config(activity, RemoteConfigHelper.show_all_ads)
+                        }"
+                    )
+                    Admob.getInstance().showAllAds = RemoteConfigHelper.getInstance()
+                        .get_config(activity, RemoteConfigHelper.show_all_ads)
+                    Admob.getInstance().setTimeInterval(
+                        RemoteConfigHelper.getInstance().get_config_long(
+                            activity,
+                            RemoteConfigHelper.interval_between_interstitial
+                        ) * 1000, true
+                    )
+                    Admob.getInstance().setTimeIntervalFromStart(
+                        RemoteConfigHelper.getInstance().get_config_long(
+                            activity,
+                            RemoteConfigHelper.interval_interstitial_from_start
+                        ) * 1000
+                    )
+                    timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
+                    if (!isResumed) {
+                        isResumed = true
+                        continuation.resume(Unit)
+                        initRemoteConfig = true
+                        Log.d(TAG, "initRemoteConfig. time - ${timeInitRemoteConfig / 1000}")
+                    }
+                    Log.d(
+                        TAG,
+                        "initRemoteConfig: END first time, fetching from Firebase - ${timeInitRemoteConfig/1000}"
+                    )
+
                 }
             }
         }
@@ -862,26 +936,82 @@ class AsyncSplash {
         }
 
     private var timeInitAdmobApi = 0L
+    private val PREF_CACHED_AD_IDS = "cached_ad_ids"
     private suspend fun initAdmobApi(activity: AppCompatActivity?) =
         suspendCoroutine<Unit> { continuation ->
             if (!isUseIdAdsFromRemoteConfig) {
                 val startTimeInitAdmobApi = System.currentTimeMillis()
                 AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
                 AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
-                AdmobApi.getInstance().init(activity, linkServer, appId, object : ApiCallback() {
-                    private var isResumed = false
-                    override fun onReady() {
-                        super.onReady()
-                        initWelcomeBack(activity)
-                        if (!isResumed) {
-                            isResumed = true
-                            continuation.resume(Unit)
-                            initAdmobApi = true
-                            Log.d(TAG, "initAdmobApi.")
+
+                val prefs = activity?.getSharedPreferences("MY_PRE", Context.MODE_PRIVATE)
+                val cachedJson = prefs?.getString(PREF_CACHED_AD_IDS, "") ?: ""
+
+                Log.d(TAG, "initAdmobApi: cachedJson.isNotEmpty() = ${cachedJson.isNotEmpty()}")
+                if (cachedJson.isNotEmpty()) {
+                    Log.d(TAG, "initAdmobApi: using cache id Ads")
+
+                    AdmobApi.getInstance().convertJsonIdAdsDefaultToList(cachedJson)
+                    initWelcomeBack(activity)
+                    initAdmobApi = true
+                    timeInitAdmobApi = System.currentTimeMillis() - startTimeInitAdmobApi
+                    continuation.resume(Unit)
+                    Log.d(TAG, "initAdmobApi: END using cache id Ads - ${timeInitAdmobApi/1000}")
+
+
+                    // Refresh ngầm cho session sau
+                    CoroutineScope(Dispatchers.IO).launch {
+                        try {
+                            withContext(Dispatchers.Main) {
+                                AdmobApi.getInstance().refreshCacheOnly(
+                                    activity,
+                                    linkServer,
+                                    appId,
+                                    object : ApiCallback() {
+                                        override fun onReady() {
+                                            super.onReady()
+                                            val newJson = AdmobApi.getInstance().jsonIdAdsDefault
+                                            if (newJson.isNotEmpty()) {
+                                                prefs?.edit()
+                                                    ?.putString(PREF_CACHED_AD_IDS, newJson)
+                                                    ?.apply()
+                                                Log.d(TAG, "initAdmobApi: background cache update")
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+                        } catch (e: Exception) {
+                            Log.d(TAG, "initAdmobApi: background refresh failed - ${e.message}")
                         }
                     }
-                })
-                timeInitAdmobApi = System.currentTimeMillis() - startTimeInitAdmobApi
+                } else {
+                    Log.d(TAG, "initAdmobApi: first time, init ads")
+
+                    AdmobApi.getInstance()
+                        .init(activity, linkServer, appId, object : ApiCallback() {
+                            private var isResumed = false
+                            override fun onReady() {
+                                super.onReady()
+                                //save cached json id
+                                val json = AdmobApi.getInstance().jsonIdAdsDefault
+                                if (json.isNotEmpty()) {
+                                    prefs?.edit()?.putString(PREF_CACHED_AD_IDS, json)?.apply()
+                                    Log.d(TAG, "initAdmobApi: cache saved")
+                                }
+
+                                initWelcomeBack(activity)
+                                if (!isResumed) {
+                                    isResumed = true
+                                    continuation.resume(Unit)
+                                    initAdmobApi = true
+                                    Log.d(TAG, "initAdmobApi.")
+                                }
+                            }
+                        })
+                    timeInitAdmobApi = System.currentTimeMillis() - startTimeInitAdmobApi
+                    Log.d(TAG, "initAdmobApi:END first time, init ads - ${timeInitAdmobApi/1000}")
+                }
             } else {
                 continuation.resume(Unit)
             }
@@ -1009,7 +1139,7 @@ class AsyncSplash {
         }
     }
 
-    private fun loadAdPreloadResume(){
+    private fun loadAdPreloadResume() {
         if (isUseAdPreloading) {
             val listIdResume = mutableListOf<String>()
             if (keyAdsOpenResume.isNotEmpty()) {
@@ -1118,6 +1248,9 @@ class AsyncSplash {
             bundle
         )
         if (!isTimeout && !isNoInternetAction) {
+            val time = (System.currentTimeMillis() - timeStartSplash) / 1000
+            Log.d(TAG, "----------")
+            Log.d(TAG, "showAdsSplash: Time show Ads = $time")
             adsSplash?.showAdsSplashApi(
                 activity,
                 appOpenCallback,

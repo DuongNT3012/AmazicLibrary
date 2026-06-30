@@ -266,6 +266,65 @@ public class AdmobApi {
         }
     }
 
+    public void refreshCacheOnly(Context context, String linkServerRelease, String AppID, ApiCallback callBack) {
+        if (!NetworkUtil.isNetworkActive(context)) return;
+
+        String linkServerTemp = linkServer;
+        String appIDTemp = appIDRelease;
+        if (linkServerRelease != null && AppID != null) {
+            if (!linkServerRelease.trim().equals("")
+                    && (linkServerRelease.contains("http://")
+                    || linkServerRelease.contains("https://"))) {
+                linkServerTemp = linkServerRelease.trim();
+                appIDTemp = AppID.trim();
+            }
+        }
+
+        String packageName = context.getPackageName();
+        String baseURL = linkServerTemp + "/api/";
+        ApiService tempApiService = new Retrofit.Builder()
+                .baseUrl(baseURL)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build()
+                .create(ApiService.class);
+
+        String appID_package = appIDTemp + "+" + packageName;
+        Log.d(TAG, "refreshCacheOnly: baseURL = " + baseURL +" , appID_package =" + appID_package);
+
+        tempApiService.callAds(appID_package).enqueue(new Callback<List<AdsModel>>() {
+            @Override
+            public void onResponse(@NonNull Call<List<AdsModel>> call,
+                                   @NonNull Response<List<AdsModel>> response) {
+                Log.d(TAG, "refreshCacheOnly: response.body() - " + response.body());
+
+                if (response.body() != null && !response.body().isEmpty()) {
+                    // Build lại JSON từ response để lưu cache
+                    // Không đụng vào listAds đang dùng
+                    StringBuilder sb = new StringBuilder("[");
+                    List<AdsModel> list = response.body();
+                    for (int i = 0; i < list.size(); i++) {
+                        AdsModel ads = list.get(i);
+                        sb.append("{")
+                                .append("\"name\":\"").append(ads.getName()).append("\",")
+                                .append("\"ads_id\":\"").append(ads.getAds_id()).append("\"")
+                                .append("}");
+                        if (i < list.size() - 1) sb.append(",");
+                    }
+                    sb.append("]");
+                    jsonIdAdsDefault = sb.toString();
+                    callBack.onReady();
+                    Log.d(TAG, "refreshCacheOnly: success - " + jsonIdAdsDefault);
+                }
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<List<AdsModel>> call, @NonNull Throwable t) {
+                Log.d(TAG, "refreshCacheOnly: failed - " + t.getMessage());
+                // Không làm gì, giữ cache cũ
+            }
+        });
+    }
+
     public void loadOpenAppAdSplashFloor(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback) {
         AppOpenManager.getInstance().loadAndShowAppOpenResumeSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
     }
@@ -290,11 +349,11 @@ public class AdmobApi {
         Admob.getInstance().loadAndShowInterAdSplashLoop(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
     }
 
-    public void loadAndShowInterAdPreloadingSplash(AppCompatActivity activity, String adsKey, InterCallback interCallback, String adsKeyNative, String remoteKeyNative){
+    public void loadAndShowInterAdPreloadingSplash(AppCompatActivity activity, String adsKey, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Admob.getInstance().loadAndShowInterAdPreloadingSplashDelay(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, adsKeyNative, remoteKeyNative);
     }
 
-    public void loadAndShowAppOpenAdPreloadingSplash(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback){
-        AppOpenManager.getInstance().loadAndShowAdPreloadingAppOpenSplash(activity,AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
+    public void loadAndShowAppOpenAdPreloadingSplash(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback) {
+        AppOpenManager.getInstance().loadAndShowAdPreloadingAppOpenSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
     }
 }

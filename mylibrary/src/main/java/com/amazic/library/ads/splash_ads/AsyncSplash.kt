@@ -94,6 +94,7 @@ class AsyncSplash {
     private var isShowNativeAfterInter = false
 
     private var isUseNativeSplash = false
+    private var isUseCacheDataCallSplash = false
 
     //1.end
     //2.use for log event
@@ -105,8 +106,9 @@ class AsyncSplash {
     private var keyAdsOpenSplash = "open_splash"
     private var keyAdsOpenResume = ""
 
-    //key native after inter
-    private var keyNativeAfterInter = "native_after_inter"
+    //key native after inter splash
+    private var keyNativeAfterInterSplash = "native_after_inter"
+    private var numberNativeAfterInterSplash = 1
 
     //
     private var isUseAppUpdateManager = false
@@ -243,9 +245,11 @@ class AsyncSplash {
         this.isSetId = false
         this.keyIntervalBetweenInterstitial = "interval_between_interstitial"
         this.keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
-        this.keyNativeAfterInter = "native_after_inter"
+        this.keyNativeAfterInterSplash = "native_after_inter"
+        this.numberNativeAfterInterSplash = 1
         this.isShowNativeAfterInter = false
         this.isUseNativeSplash = false
+        this.isUseCacheDataCallSplash = false
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
@@ -308,8 +312,16 @@ class AsyncSplash {
         return this.keyAdsOpenResume
     }
 
-    fun setKeyNativeAfterInter(key: String) {
-        this.keyNativeAfterInter = key
+    fun setKeyNativeAfterInterSplash(key: String) {
+        this.keyNativeAfterInterSplash = key
+    }
+
+    fun setNumberNativeAfterInterSplash(count: Int){
+        this.numberNativeAfterInterSplash = count
+    }
+
+    fun getNumberNativeAfterInterSplash(): Int{
+        return this.numberNativeAfterInterSplash
     }
 
     fun setAsyncSplashAds() { //Show splash ads without wait any thing
@@ -364,6 +376,14 @@ class AsyncSplash {
 
     fun getUseNativeSplash(): Boolean {
         return this.isUseNativeSplash
+    }
+
+    fun setUseCacheDataCallSplash(isUse: Boolean){
+        this.isUseCacheDataCallSplash = isUse
+    }
+
+    fun getUseCacheDataCallSplash(): Boolean{
+        return this.isUseCacheDataCallSplash
     }
 
     fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
@@ -755,7 +775,9 @@ class AsyncSplash {
                 }
             }, timeOutCallIdRemoteConfig)
 
-            if (hasBeenFetchedBefore) {
+            Log.d(TAG, "check initRemoteConfig: hasBeenFetchedBefore = $hasBeenFetchedBefore, isUseCacheDataCallSplash = $isUseCacheDataCallSplash")
+
+            if (hasBeenFetchedBefore && isUseCacheDataCallSplash) {
                 Log.d(TAG, "initRemoteConfig: using SharedPreferences cache")
 
                 // apply config từ SP ngay (get_config đọc từ SP → instant)
@@ -809,7 +831,7 @@ class AsyncSplash {
                 Log.d(TAG, "initRemoteConfig: first time, fetching from Firebase")
                 var isResumed = false
                 RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
-                    if (isSuccess) {
+                    if (isSuccess && isUseCacheDataCallSplash) {
                         prefs?.edit()?.putBoolean(PREF_REMOTE_FETCHED_FLAG, true)?.apply()
                     }
                     //Handle remote config id ads
@@ -947,8 +969,8 @@ class AsyncSplash {
                 val prefs = activity?.getSharedPreferences("MY_PRE", Context.MODE_PRIVATE)
                 val cachedJson = prefs?.getString(PREF_CACHED_AD_IDS, "") ?: ""
 
-                Log.d(TAG, "initAdmobApi: cachedJson.isNotEmpty() = ${cachedJson.isNotEmpty()}")
-                if (cachedJson.isNotEmpty()) {
+                Log.d(TAG, "check initAdmobApi: cachedJson.isNotEmpty() = ${cachedJson.isNotEmpty()}, isUseCacheDataCallSplash = $isUseCacheDataCallSplash")
+                if (cachedJson.isNotEmpty() && isUseCacheDataCallSplash) {
                     Log.d(TAG, "initAdmobApi: using cache id Ads")
 
                     AdmobApi.getInstance().convertJsonIdAdsDefaultToList(cachedJson)
@@ -994,10 +1016,12 @@ class AsyncSplash {
                             override fun onReady() {
                                 super.onReady()
                                 //save cached json id
-                                val json = AdmobApi.getInstance().jsonIdAdsDefault
-                                if (json.isNotEmpty()) {
-                                    prefs?.edit()?.putString(PREF_CACHED_AD_IDS, json)?.apply()
-                                    Log.d(TAG, "initAdmobApi: cache saved")
+                                if(isUseCacheDataCallSplash) {
+                                    val json = AdmobApi.getInstance().jsonIdAdsDefault
+                                    if (json.isNotEmpty()) {
+                                        prefs?.edit()?.putString(PREF_CACHED_AD_IDS, json)?.apply()
+                                        Log.d(TAG, "initAdmobApi: cache saved")
+                                    }
                                 }
 
                                 initWelcomeBack(activity)
@@ -1255,8 +1279,8 @@ class AsyncSplash {
                 activity,
                 appOpenCallback,
                 interCallback,
-                keyNativeAfterInter,
-                keyNativeAfterInter
+                keyNativeAfterInterSplash,
+                keyNativeAfterInterSplash
             )
             Log.d(TAG, "showAdsSplash.")
             isShowAdsSplash = true

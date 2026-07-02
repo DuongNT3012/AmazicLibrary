@@ -10,25 +10,29 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.NativeCallback;
+import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.mylibrary.R;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NativeAfterInterManager {
     private static final String TAG = "Admob";
     public static final Map<String, NativeAd> mapNativeAdsAfterInter = new HashMap<>();
+    public static final Map<String, List<NativeAd>> mapNativeAdsAfterInterSplash = new HashMap<>();
 
     public static void preloadNativeAfterInter(Activity activity, String adsKey, String remoteKey) {
         NativeAfterInterActivity.Companion.setAdsKey(adsKey);
         NativeAfterInterActivity.Companion.setRemoteKey(remoteKey);
-        Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter - list is Empty: "+AdmobApi.getInstance().getListIDByName(adsKey).isEmpty() + ", adskey = "+mapNativeAdsAfterInter.get(adsKey));
-        if (mapNativeAdsAfterInter.get(adsKey) == null || !AdmobApi.getInstance().getListIDByName(adsKey).isEmpty()) {
-            Log.d(TAG, "NativeAfterInterManager: 1.preloadNativeAfterInter."+ AdmobApi.getInstance().getListIDByName(adsKey));
+        Log.d(TAG, "NativeAfterInterManager: preloadNativeAfterInter - list is Empty: " + AdmobApi.getInstance().getListIDByName(adsKey).isEmpty() + ", adskey = " + mapNativeAdsAfterInter.get(adsKey));
+        if (mapNativeAdsAfterInter.get(adsKey) == null && !AdmobApi.getInstance().getListIDByName(adsKey).isEmpty()) {
+            Log.d(TAG, "NativeAfterInterManager: 1.preloadNativeAfterInter." + AdmobApi.getInstance().getListIDByName(adsKey));
             Admob.getInstance().loadNativeAds(
                     activity,
                     AdmobApi.getInstance().getListIDByName(adsKey),
@@ -63,16 +67,16 @@ public class NativeAfterInterManager {
 
             AppCompatButton btnClose = adView.findViewById(R.id.btn_close);
             btnClose.setOnClickListener(view -> {
-                if(listener != null){
+                if (listener != null) {
                     listener.onClose();
                 }
             });
             fr.removeAllViews();
             fr.addView(adView);
             Admob.getInstance().populateNativeAdView(nativeAd, adView);
-        }else {
+        } else {
             Log.d(TAG, "NativeAfterInterManager: NativeAd NULL onNext");
-            if(listener != null){
+            if (listener != null) {
                 listener.onFail();
             }
         }
@@ -81,8 +85,81 @@ public class NativeAfterInterManager {
 
     }
 
+    /// NATIVE AFTER INTER SPLASH
+    public static void preloadNativeAfterInterSplash(Activity activity, String adsKey, String remoteKey) {
+        NativeAfterInterActivity.Companion.setAdsKey(adsKey);
+        NativeAfterInterActivity.Companion.setRemoteKey(remoteKey);
+
+        List<String> listId = AdmobApi.getInstance().getListIDByName(adsKey);
+        if (listId.isEmpty()) {
+            Log.d(TAG, "NativeAfterInterManager Splash: no IDs for " + adsKey);
+            return;
+        }
+
+        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeAfterInterSplash();
+        Log.d(TAG, "NativeAfterInterManager Splash: preload " + targetCount + " native ads");
+
+        // Clear list cũ
+        List<NativeAd> oldList = mapNativeAdsAfterInterSplash.get(adsKey);
+        if (oldList != null) {
+            for (NativeAd ad : oldList) ad.destroy();
+            oldList.clear();
+        }
+
+        List<NativeAd> newList = new ArrayList<>();
+        mapNativeAdsAfterInterSplash.put(adsKey, newList);
+
+        loadNativeSequentiallySplash(activity, adsKey, remoteKey, targetCount, newList, 0);
+    }
+
+    private static void loadNativeSequentiallySplash(Activity activity, String adsKey, String remoteKey, int targetCount, List<NativeAd> list, int loadedCount) {
+        if (loadedCount >= targetCount) {
+            Log.d(TAG, "NativeAfterInterManager Splash: preload done, total = " + list.size());
+            return;
+        }
+        Admob.getInstance().loadNativeAds(
+                activity,
+                AdmobApi.getInstance().getListIDByName(adsKey),
+                new NativeCallback() {
+                    @Override
+                    public void onNativeAdLoaded(NativeAd nativeAd) {
+                        super.onNativeAdLoaded(nativeAd);
+                        list.add(nativeAd);
+                        Log.d(TAG, "NativeAfterInterManager Splash: loaded " + list.size() + "/" + targetCount);
+                        loadNativeSequentiallySplash(activity, adsKey, remoteKey, targetCount, list, loadedCount + 1);
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(LoadAdError loadAdError) {
+                        super.onAdFailedToLoad(loadAdError);
+                        Log.d(TAG, "NativeAfterInterManager Splash: failed at " + loadedCount + ": " + loadAdError.getMessage());
+                        loadNativeSequentiallySplash(activity, adsKey, remoteKey, targetCount, list, loadedCount + 1);
+                    }
+                }, remoteKey
+        );
+    }
+
+    public static boolean hasNativeAfterInterSplash(String adsKey) {
+        List<NativeAd> list = mapNativeAdsAfterInterSplash.get(adsKey);
+        return list != null && !list.isEmpty();
+    }
+
+    public static void showNativeAdInFrameSplash(FrameLayout fr, NativeAd nativeAd) {
+        if (nativeAd == null) return;
+        NativeAdView adView = (NativeAdView) LayoutInflater.from(fr.getContext())
+                .inflate(R.layout.native_after_inter, fr, false);
+        // Ẩn btn_close trong layout native, dùng overlay button của activity thay thế
+        if (adView.findViewById(R.id.btn_close) != null) {
+            adView.findViewById(R.id.btn_close).setVisibility(android.view.View.GONE);
+        }
+        fr.removeAllViews();
+        fr.addView(adView);
+        Admob.getInstance().populateNativeAdView(nativeAd, adView);
+    }
+
     public interface OnCloseNativeListener {
         void onClose();
+
         void onFail();
     }
 }

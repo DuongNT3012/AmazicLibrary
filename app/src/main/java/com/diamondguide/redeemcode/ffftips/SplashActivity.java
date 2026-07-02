@@ -162,7 +162,8 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("open_splash");
-            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(false);
+            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
+            Admob.getInstance().setOpenActivityAfterShowInterAds(false);
             AsyncSplash.Companion.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");
             AsyncSplash.Companion.getInstance().setKeyIntervalInterstitialFromStart("interval_interstitial_from_start");
             AsyncSplash.Companion.getInstance().setShowBannerSplash(binding.bannerContainerView, listIdBannerSplash, "banner_splash");
@@ -174,6 +175,7 @@ public class SplashActivity extends AppCompatActivity {
                     return null;
                 }
             });
+            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
             AsyncSplash.Companion.getInstance().handleAsync(this, this,
                     LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
                         @Override

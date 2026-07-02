@@ -313,8 +313,8 @@ public class Admob {
         }
     }
 
-    public void removeHandlerRewardAds(){
-        if(handlerTimeoutReward != null && runnable != null){
+    public void removeHandlerRewardAds() {
+        if (handlerTimeoutReward != null && runnable != null) {
             handlerTimeoutReward.removeCallbacks(runnable);
             handlerTimeoutReward.removeCallbacksAndMessages(null);
         }
@@ -624,28 +624,30 @@ public class Admob {
                     // Set the ad reference to null so you don't show the ad a second time.
                     Log.d(TAG, "INTER: Ad dismissed fullscreen content. " + remoteKeyInter + " ,openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
                     interCallback.onAdDismissedFullScreenContent();
-                    if (!openActivityAfterShowInterAds) {
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                startNativeAfterInter(activity, interCallback);
-                            } else {
-                                interCallback.onNextAction();
-                            }
+//                    if (!openActivityAfterShowInterAds) {
+                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                        if (isShowNativeAfterInter) {
+                            startNativeAfterInter(activity, interCallback);
                         } else {
                             interCallback.onNextAction();
                         }
                     } else {
-                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                                if (nativeAd == null) {
-                                    interCallback.onNextAction();
-                                }
-
-                            }
+                        if (!openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
                         }
                     }
+//                    } else {
+//                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
+//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                            if (isShowNativeAfterInter) {
+//                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+//                                if (nativeAd == null) {
+//                                    interCallback.onNextAction();
+//                                }
+//
+//                            }
+//                        }
+//                    }
                     isInterOrRewardedShowing = false;
                     lastTimeDismissInter = System.currentTimeMillis();
                 }
@@ -655,28 +657,30 @@ public class Admob {
                     // Called when ad fails to show.
                     Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + remoteKeyInter);
                     interCallback.onAdFailedToShowFullScreenContent();
-                    if (!openActivityAfterShowInterAds) {
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                startNativeAfterInter(activity, interCallback);
-                            } else {
-                                interCallback.onNextAction();
-                            }
+//                    if (!openActivityAfterShowInterAds) {
+                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                        if (isShowNativeAfterInter) {
+                            startNativeAfterInter(activity, interCallback);
                         } else {
                             interCallback.onNextAction();
                         }
                     } else {
-                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                                if (nativeAd == null) {
-                                    interCallback.onNextAction();
-                                }
-
-                            }
+                        if (!openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
                         }
                     }
+//                    } else {
+//                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
+//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                            if (isShowNativeAfterInter) {
+//                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+//                                if (nativeAd == null) {
+//                                    interCallback.onNextAction();
+//                                }
+//
+//                            }
+//                        }
+//                    }
                     isInterOrRewardedShowing = false;
                     removeHandlerInterAds();
                 }
@@ -701,11 +705,11 @@ public class Admob {
             isInterOrRewardedShowing = true;
             if (openActivityAfterShowInterAds) {
                 if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                    if (isShowNativeAfterInter) {
-                        startNativeAfterInter(activity, interCallback);
-                    } else {
-                        interCallback.onNextAction();
-                    }
+//                    if (isShowNativeAfterInter) {
+//                        startNativeAfterInter(activity, interCallback);
+//                    } else {
+//                        interCallback.onNextAction();
+//                    }
                 } else {
                     interCallback.onNextAction();
                 }
@@ -717,6 +721,14 @@ public class Admob {
 
     private void startNativeAfterInter(Activity activity, InterCallback interCallback) {
         NativeAfterInterActivity.Companion.setInterCallback(interCallback);
+        NativeAfterInterActivity.Companion.setSplashMode(false);
+        Intent intent = new Intent(activity, NativeAfterInterActivity.class);
+        activity.startActivity(intent);
+    }
+
+    private void startNativeAfterInterSplash(Activity activity, InterCallback interCallback) {
+        NativeAfterInterActivity.Companion.setInterCallback(interCallback);
+        NativeAfterInterActivity.Companion.setSplashMode(true);
         Intent intent = new Intent(activity, NativeAfterInterActivity.class);
         activity.startActivity(intent);
     }
@@ -833,28 +845,30 @@ public class Admob {
 
                     Log.d(TAG, "INTER Ad Preload: onAdDismissedFullScreenContent - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
 
-                    if (!openActivityAfterShowInterAds) {
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                startNativeAfterInter(activity, interCallback);
-                            } else {
-                                interCallback.onNextAction();
-                            }
+//                    if (!openActivityAfterShowInterAds) {
+                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                        if (isShowNativeAfterInter) {
+                            startNativeAfterInter(activity, interCallback);
                         } else {
                             interCallback.onNextAction();
                         }
                     } else {
-                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                                if (nativeAd == null) {
-                                    interCallback.onNextAction();
-                                }
-
-                            }
+                        if (!openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
                         }
                     }
+//                    } else {
+//                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
+//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                            if (isShowNativeAfterInter) {
+//                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+//                                if (nativeAd == null) {
+//                                    interCallback.onNextAction();
+//                                }
+//
+//                            }
+//                        }
+//                    }
                     isInterOrRewardedShowing = false;
                     lastTimeDismissInter = System.currentTimeMillis();
                 }
@@ -866,28 +880,30 @@ public class Admob {
                     interCallback.onAdFailedToShowFullScreenContent();
                     Log.d(TAG, "INTER Ad Preload: onAdFailedToShowFullScreenContent - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
 
-                    if (!openActivityAfterShowInterAds) {
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                startNativeAfterInter(activity, interCallback);
-                            } else {
-                                interCallback.onNextAction();
-                            }
+//                    if (!openActivityAfterShowInterAds) {
+                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                        if (isShowNativeAfterInter) {
+                            startNativeAfterInter(activity, interCallback);
                         } else {
                             interCallback.onNextAction();
                         }
                     } else {
-                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isShowNativeAfterInter) {
-                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                                if (nativeAd == null) {
-                                    interCallback.onNextAction();
-                                }
-
-                            }
+                        if (!openActivityAfterShowInterAds) {
+                            interCallback.onNextAction();
                         }
                     }
+//                    } else {
+//                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
+//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                            if (isShowNativeAfterInter) {
+//                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
+//                                if (nativeAd == null) {
+//                                    interCallback.onNextAction();
+//                                }
+//
+//                            }
+//                        }
+//                    }
                     if (!activity.isFinishing() && !activity.isDestroyed() && isShowLoading && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
                     }
@@ -920,11 +936,11 @@ public class Admob {
 
             if (openActivityAfterShowInterAds) {
                 if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                    if (isShowNativeAfterInter) {
-                        startNativeAfterInter(activity, interCallback);
-                    } else {
-                        interCallback.onNextAction();
-                    }
+//                    if (isShowNativeAfterInter) {
+//                        startNativeAfterInter(activity, interCallback);
+//                    } else {
+//                        interCallback.onNextAction();
+//                    }
                 } else {
                     interCallback.onNextAction();
                 }
@@ -1045,7 +1061,7 @@ public class Admob {
                     }
 
                     if (isFirstLoadAd.getAndSet(false)) {
-                        Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - getShowNativeAfterInter = " +AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
+                        Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
                         if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                             if (isShowNativeAfterInter) {
                                 Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - show Native after inter");
@@ -1092,7 +1108,9 @@ public class Admob {
 
     public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "AdsSplash Inter preload: Bắt đầu tiến trình Load And Show Inter Delay ads...");
-        NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative);
+        new Handler(Looper.getMainLooper()).post(() ->
+                NativeAfterInterManager.preloadNativeAfterInterSplash(activity, adsKeyNative, remoteKeyNative)
+        );
         startTime = System.currentTimeMillis();
 
         boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
@@ -1113,11 +1131,10 @@ public class Admob {
                         if (isEmptyListNativeAfterInter) {
                             interCallback.onNextAction();
                         } else {
-                            NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                            if (nativeAd == null) {
+                            if (!NativeAfterInterManager.hasNativeAfterInterSplash(adsKeyNative)) {
                                 interCallback.onNextAction();
                             } else {
-                                startNativeAfterInter(activity, interCallback);
+                                startNativeAfterInterSplash(activity, interCallback);
                             }
                         }
                     } else {
@@ -1132,7 +1149,7 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //delay ads splash
-        if(AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
+        if (AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
             timerDelayRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -1141,7 +1158,7 @@ public class Admob {
                     checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
                 }
             };
-        }else{
+        } else {
             Log.d(TAG, "AdsSplash Inter preload: không dùng chờ 7 giây đếm ngược.");
             isTimerDelayFinished = true;
         }
@@ -1268,11 +1285,10 @@ public class Admob {
                     if (isEmptyListNativeAfterInter) {
                         interCallback.onNextAction();
                     } else {
-                        NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                        if (nativeAd == null) {
+                        if (!NativeAfterInterManager.hasNativeAfterInterSplash(adsKeyNative)) {
                             interCallback.onNextAction();
                         } else {
-                            startNativeAfterInter(activity, interCallback);
+                            startNativeAfterInterSplash(activity, interCallback);
                         }
                     }
                 } else {
@@ -1315,25 +1331,24 @@ public class Admob {
                         AppOpenManager.getInstance().setEnableResume(true);
                         Log.d(TAG, "AdsSplash Inter preload: start check openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
 
-                        if (!openActivityAfterShowInterAds) {
-                            Log.d(TAG, "AdsSplash Inter preload: start check getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
-                            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                                Log.d(TAG, "AdsSplash Inter preload: start check isConfigShowNativeAfterInter = " + isConfigShowNativeAfterInter + ", isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
-                                if (isConfigShowNativeAfterInter) {
-                                    if (isEmptyListNativeAfterInter) {
+                        Log.d(TAG, "AdsSplash Inter preload: start check getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
+                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            Log.d(TAG, "AdsSplash Inter preload: start check isConfigShowNativeAfterInter = " + isConfigShowNativeAfterInter + ", isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
+                            if (isConfigShowNativeAfterInter) {
+                                if (isEmptyListNativeAfterInter) {
+                                    interCallback.onNextAction();
+                                } else {
+                                    if (!NativeAfterInterManager.hasNativeAfterInterSplash(adsKeyNative)) {
                                         interCallback.onNextAction();
                                     } else {
-                                        NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                                        if (nativeAd == null) {
-                                            interCallback.onNextAction();
-                                        } else {
-                                            startNativeAfterInter(activity, interCallback);
-                                        }
+                                        startNativeAfterInterSplash(activity, interCallback);
                                     }
-                                } else {
-                                    interCallback.onNextAction();
                                 }
                             } else {
+                                interCallback.onNextAction();
+                            }
+                        } else {
+                            if (!openActivityAfterShowInterAds) {
                                 interCallback.onNextAction();
                             }
                         }
@@ -1347,23 +1362,22 @@ public class Admob {
                         //end increase splash open
                         Log.e(TAG, "AdsSplash Inter preload: Ad failed to show fullscreen content.");
                         interCallback.onAdFailedToShowFullScreenContent();
-                        if (isSplashResume && !openActivityAfterShowInterAds) {
-                            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                                if (isConfigShowNativeAfterInter) {
-                                    if (isEmptyListNativeAfterInter) {
+                        if (isSplashResume || AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                            if (isConfigShowNativeAfterInter) {
+                                if (isEmptyListNativeAfterInter) {
+                                    interCallback.onNextAction();
+                                } else {
+                                    if (!NativeAfterInterManager.hasNativeAfterInterSplash(adsKeyNative)) {
                                         interCallback.onNextAction();
                                     } else {
-                                        NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                                        if (nativeAd == null) {
-                                            interCallback.onNextAction();
-                                        } else {
-                                            startNativeAfterInter(activity, interCallback);
-                                        }
+                                        startNativeAfterInterSplash(activity, interCallback);
                                     }
-                                } else {
-                                    interCallback.onNextAction();
                                 }
                             } else {
+                                interCallback.onNextAction();
+                            }
+                        } else {
+                            if (!openActivityAfterShowInterAds) {
                                 interCallback.onNextAction();
                             }
                         }
@@ -1417,28 +1431,10 @@ public class Admob {
                     }
                     isInterOrRewardedShowing = true;
                     AppOpenManager.getInstance().setEnableResume(false);
+
                     if (openActivityAfterShowInterAds) {
                         Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: openActivityAfterShowInterAds = true, onNextAction");
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
-                            if (isConfigShowNativeAfterInter) {
-                                if (isEmptyListNativeAfterInter) {
-                                    Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
-                                    interCallback.onNextAction();
-                                } else {
-                                    NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
-                                    if (nativeAd == null) {
-                                        Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: NATIVE AD NULL NOT Show Native After Inter");
-                                        interCallback.onNextAction();
-                                    } else {
-                                        Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: show Native After Inter");
-                                        startNativeAfterInter(activity, interCallback);
-                                    }
-                                }
-                            } else {
-                                Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: onNextAction");
-                                interCallback.onNextAction();
-                            }
-                        } else {
+                        if (!AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                             Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: onNextAction init set off Native After Inter");
                             interCallback.onNextAction();
                         }
@@ -2211,7 +2207,7 @@ public class Admob {
                         //Tracking revenue
                         interstitialAd.setOnPaidEventListener(adValue -> {
                             //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0),"inter_splash");
+                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), "inter_splash");
                         });
                         // The mInterstitialAd reference will be null until
                         // an ad is loaded.
@@ -2237,7 +2233,9 @@ public class Admob {
 
     public void loadAndShowInterAdSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "Bắt đầu tiến trình Load And Show Inter Delay ads...");
-        NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative);
+        new Handler(Looper.getMainLooper()).post(() ->
+                NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative)
+        );
         startTime = System.currentTimeMillis();
 
         boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
@@ -2272,7 +2270,7 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //delay ads splash
-        if(AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
+        if (AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
             timerDelayRunnable = new Runnable() {
                 @Override
                 public void run() {
@@ -2281,7 +2279,7 @@ public class Admob {
                     checkConditionAdsSplash(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
                 }
             };
-        }else {
+        } else {
             Log.d(TAG, "Không dùng chờ 7 giây đếm ngược.");
             isTimerDelayFinished = true;
         }
@@ -4427,7 +4425,7 @@ public class Admob {
         //timeout
         isLoadRewardAdsIdTimeout = false;
         runnable = () -> {
-            Log.d(TAG, "REWARD Ad Preload - timeout: "+remoteKey);
+            Log.d(TAG, "REWARD Ad Preload - timeout: " + remoteKey);
             EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.reward_ads_id_timeout, "remoteKey", remoteKey);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();

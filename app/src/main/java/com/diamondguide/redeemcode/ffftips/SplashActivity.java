@@ -141,7 +141,6 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
             AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
-            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
 //            AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
@@ -162,7 +161,6 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("open_splash");
-            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
             Admob.getInstance().setOpenActivityAfterShowInterAds(false);
             AsyncSplash.Companion.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");
             AsyncSplash.Companion.getInstance().setKeyIntervalInterstitialFromStart("interval_interstitial_from_start");
@@ -175,7 +173,22 @@ public class SplashActivity extends AppCompatActivity {
                     return null;
                 }
             });
+
+            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
+            /// show native after inter count
+//            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
+//            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
+            /// end
+
+            /// use cache id, config
+//            AsyncSplash.Companion.getInstance().setUseCacheDataCallSplash(true);
+            /// end
+
+            /// change open, inter splash -> native full screen
+            AsyncSplash.Companion.getInstance().setUseNativeFullSplash(true);
             AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
+            /// end
+
             AsyncSplash.Companion.getInstance().handleAsync(this, this,
                     LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
                         @Override

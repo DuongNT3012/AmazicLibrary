@@ -94,6 +94,7 @@ class AsyncSplash {
     private var isShowNativeAfterInter = false
 
     private var isUseNativeSplash = false
+    private var isUseNativeFullSplash = false
     private var isUseCacheDataCallSplash = false
 
     //1.end
@@ -249,6 +250,7 @@ class AsyncSplash {
         this.numberNativeAfterInterSplash = 1
         this.isShowNativeAfterInter = false
         this.isUseNativeSplash = false
+        this.isUseNativeFullSplash = false
         this.isUseCacheDataCallSplash = false
     }
 
@@ -376,6 +378,14 @@ class AsyncSplash {
 
     fun getUseNativeSplash(): Boolean {
         return this.isUseNativeSplash
+    }
+
+    fun setUseNativeFullSplash(isUse: Boolean) {
+        this.isUseNativeFullSplash = isUse
+    }
+
+    fun getUseNativeFullSplash(): Boolean {
+        return this.isUseNativeFullSplash
     }
 
     fun setUseCacheDataCallSplash(isUse: Boolean){

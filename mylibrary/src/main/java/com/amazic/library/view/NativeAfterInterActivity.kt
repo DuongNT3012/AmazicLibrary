@@ -98,6 +98,9 @@ class NativeAfterInterActivity : AppCompatActivity() {
     ///splash
     private fun initSplashMode() {
         val adList = NativeAfterInterManager.mapNativeAdsAfterInterSplash[adsKey]
+        Log.d("Admob", "initSplashMode: adsKey='$adsKey'" +
+                ", mapKeys=${NativeAfterInterManager.mapNativeAdsAfterInterSplash.keys}" +
+                ", mapListSize=${NativeAfterInterManager.mapNativeAdsAfterInterSplash[adsKey]?.size}")
         if (adList.isNullOrEmpty()) {
             Log.d("Admob", "NativeAfterInter Splash: no ads → onNextAction")
             interCallback?.onNextAction()

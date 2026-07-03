@@ -356,4 +356,8 @@ public class AdmobApi {
     public void loadAndShowAppOpenAdPreloadingSplash(AppCompatActivity activity, String adsKey, AppOpenCallback appOpenCallback) {
         AppOpenManager.getInstance().loadAndShowAdPreloadingAppOpenSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), appOpenCallback);
     }
+
+    public void loadAndShowNativeFullSplash(AppCompatActivity activity, String adsKeyNative, InterCallback interCallback, String remoteKeyNative) {
+        Admob.getInstance().loadAndShowNativeFullSplashCount(activity, AdmobApi.getInstance().getListIDByName(adsKeyNative), interCallback, adsKeyNative, remoteKeyNative);
+    }
 }

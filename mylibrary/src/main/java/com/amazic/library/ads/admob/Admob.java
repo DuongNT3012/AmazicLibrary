@@ -1106,6 +1106,70 @@ public class Admob {
 
     }
 
+    public void loadAndShowNativeFullSplashCount(AppCompatActivity activity, List<String> listIdNative, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
+        long nativeFullSplashStartTime = System.currentTimeMillis();
+        Log.d(TAG, "AdsSplash Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash...");
+
+        // Check basic conditions
+        if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
+            Log.d(TAG, "AdsSplash Native Full Splash: condition failed → onNextAction");
+            if (interCallback != null) interCallback.onNextAction();
+            return;
+        }
+
+        boolean isConfigShowNative = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
+        if (!isConfigShowNative) {
+            Log.d(TAG, "AdsSplash Native Full Splash: remote config OFF → onNextAction");
+            if (interCallback != null) interCallback.onNextAction();
+            return;
+        }
+
+        if (listIdNative == null || listIdNative.isEmpty()) {
+            Log.d(TAG, "AdsSplash Native Full Splash: no IDs → onNextAction");
+            if (interCallback != null) interCallback.onNextAction();
+            return;
+        }
+
+        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeAfterInterSplash();
+
+        // Timeout handler
+        Handler timeoutHandler = new Handler(Looper.getMainLooper());
+        boolean[] hasNavigated = {false};
+        Runnable timeoutRunnable = () -> {
+            if (!hasNavigated[0]) {
+                hasNavigated[0] = true;
+                Log.d(TAG, "AdsSplash Native Full Splash: timeout → onNextAction");
+                if (interCallback != null) interCallback.onNextAction();
+            }
+        };
+        timeoutHandler.postDelayed(timeoutRunnable, timeOutCallSplashAds);
+
+        NativeAfterInterManager.loadNativeFullSplash(
+                activity, adsKeyNative, remoteKeyNative, targetCount,
+                () -> {
+                    // First native loaded → navigate immediately
+                    if (!hasNavigated[0]) {
+                        hasNavigated[0] = true;
+                        timeoutHandler.removeCallbacks(timeoutRunnable);
+                        long elapsed = System.currentTimeMillis() - nativeFullSplashStartTime;
+                        Log.d(TAG, "AdsSplash Native Full Splash: first loaded → startNativeAfterInterSplash | time=" + elapsed + "ms (" + (elapsed / 1000f) + "s)");
+                        NativeAfterInterActivity.Companion.setAdsKey(adsKeyNative);
+                        NativeAfterInterActivity.Companion.setRemoteKey(remoteKeyNative);
+                        startNativeAfterInterSplash(activity, interCallback);
+                    }
+                },
+                () -> {
+                    // All slots failed, nothing loaded
+                    if (!hasNavigated[0]) {
+                        hasNavigated[0] = true;
+                        timeoutHandler.removeCallbacks(timeoutRunnable);
+                        Log.d(TAG, "AdsSplash Native Full Splash: all failed → onNextAction");
+                        if (interCallback != null) interCallback.onNextAction();
+                    }
+                }
+        );
+    }
+
     public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "AdsSplash Inter preload: Bắt đầu tiến trình Load And Show Inter Delay ads...");
         new Handler(Looper.getMainLooper()).post(() ->

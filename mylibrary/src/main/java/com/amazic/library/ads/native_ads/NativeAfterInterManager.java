@@ -17,6 +17,9 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -155,6 +158,63 @@ public class NativeAfterInterManager {
         fr.removeAllViews();
         fr.addView(adView);
         Admob.getInstance().populateNativeAdView(nativeAd, adView);
+    }
+
+    /// NATIVE FULL SPLASH (thay thế hoàn toàn inter_splash)
+    public static void loadNativeFullSplash(Activity activity, String adsKey, String remoteKey, int targetCount, Runnable onFirstLoaded, Runnable onAllFailed) {
+        NativeAfterInterActivity.Companion.setAdsKey(adsKey);
+        NativeAfterInterActivity.Companion.setRemoteKey(remoteKey);
+
+        // Clear old list
+        List<NativeAd> oldList = mapNativeAdsAfterInterSplash.get(adsKey);
+        if (oldList != null) {
+            for (NativeAd ad : oldList) ad.destroy();
+            oldList.clear();
+        }
+        List<NativeAd> newList = new ArrayList<>();
+        mapNativeAdsAfterInterSplash.put(adsKey, newList);
+
+        Log.d(TAG, "NativeFullSplash: start load " + targetCount + " native ads for key=" + adsKey);
+        loadNativeFullSplashSequentially(activity, adsKey, remoteKey, targetCount, newList, 0,
+                new boolean[]{false}, new boolean[]{false}, onFirstLoaded, onAllFailed);
+    }
+
+    private static void loadNativeFullSplashSequentially(Activity activity, String adsKey, String remoteKey, int targetCount, List<NativeAd> list, int loadedCount, boolean[] hasNotifiedFirst, boolean[] hasNotifiedFail, Runnable onFirstLoaded, Runnable onAllFailed) {
+        if (loadedCount >= targetCount) {
+            Log.d(TAG, "NativeFullSplash: loading done, total loaded = " + list.size());
+            if (list.isEmpty() && !hasNotifiedFail[0]) {
+                hasNotifiedFail[0] = true;
+                new Handler(Looper.getMainLooper()).post(onAllFailed);
+            }
+            return;
+        }
+        Admob.getInstance().loadNativeAds(activity, AdmobApi.getInstance().getListIDByName(adsKey),
+                new NativeCallback() {
+                    @Override
+                    public void onNativeAdLoaded(NativeAd nativeAd) {
+                        super.onNativeAdLoaded(nativeAd);
+                        list.add(nativeAd);
+                        Log.d(TAG, "NativeFullSplash: loaded " + list.size() + "/" + targetCount);
+                        if (!hasNotifiedFirst[0]) {
+                            hasNotifiedFirst[0] = true;
+                            List<NativeAd> mapList = mapNativeAdsAfterInterSplash.get(adsKey);
+                            Log.d(TAG, "NativeFullSplash: [before navigate] adsKey='" + adsKey
+                                    + "', list.size=" + list.size()
+                                    + ", mapHasKey=" + mapNativeAdsAfterInterSplash.containsKey(adsKey)
+                                    + ", mapListSize=" + (mapList != null ? mapList.size() : "null")
+                                    + ", isSameRef=" + (mapList == list));
+                            new Handler(Looper.getMainLooper()).post(onFirstLoaded);
+                        }
+                        loadNativeFullSplashSequentially(activity, adsKey, remoteKey, targetCount, list, loadedCount + 1, hasNotifiedFirst, hasNotifiedFail, onFirstLoaded, onAllFailed);
+                    }
+
+                    @Override
+                    public void onAdFailedToLoad(LoadAdError loadAdError) {
+                        super.onAdFailedToLoad(loadAdError);
+                        Log.d(TAG, "NativeFullSplash: fail at slot " + loadedCount + ": " + loadAdError.getMessage());
+                        loadNativeFullSplashSequentially(activity, adsKey, remoteKey, targetCount, list, loadedCount + 1, hasNotifiedFirst, hasNotifiedFail, onFirstLoaded, onAllFailed);
+                    }
+                }, remoteKey);
     }
 
     public interface OnCloseNativeListener {

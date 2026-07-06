@@ -1338,10 +1338,15 @@ public class Admob {
                 Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + false);
             }
         });
+        Log.d(TAG, "1.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
 
-        InterstitialAd ad = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
 
-        if (ad == null) {
+        //destroy preload ads
+        InterstitialAdPreloader.destroy(listIdInter.get(0));
+        Log.d(TAG, "2.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+
+        if (mInterstitialAdSplash == null) {
             Log.d(TAG, "AdsSplash Inter preload: The interstitial ad wasn't ready yet.");
             AppOpenManager.getInstance().setEnableResume(true);
             if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
@@ -1366,13 +1371,13 @@ public class Admob {
 
         if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                ad.setOnPaidEventListener(
+                mInterstitialAdSplash.setOnPaidEventListener(
                         adValue -> {
-                            AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), "inter_splash_preloading");
+                            AdjustUtil.trackRevenue(mInterstitialAdSplash.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), "inter_splash_preloading");
                         }
                 );
 
-                ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+                mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
                     @Override
                     public void onAdClicked() {
                         AppOpenManager.isLastActionClickAd = true;
@@ -1459,9 +1464,8 @@ public class Admob {
 
                     @Override
                     public void onAdImpression() {
-                        InterstitialAdPreloader.destroy(listIdInter.get(0));
                         // Called when an impression is recorded for an ad.
-                        Log.d(TAG, "AdsSplash Inter preload: Ad recorded an impression.");
+                        Log.d(TAG, "AdsSplash Inter preload: Ad impression. time - " + (System.currentTimeMillis() - timeSplashLoadingAdShow) / 1000);
                         interCallback.onAdImpression();
                         //log event
                         EventTrackingHelper.logEventWithAParam(activity, time_splash_loading_ad_show, time_splash_loading_show, String.valueOf((System.currentTimeMillis() - timeSplashLoadingAdShow) / 1000));
@@ -1486,7 +1490,7 @@ public class Admob {
                         removeHandlerSplashAds();
                     }
                 });
-                boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
+                boolean isResumeState = activity.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
                 Log.d(TAG, "AdsSplash Inter preload: ResumeState: " + isResumeState);
                 if (isResumeState) {
                     loadingAdsDialog = new LoadingAdsDialog(activity);
@@ -1504,8 +1508,8 @@ public class Admob {
                         }
                     }
                     Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: show Inter");
-                    ad.setImmersiveMode(true);
-                    ad.show(activity);
+                    mInterstitialAdSplash.setImmersiveMode(true);
+                    mInterstitialAdSplash.show(activity);
                 } else {
                     Log.e(TAG, "AdsSplash Inter preload: Fail to show on background.");
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
@@ -1516,7 +1520,7 @@ public class Admob {
                         handlerTimeoutSplash.removeCallbacks(runnable);
                     }
                 }
-            }, 250);
+            }, 50);
         }
     }
 

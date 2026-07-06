@@ -318,11 +318,11 @@ class AsyncSplash {
         this.keyNativeAfterInterSplash = key
     }
 
-    fun setNumberNativeAfterInterSplash(count: Int){
+    fun setNumberNativeAfterInterSplash(count: Int) {
         this.numberNativeAfterInterSplash = count
     }
 
-    fun getNumberNativeAfterInterSplash(): Int{
+    fun getNumberNativeAfterInterSplash(): Int {
         return this.numberNativeAfterInterSplash
     }
 
@@ -388,11 +388,11 @@ class AsyncSplash {
         return this.isUseNativeFullSplash
     }
 
-    fun setUseCacheDataCallSplash(isUse: Boolean){
+    fun setUseCacheDataCallSplash(isUse: Boolean) {
         this.isUseCacheDataCallSplash = isUse
     }
 
-    fun getUseCacheDataCallSplash(): Boolean{
+    fun getUseCacheDataCallSplash(): Boolean {
         return this.isUseCacheDataCallSplash
     }
 
@@ -614,15 +614,13 @@ class AsyncSplash {
                     e.printStackTrace()
                 } finally {
                     logEventStep("DoneAsyncInit")
-                    lifecycleCoroutineScope.launch {
-                        loadBannerSplash(
-                            activity,
-                            lifecycleOwner,
-                            frAdsBannerSplash,
-                            listIdBannerSplash,
-                            adsKey
-                        )
-                    }
+                    loadBannerSplash(
+                        activity,
+                        lifecycleOwner,
+                        frAdsBannerSplash,
+                        listIdBannerSplash,
+                        adsKey
+                    )
                     try {
                         logEventStep("StartIDApi")
                         //wait to load inter or open splash
@@ -641,37 +639,37 @@ class AsyncSplash {
                             timeAsync.toString()
                         )
                         onPrepareLoadInterOpenSplashAds?.invoke()
-                        lifecycleCoroutineScope.launch {
-                            logEventStep("StartAdSplash")
-                            var rateAoaInterSplash: String =
-                                RemoteConfigHelper.getInstance().get_config_string(
-                                    activity,
-                                    RemoteConfigHelper.rate_aoa_inter_splash
-                                )
-                            if (rateAoaInterSplash.isEmpty()) {
-                                rateAoaInterSplash = "0_100"
-                            }
-                            val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance()
-                                .get_config(activity, keyAdsOpenSplash)
-                            val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance()
-                                .get_config(activity, keyAdsInterSplash)
-                            adsSplash = AdsSplash.init(
-                                isShowOpenSplash,
-                                isShowInterSplash,
-                                rateAoaInterSplash
+//                        lifecycleCoroutineScope.launch {
+                        logEventStep("StartAdSplash")
+                        var rateAoaInterSplash: String =
+                            RemoteConfigHelper.getInstance().get_config_string(
+                                activity,
+                                RemoteConfigHelper.rate_aoa_inter_splash
                             )
-                            adsSplash?.setKeyAdsInterSplash(keyAdsInterSplash)
-                            adsSplash?.setKeyAdsOpenSplash(keyAdsOpenSplash)
-                            adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
-                            showAdsSplash(activity, appOpenCallback, interCallback)
+                        if (rateAoaInterSplash.isEmpty()) {
+                            rateAoaInterSplash = "0_100"
                         }
+                        val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance()
+                            .get_config(activity, keyAdsOpenSplash)
+                        val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance()
+                            .get_config(activity, keyAdsInterSplash)
+                        adsSplash = AdsSplash.init(
+                            isShowOpenSplash,
+                            isShowInterSplash,
+                            rateAoaInterSplash
+                        )
+                        adsSplash?.setKeyAdsInterSplash(keyAdsInterSplash)
+                        adsSplash?.setKeyAdsOpenSplash(keyAdsOpenSplash)
+                        adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
+                        showAdsSplash(activity, appOpenCallback, interCallback)
+//                        }
                         if (isAsyncSplashAds) {
                             awaitAll(asyncRemoteConfig, asyncTechManager)
                             if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
                                 turnOffSomeRemoteKeys(activity)
                             }
                         }
-                        lifecycleCoroutineScope.launch {
+//                        lifecycleCoroutineScope.launch {
                             //set list random animation
                             val listAnim = arrayListOf(
                                 R.raw.ads_1,
@@ -692,7 +690,7 @@ class AsyncSplash {
 
                             ///load ad preload resume
                             loadAdPreloadResume()
-                        }
+//                        }
                     }
                 }
             }
@@ -785,7 +783,10 @@ class AsyncSplash {
                 }
             }, timeOutCallIdRemoteConfig)
 
-            Log.d(TAG, "check initRemoteConfig: hasBeenFetchedBefore = $hasBeenFetchedBefore, isUseCacheDataCallSplash = $isUseCacheDataCallSplash")
+            Log.d(
+                TAG,
+                "check initRemoteConfig: hasBeenFetchedBefore = $hasBeenFetchedBefore, isUseCacheDataCallSplash = $isUseCacheDataCallSplash"
+            )
 
             if (hasBeenFetchedBefore && isUseCacheDataCallSplash) {
                 Log.d(TAG, "initRemoteConfig: using SharedPreferences cache")
@@ -829,7 +830,7 @@ class AsyncSplash {
                 continuation.resume(Unit) // resume ngay
                 Log.d(
                     TAG,
-                    "initRemoteConfig: END using SharedPreferences cache - ${timeInitRemoteConfig/1000}"
+                    "initRemoteConfig: END using SharedPreferences cache - ${timeInitRemoteConfig / 1000}"
                 )
                 // Fetch ngầm để update SP cho session sau
                 CoroutineScope(Dispatchers.Main).launch {
@@ -904,7 +905,7 @@ class AsyncSplash {
                     }
                     Log.d(
                         TAG,
-                        "initRemoteConfig: END first time, fetching from Firebase - ${timeInitRemoteConfig/1000}"
+                        "initRemoteConfig: END first time, fetching from Firebase - ${timeInitRemoteConfig / 1000}"
                     )
 
                 }
@@ -979,7 +980,10 @@ class AsyncSplash {
                 val prefs = activity?.getSharedPreferences("MY_PRE", Context.MODE_PRIVATE)
                 val cachedJson = prefs?.getString(PREF_CACHED_AD_IDS, "") ?: ""
 
-                Log.d(TAG, "check initAdmobApi: cachedJson.isNotEmpty() = ${cachedJson.isNotEmpty()}, isUseCacheDataCallSplash = $isUseCacheDataCallSplash")
+                Log.d(
+                    TAG,
+                    "check initAdmobApi: cachedJson.isNotEmpty() = ${cachedJson.isNotEmpty()}, isUseCacheDataCallSplash = $isUseCacheDataCallSplash"
+                )
                 if (cachedJson.isNotEmpty() && isUseCacheDataCallSplash) {
                     Log.d(TAG, "initAdmobApi: using cache id Ads")
 
@@ -988,7 +992,7 @@ class AsyncSplash {
                     initAdmobApi = true
                     timeInitAdmobApi = System.currentTimeMillis() - startTimeInitAdmobApi
                     continuation.resume(Unit)
-                    Log.d(TAG, "initAdmobApi: END using cache id Ads - ${timeInitAdmobApi/1000}")
+                    Log.d(TAG, "initAdmobApi: END using cache id Ads - ${timeInitAdmobApi / 1000}")
 
 
                     // Refresh ngầm cho session sau
@@ -1026,7 +1030,7 @@ class AsyncSplash {
                             override fun onReady() {
                                 super.onReady()
                                 //save cached json id
-                                if(isUseCacheDataCallSplash) {
+                                if (isUseCacheDataCallSplash) {
                                     val json = AdmobApi.getInstance().jsonIdAdsDefault
                                     if (json.isNotEmpty()) {
                                         prefs?.edit()?.putString(PREF_CACHED_AD_IDS, json)?.apply()
@@ -1044,7 +1048,7 @@ class AsyncSplash {
                             }
                         })
                     timeInitAdmobApi = System.currentTimeMillis() - startTimeInitAdmobApi
-                    Log.d(TAG, "initAdmobApi:END first time, init ads - ${timeInitAdmobApi/1000}")
+                    Log.d(TAG, "initAdmobApi:END first time, init ads - ${timeInitAdmobApi / 1000}")
                 }
             } else {
                 continuation.resume(Unit)
@@ -1282,6 +1286,7 @@ class AsyncSplash {
             bundle
         )
         if (!isTimeout && !isNoInternetAction) {
+            isShowAdsSplash = true
             val time = (System.currentTimeMillis() - timeStartSplash) / 1000
             Log.d(TAG, "----------")
             Log.d(TAG, "showAdsSplash: Time show Ads = $time")
@@ -1293,7 +1298,6 @@ class AsyncSplash {
                 keyNativeAfterInterSplash
             )
             Log.d(TAG, "showAdsSplash.")
-            isShowAdsSplash = true
         }
     }
 }

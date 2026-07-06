@@ -181,12 +181,12 @@ public class SplashActivity extends AppCompatActivity {
             /// end
 
             /// use cache id, config
-//            AsyncSplash.Companion.getInstance().setUseCacheDataCallSplash(true);
+            AsyncSplash.Companion.getInstance().setUseCacheDataCallSplash(true);
             /// end
 
             /// change open, inter splash -> native full screen
-            AsyncSplash.Companion.getInstance().setUseNativeFullSplash(true);
-            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
+//            AsyncSplash.Companion.getInstance().setUseNativeFullSplash(true);
+//            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
             /// end
 
             AsyncSplash.Companion.getInstance().handleAsync(this, this,

@@ -25,3 +25,7 @@ allprojects {
         enabled = false
     }
 }
+task publishToMavenLocal {
+    dependsOn ':noninterruptive-sdk:publishToMavenLocal'
+    dependsOn ':mylibrary:publishToMavenLocal'
+}

@@ -96,6 +96,7 @@ class AsyncSplash {
     private var isUseNativeSplash = false
     private var isUseNativeFullSplash = false
     private var isUseCacheDataCallSplash = false
+    private var isUseDetectionVPNOrEmulator = false
 
     //1.end
     //2.use for log event
@@ -252,6 +253,7 @@ class AsyncSplash {
         this.isUseNativeSplash = false
         this.isUseNativeFullSplash = false
         this.isUseCacheDataCallSplash = false
+        this.isUseDetectionVPNOrEmulator = false
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
@@ -394,6 +396,14 @@ class AsyncSplash {
 
     fun getUseCacheDataCallSplash(): Boolean {
         return this.isUseCacheDataCallSplash
+    }
+
+    fun setUseDetectionVPNOrEmulator(isUse: Boolean) {
+        this.isUseDetectionVPNOrEmulator = isUse
+    }
+
+    fun getUseDetectionVPNOrEmulator(): Boolean {
+        return this.isUseDetectionVPNOrEmulator
     }
 
     fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
@@ -670,26 +680,26 @@ class AsyncSplash {
                             }
                         }
 //                        lifecycleCoroutineScope.launch {
-                            //set list random animation
-                            val listAnim = arrayListOf(
-                                R.raw.ads_1,
-                                R.raw.ads_2,
-                                R.raw.ads_3,
-                                R.raw.ads_4,
-                                R.raw.ads_5,
-                                R.raw.ads_6,
-                                R.raw.ads_7,
-                                R.raw.ads_8,
-                                R.raw.ads_9,
-                                R.raw.ads_10,
-                            )
-                            Admob.getInstance().setCustomAnimationDialog(listAnim)
-                            AppOpenManager.getInstance().setCustomAnimationDialog(listAnim)
-                            //end
-                            onAsyncSplashDone.invoke()
+                        //set list random animation
+                        val listAnim = arrayListOf(
+                            R.raw.ads_1,
+                            R.raw.ads_2,
+                            R.raw.ads_3,
+                            R.raw.ads_4,
+                            R.raw.ads_5,
+                            R.raw.ads_6,
+                            R.raw.ads_7,
+                            R.raw.ads_8,
+                            R.raw.ads_9,
+                            R.raw.ads_10,
+                        )
+                        Admob.getInstance().setCustomAnimationDialog(listAnim)
+                        AppOpenManager.getInstance().setCustomAnimationDialog(listAnim)
+                        //end
+                        onAsyncSplashDone.invoke()
 
-                            ///load ad preload resume
-                            loadAdPreloadResume()
+                        ///load ad preload resume
+                        loadAdPreloadResume()
 //                        }
                     }
                 }

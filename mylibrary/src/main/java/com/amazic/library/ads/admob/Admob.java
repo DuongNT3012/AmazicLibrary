@@ -1219,6 +1219,16 @@ public class Admob {
                 public void run() {
                     Log.d(TAG, "AdsSplash Inter preload: Đã đủ 7 giây đếm ngược.");
                     isTimerDelayFinished = true;
+
+                    //get data ad inter
+                    if(mInterstitialAdSplash == null) {
+                        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+                        Log.d(TAG, "Get data ad Timeout 7s: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)) + ", ad = " + mInterstitialAdSplash);
+
+                        //destroy preload ads
+                        InterstitialAdPreloader.destroy(listIdInter.get(0));
+                    }
+
                     checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
                 }
             };
@@ -1289,6 +1299,13 @@ public class Admob {
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is available.");
                 interCallback.onAdLoaded(null);
 
+                Log.d(TAG, "onAdPreloaded have ad data: "+InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+                //get data ad inter
+                mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+                Log.d(TAG, "onAdPreloaded done: ad = " + mInterstitialAdSplash);
+
+                //destroy preload ads
+                InterstitialAdPreloader.destroy(listIdInter.get(0));
                 /// show ads
                 checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
                 removeHandlerSplashAds();
@@ -1338,13 +1355,13 @@ public class Admob {
                 Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + false);
             }
         });
-        Log.d(TAG, "1.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+//        Log.d(TAG, "1.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
 
-        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
-
-        //destroy preload ads
-        InterstitialAdPreloader.destroy(listIdInter.get(0));
-        Log.d(TAG, "2.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+//        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+//
+//        //destroy preload ads
+//        InterstitialAdPreloader.destroy(listIdInter.get(0));
+//        Log.d(TAG, "2.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
 
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "AdsSplash Inter preload: The interstitial ad wasn't ready yet.");
@@ -1422,6 +1439,7 @@ public class Admob {
                             }
                         }
                         isInterOrRewardedShowing = false;
+                        mInterstitialAdSplash = null;
                     }
 
                     @Override
@@ -1460,6 +1478,7 @@ public class Admob {
                         //log event
                         EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
                         //end log event
+                        mInterstitialAdSplash = null;
                     }
 
                     @Override
@@ -1523,7 +1542,6 @@ public class Admob {
             }, 50);
         }
     }
-
     //End Inter Preload
 
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {

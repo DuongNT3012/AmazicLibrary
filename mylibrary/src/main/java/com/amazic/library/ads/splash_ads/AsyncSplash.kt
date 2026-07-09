@@ -121,7 +121,7 @@ class AsyncSplash {
     private var timeSplashCheck = System.currentTimeMillis()
 
     //check internet speed
-    private var urlCheckInternetSpeed = "http://207.148.116.90/app/poster/avatar/sale5.png"
+    private var urlCheckInternetSpeed = "https://www.google.com/"
 
     //Set loadAndShowIdInterAdSplashAsync 30/05/2025
     private var loadAndShowIdInterAdSplashAsync = false

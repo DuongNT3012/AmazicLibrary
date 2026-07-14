@@ -111,8 +111,11 @@ class AsyncSplash {
     //key native after inter splash
     private var keyNativeAfterInterSplash = "native_after_inter"
     private var numberNativeAfterInterSplash = 1
-
     //
+    //id set test native meta
+    private var idNativeMetaSplash = ""
+    //end
+
     private var isUseAppUpdateManager = false
     private var remoteKeyIdAdsServer = "id_ads"
     private var onPrepareLoadInterOpenSplashAds: (() -> Unit?)? = null
@@ -254,6 +257,7 @@ class AsyncSplash {
         this.isUseNativeFullSplash = false
         this.isUseCacheDataCallSplash = false
         this.isUseDetectionVPNOrEmulator = false
+        this.idNativeMetaSplash = ""
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
@@ -318,6 +322,14 @@ class AsyncSplash {
 
     fun setKeyNativeAfterInterSplash(key: String) {
         this.keyNativeAfterInterSplash = key
+    }
+
+    fun setIdNativeMetaSplash(id: String){
+        this.idNativeMetaSplash = id
+    }
+
+    fun getIdNativeMetaSplash(): String{
+        return this.idNativeMetaSplash
     }
 
     fun setNumberNativeAfterInterSplash(count: Int) {

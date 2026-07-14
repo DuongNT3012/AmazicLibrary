@@ -1,28 +1,29 @@
 {
   "project_info": {
-    "project_number": "683253092214",
-    "project_id": "asa199-get-daily-diamond",
-    "storage_bucket": "asa199-get-daily-diamond.appspot.com"
+    "project_number": "731492096433",
+    "project_id": "asa296-live-score-v4",
+    "storage_bucket": "asa296-live-score-v4.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:683253092214:android:98a6578533072ffaf13457",
+        "mobilesdk_app_id": "1:731492096433:android:0fabb6362f2252d7530590",
         "android_client_info": {
-          "package_name": "com.diamondguide.redeemcode.ffftips"
+          "package_name": "com.footballscores.livescore.soccerscores.sports"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyB5BXUdJJ0AyodZCBQmbRpNsa5pIDGoYc4"
+          "current_key": "AIzaSyARijUlzod4xdaeC5Lx8KD4-cu_U-jc8Po"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": []
         }
-      }
+      },
+      "admob_app_id": "ca-app-pub-7117777112918698~2761088142"
     }
   ],
   "configuration_version": "1"

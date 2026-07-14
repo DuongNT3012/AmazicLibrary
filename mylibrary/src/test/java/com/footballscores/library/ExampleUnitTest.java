@@ -1,4 +1,4 @@
-package com.diamondguide.library;
+package com.footballscores.library;
 
 import org.junit.Test;
 

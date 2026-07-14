@@ -1,29 +1,24 @@
-package com.diamondguide.redeemcode.ffftips;
+package com.footballscores.livescore.soccerscores.sports;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LifecycleOwnerKt;
 
-import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
-import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
-import com.amazic.library.ads.inter_ads.InterManager;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 /*import com.amazic.library.iap.IAPManager;
 import com.amazic.library.iap.ProductDetailCustom;*/
 import com.amazic.library.update_app.UpdateApplicationManager;
-import com.diamondguide.redeemcode.ffftips.databinding.ActivitySplashBinding;
+import com.footballscores.livescore.soccerscores.sports.databinding.ActivitySplashBinding;
 import com.google.android.play.core.appupdate.AppUpdateManager;
-import com.google.android.play.core.install.InstallState;
 import com.google.android.play.core.install.InstallStateUpdatedListener;
 import com.google.android.play.core.install.model.InstallStatus;
 
@@ -175,7 +170,7 @@ public class SplashActivity extends AppCompatActivity {
             });
             /// use Native full change inter, open
             AsyncSplash.Companion.getInstance().setUseNativeFullSplash(true);
-            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(1);
+            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
             AsyncSplash.Companion.getInstance().setKeyNativeAfterInterSplash("native_after_inter");
             /// end
 
@@ -193,6 +188,10 @@ public class SplashActivity extends AppCompatActivity {
 //            AsyncSplash.Companion.getInstance().setUseNativeFullSplash(true);
 //            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
             /// end
+
+            /// use native meta test
+        AsyncSplash.Companion.getInstance().setIdNativeMetaSplash("1439001763964762_1710436723487930");
+            ///
 
 
             AsyncSplash.Companion.getInstance().handleAsync(this, this,

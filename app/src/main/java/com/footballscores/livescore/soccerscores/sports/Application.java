@@ -1,4 +1,4 @@
-package com.diamondguide.redeemcode.ffftips;
+package com.footballscores.livescore.soccerscores.sports;
 
 import androidx.annotation.NonNull;
 

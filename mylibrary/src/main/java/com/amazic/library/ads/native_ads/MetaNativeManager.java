@@ -8,14 +8,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.mylibrary.R;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
+import com.facebook.ads.AdOptionsView;
 import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
+import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
 
 import java.util.ArrayList;
@@ -89,12 +92,13 @@ public class MetaNativeManager {
 //                .inflate(R.layout.native_meta_splash, fr, false);
 //        bindMetaNativeAdView(adView, nativeAd);
 //
-////        View btnClose = adView.findViewById(R.id.btn_close);
-////        if (btnClose != null) {
-////            btnClose.setOnClickListener(v -> {
-////                if (listener != null) listener.onClose();
-////            });
-////        }
+
+    /// /        View btnClose = adView.findViewById(R.id.btn_close);
+    /// /        if (btnClose != null) {
+    /// /            btnClose.setOnClickListener(v -> {
+    /// /                if (listener != null) listener.onClose();
+    /// /            });
+    /// /        }
 //        fr.removeAllViews();
 //        fr.addView(adView);
 //    }
@@ -150,7 +154,6 @@ public class MetaNativeManager {
 //    }
 
     // ─── NATIVE FULL SPLASH (thay inter_splash) ──────────────────────
-
     public static void loadMetaNativeFullSplash(Activity activity, String placementId,
                                                 String adsKey, int targetCount,
                                                 Runnable onFirstLoaded, Runnable onAllFailed) {
@@ -162,8 +165,9 @@ public class MetaNativeManager {
         List<NativeAd> newList = new ArrayList<>();
         mapMetaNativeAfterInterSplash.put(adsKey, newList);
 
-        Log.d(TAG, "MetaNativeFullSplash: start load " + targetCount + " ads key=" + adsKey);
-        loadMetaNativeFullSplashSequentially(activity, placementId, adsKey, targetCount, newList, 0,
+        String idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
+        Log.d(TAG, "MetaNativeFullSplash: start load " + targetCount + " ads key=" + adsKey + " idMeta = " + idMeta);
+        loadMetaNativeFullSplashSequentially(activity, idMeta, adsKey, targetCount, newList, 0,
                 new boolean[]{false}, new boolean[]{false}, onFirstLoaded, onAllFailed);
     }
 
@@ -188,7 +192,7 @@ public class MetaNativeManager {
                         .withAdListener(new NativeAdListener() {
                             @Override
                             public void onError(Ad ad, AdError adError) {
-                                Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount + " err=" + adError.getErrorMessage());
+                                Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount + ", idMeta = " + placementId + " err=" + adError.getErrorMessage());
                                 loadMetaNativeFullSplashSequentially(activity, placementId, adsKey,
                                         targetCount, list, loadedCount + 1,
                                         hasNotifiedFirst, hasNotifiedFail, onFirstLoaded, onAllFailed);
@@ -197,7 +201,7 @@ public class MetaNativeManager {
                             @Override
                             public void onAdLoaded(Ad ad) {
                                 list.add((NativeAd) ad);
-                                Log.d(TAG, "MetaNativeFullSplash: loaded " + list.size() + "/" + targetCount);
+                                Log.d(TAG, "MetaNativeFullSplash: loaded " + list.size() + "/" + targetCount + ", idMeta = " + placementId);
                                 if (!hasNotifiedFirst[0]) {
                                     hasNotifiedFirst[0] = true;
                                     new Handler(Looper.getMainLooper()).post(onFirstLoaded);
@@ -207,9 +211,17 @@ public class MetaNativeManager {
                                         hasNotifiedFirst, hasNotifiedFail, onFirstLoaded, onAllFailed);
                             }
 
-                            @Override public void onAdClicked(Ad ad) {}
-                            @Override public void onLoggingImpression(Ad ad) {}
-                            @Override public void onMediaDownloaded(Ad ad) {}
+                            @Override
+                            public void onAdClicked(Ad ad) {
+                            }
+
+                            @Override
+                            public void onLoggingImpression(Ad ad) {
+                            }
+
+                            @Override
+                            public void onMediaDownloaded(Ad ad) {
+                            }
                         }).build()
         );
     }
@@ -230,21 +242,27 @@ public class MetaNativeManager {
     // ─── BIND DATA → VIEW ────────────────────────────────────────────
 
     private static void bindMetaNativeAdView(View adView, NativeAd nativeAd) {
-        MediaView mediaView   = adView.findViewById(R.id.native_ad_media);
-        MediaView adIconView = adView.findViewById(R.id.native_ad_icon);
-        TextView tvTitle      = adView.findViewById(R.id.native_ad_title);
-        TextView tvBody       = adView.findViewById(R.id.native_ad_body);
-        Button btnCta         = adView.findViewById(R.id.native_ad_call_to_action);
-        TextView tvSponsor    = adView.findViewById(R.id.native_ad_sponsored_label);
+        NativeAdLayout nativeAdLayout = adView.findViewById(R.id.native_ad_container);
+        LinearLayout adChoicesContainer = adView.findViewById(R.id.ad_choices_container);
+        AdOptionsView adOptionsView = new AdOptionsView(adView.getContext(), nativeAd, nativeAdLayout);
+        adChoicesContainer.removeAllViews();
+        adChoicesContainer.addView(adOptionsView, 0);
 
-        if (tvTitle != null)   tvTitle.setText(nativeAd.getAdvertiserName());
-        if (tvBody != null)    tvBody.setText(nativeAd.getAdBodyText());
-        if (btnCta != null)    btnCta.setText(nativeAd.getAdCallToAction());
+        MediaView mediaView = adView.findViewById(R.id.native_ad_media);
+        MediaView adIconView = adView.findViewById(R.id.native_ad_icon);
+        TextView tvTitle = adView.findViewById(R.id.native_ad_title);
+        TextView tvBody = adView.findViewById(R.id.native_ad_body);
+        Button btnCta = adView.findViewById(R.id.native_ad_call_to_action);
+        TextView tvSponsor = adView.findViewById(R.id.native_ad_sponsored_label);
+
+        if (tvTitle != null) tvTitle.setText(nativeAd.getAdvertiserName());
+        if (tvBody != null) tvBody.setText(nativeAd.getAdBodyText());
+        if (btnCta != null) btnCta.setText(nativeAd.getAdCallToAction());
         if (tvSponsor != null) tvSponsor.setText("Sponsored");
 
         // Bắt buộc phải registerViewForInteraction — Meta mới track impression và click
         List<View> clickableViews = new ArrayList<>();
-        if (btnCta != null)  clickableViews.add(btnCta);
+        if (btnCta != null) clickableViews.add(btnCta);
         if (tvTitle != null) clickableViews.add(tvTitle);
 
         nativeAd.registerViewForInteraction(adView, mediaView, adIconView, clickableViews);
@@ -284,6 +302,7 @@ public class MetaNativeManager {
 
     public interface OnCloseNativeListener {
         void onClose();
+
         void onFail();
     }
 }

@@ -60,10 +60,17 @@
                         android:textSize="12sp" />
                 </LinearLayout>
 
-                <com.facebook.ads.AdOptionsView
-                    android:id="@+id/native_ad_choices_icon"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+<!--                <com.facebook.ads.AdOptionsView-->
+<!--                    android:id="@+id/native_ad_choices_icon"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content" />-->
+
+                <LinearLayout
+                    android:id="@+id/ad_choices_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:orientation="horizontal" />
             </LinearLayout>
 
             <TextView

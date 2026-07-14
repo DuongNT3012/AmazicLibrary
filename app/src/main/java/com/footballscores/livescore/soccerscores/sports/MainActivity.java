@@ -1,4 +1,4 @@
-package com.diamondguide.redeemcode.ffftips;
+package com.footballscores.livescore.soccerscores.sports;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -24,7 +24,7 @@ import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
 import com.amazic.library.ads.reward_ads.RewardManager;
 import com.amazic.library.ads.reward_inter_ads.RewardInterManager;
-import com.diamondguide.redeemcode.ffftips.databinding.ActivityMainBinding;
+import com.footballscores.livescore.soccerscores.sports.databinding.ActivityMainBinding;
 
 import java.util.List;
 

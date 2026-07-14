@@ -42,17 +42,16 @@ public abstract class AdsApplication extends Application implements Application.
     private void initMeta() {
         if (Admob.getInstance().getIsUseNativeSplashMeta()) {
             /// chi dung khi debug test ads meta
-//            if (buildDebug()) {
+            Log.d("Admob", "initMeta - check buildDebug setTestMode = " + buildDebug());
+            if (buildDebug()) {
                 AdSettings.setTestMode(true);
-//            AdSettings.addTestDevice("");
-//            AdSettings.setIntegrationErrorMode(AdSettings.IntegrationErrorMode.INTEGRATION_ERROR_CALLBACK_MODE);
+            }
 
-//            }
-//            if (!AudienceNetworkAds.isInitialized(this)) {
+            if (!AudienceNetworkAds.isInitialized(this)) {
                 AudienceNetworkAds.buildInitSettings(this)
                         .withInitListener(result -> Log.d("Admob", "initMeta: " + result.getMessage()))
                         .initialize();
-//            }
+            }
         }
     }
 

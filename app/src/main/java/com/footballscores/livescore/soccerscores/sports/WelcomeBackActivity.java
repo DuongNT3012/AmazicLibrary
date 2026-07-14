@@ -1,16 +1,11 @@
-package com.diamondguide.redeemcode.ffftips;
+package com.footballscores.livescore.soccerscores.sports;
 
 import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.amazic.library.ads.admob.AdmobApi;
-import com.amazic.library.ads.app_open_ads.AppOpenManager;
-import com.amazic.library.ads.banner_ads.BannerPictureInPictureManager;
-import com.amazic.library.ads.callback.AppOpenCallback;
-import com.diamondguide.redeemcode.ffftips.databinding.ActivityWelcomeBackBinding;
-import com.google.android.gms.ads.appopen.AppOpenAd;
+import com.footballscores.livescore.soccerscores.sports.databinding.ActivityWelcomeBackBinding;
 
 public class WelcomeBackActivity extends AppCompatActivity {
     private ActivityWelcomeBackBinding binding;

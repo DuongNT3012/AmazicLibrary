@@ -1,4 +1,4 @@
-package com.diamondguide.redeemcode;
+package com.footballscores.livescore;
 
 import org.junit.Test;
 

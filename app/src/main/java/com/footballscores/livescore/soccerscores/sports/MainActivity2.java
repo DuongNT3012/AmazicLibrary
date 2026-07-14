@@ -1,19 +1,14 @@
-package com.diamondguide.redeemcode.ffftips;
+package com.footballscores.livescore.soccerscores.sports;
 
 import android.os.Bundle;
-import android.os.Handler;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.amazic.library.ads.admob.AdmobApi;
-import com.amazic.library.ads.banner_ads.BannerPictureInPictureManager;
 import com.amazic.library.ads.native_ads.NativeSqueezeBackManager;
-import com.diamondguide.redeemcode.ffftips.databinding.ActivityMain2Binding;
-import com.diamondguide.redeemcode.ffftips.databinding.ActivityMainBinding;
+import com.footballscores.livescore.soccerscores.sports.databinding.ActivityMain2Binding;
+import com.footballscores.livescore.soccerscores.sports.databinding.ActivityMainBinding;
 
 public class MainActivity2 extends AppCompatActivity {
 

@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace 'com.diamondguide.redeemcode.ffftips'
+    namespace 'com.footballscores.livescore.soccerscores.sports'
     compileSdk 35
 
     defaultConfig {
-        applicationId "com.diamondguide.redeemcode.ffftips"
+        applicationId "com.footballscores.livescore.soccerscores.sports"
         minSdk 24
         targetSdk 35
         versionCode 100

@@ -125,6 +125,10 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.10.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.10.0'
     implementation 'com.airbnb.android:lottie:6.7.1'
+
+    //sdk meta
+    implementation 'androidx.annotation:annotation:1.10.0'
+    implementation 'com.facebook.android:audience-network-sdk:6.21.0'
 }
 
 afterEvaluate {

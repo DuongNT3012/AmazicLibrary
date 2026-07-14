@@ -173,21 +173,27 @@ public class SplashActivity extends AppCompatActivity {
                     return null;
                 }
             });
+            /// use Native full change inter, open
+            AsyncSplash.Companion.getInstance().setUseNativeFullSplash(true);
+            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(1);
+            AsyncSplash.Companion.getInstance().setKeyNativeAfterInterSplash("native_after_inter");
+            /// end
 
-            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
+//            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
             /// show native after inter count
 //            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
 //            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);
             /// end
 
             /// use cache id, config
-            AsyncSplash.Companion.getInstance().setUseCacheDataCallSplash(true);
+//            AsyncSplash.Companion.getInstance().setUseCacheDataCallSplash(true);
             /// end
 
             /// change open, inter splash -> native full screen
 //            AsyncSplash.Companion.getInstance().setUseNativeFullSplash(true);
 //            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
             /// end
+
 
             AsyncSplash.Companion.getInstance().handleAsync(this, this,
                     LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {

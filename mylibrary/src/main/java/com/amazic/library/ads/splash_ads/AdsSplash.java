@@ -84,19 +84,23 @@ public class AdsSplash {
     public void showAdsSplashApi(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "state show: " + getState());
         if (AsyncSplash.Companion.getInstance().getUseNativeFullSplash()) {
-            Log.d(TAG, "AdsSplash: USE Native Full Splash");
-            AdmobApi.getInstance().loadAndShowNativeFullSplash(activity, adsKeyNative, interCallback, remoteKeyNative);
+            Log.d(TAG, "AdsSplash: USE Native Full Splash - isUseMeta = " + Admob.getInstance().getIsUseNativeSplashMeta());
+            if (Admob.getInstance().getIsUseNativeSplashMeta()) {
+                AdmobApi.getInstance().loadAndShowMetaNativeFullSplash(activity, adsKeyNative, interCallback, remoteKeyNative);
+            } else {
+                AdmobApi.getInstance().loadAndShowNativeFullSplash(activity, adsKeyNative, interCallback, remoteKeyNative);
+            }
             return;
         }
         if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {
-            Log.d(TAG, "AdsSplash preload: USE Preload " +getState());
+            Log.d(TAG, "AdsSplash preload: USE Preload " + getState());
             if (getState() == STATE.OPEN) {
-                AdmobApi.getInstance().loadAndShowAppOpenAdPreloadingSplash(activity,keyAdsOpenSplash, appOpenCallback);
+                AdmobApi.getInstance().loadAndShowAppOpenAdPreloadingSplash(activity, keyAdsOpenSplash, appOpenCallback);
             } else {
                 AdmobApi.getInstance().loadAndShowInterAdPreloadingSplash(activity, keyAdsInterSplash, interCallback, adsKeyNative, remoteKeyNative);
             }
         } else {
-            Log.d(TAG, "AdsSplash preload: USE Normal "+getState());
+            Log.d(TAG, "AdsSplash preload: USE Normal " + getState());
             if (getState() == STATE.OPEN) {
                 if (this.isLoopAdsSplash) {
                     AdmobApi.getInstance().loadOpenAppAdSplashLoop(activity, keyAdsOpenSplash, appOpenCallback);

@@ -10,6 +10,9 @@
         android:hardwareAccelerated="true"
         android:usesCleartextTraffic="true">
         <activity
+            android:name="com.amazic.library.view.NativeMetaSplashActivity"
+            android:exported="false" />
+        <activity
             android:name="com.amazic.library.view.NativeAfterInterActivity"
             android:exported="false" />
     </application>

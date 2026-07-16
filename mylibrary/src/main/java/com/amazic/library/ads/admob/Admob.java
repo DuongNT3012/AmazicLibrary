@@ -293,11 +293,11 @@ public class Admob {
         return isShowAllAds;
     }
 
-    public void setUseNativeSplashMeta(boolean isUse){
+    public void setUseNativeSplashMeta(boolean isUse) {
         this.isUseNativeSplashMeta = isUse;
     }
 
-    public boolean getIsUseNativeSplashMeta(){
+    public boolean getIsUseNativeSplashMeta() {
         return isUseNativeSplashMeta;
     }
 
@@ -745,7 +745,7 @@ public class Admob {
         activity.startActivity(intent);
     }
 
-    private void startNativeMetaSplash(Activity activity, InterCallback interCallback){
+    private void startNativeMetaSplash(Activity activity, InterCallback interCallback) {
         NativeMetaSplashActivity.Companion.setInterCallback(interCallback);
         Intent intent = new Intent(activity, NativeMetaSplashActivity.class);
         activity.startActivity(intent);
@@ -1188,7 +1188,7 @@ public class Admob {
         );
     }
 
-    public void loadAndShowMetaNativeFullSplashCount(AppCompatActivity activity, List<String> listIdNative, InterCallback interCallback, String adsKeyNative, String remoteKeyNative){
+    public void loadAndShowMetaNativeFullSplashCount(AppCompatActivity activity, List<String> listIdNative, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         long nativeFullSplashStartTime = System.currentTimeMillis();
         Log.d(TAG, "AdsSplash META Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash...");
 
@@ -1251,6 +1251,7 @@ public class Admob {
                 }
         );
     }
+
     public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "AdsSplash Inter preload: Bắt đầu tiến trình Load And Show Inter Delay ads...");
         new Handler(Looper.getMainLooper()).post(() ->
@@ -1302,7 +1303,7 @@ public class Admob {
                     isTimerDelayFinished = true;
 
                     //get data ad inter
-                    if(mInterstitialAdSplash == null) {
+                    if (mInterstitialAdSplash == null) {
                         mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
                         Log.d(TAG, "Get data ad Timeout 7s: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)) + ", ad = " + mInterstitialAdSplash);
 
@@ -1380,7 +1381,7 @@ public class Admob {
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is available.");
                 interCallback.onAdLoaded(null);
 
-                Log.d(TAG, "onAdPreloaded have ad data: "+InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+                Log.d(TAG, "onAdPreloaded have ad data: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
                 //get data ad inter
                 mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
                 Log.d(TAG, "onAdPreloaded done: ad = " + mInterstitialAdSplash);
@@ -1779,6 +1780,7 @@ public class Admob {
         if (mInterstitialAdSplash == null) {
             Log.d(TAG, "SPLASH: The interstitial ad wasn't ready yet.");
             AppOpenManager.getInstance().setEnableResume(true);
+            EventTrackingHelper.logEvent(activity, "inter_splash_showad_false_ad_null");
             if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
                 if (isConfigShowNativeAfterInter) {
                     if (isEmptyListNativeAfterInter) {
@@ -1866,7 +1868,10 @@ public class Admob {
                         isInterOrRewardedShowing = false;
                         removeHandlerSplashAds();
                         //log event
-                        EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                        Bundle bundle = new Bundle();
+                        bundle.putString(EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                        bundle.putString("failed_message", "show_" + adError.getMessage());
+                        EventTrackingHelper.logEventWithMultipleParams(activity, "inter_splash_showad_false_cb", bundle);
                         //end log event
                     }
 
@@ -1932,6 +1937,7 @@ public class Admob {
                     mInterstitialAdSplash.setImmersiveMode(true);
                     mInterstitialAdSplash.show(activity);
                 } else {
+                    EventTrackingHelper.logEvent(activity, "inter_splash_showad_false_app_pause");
                     Log.e(TAG, "SPLASH: Fail to show on background.");
                     if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                         dismissLoadingDialog();
@@ -2525,9 +2531,17 @@ public class Admob {
     private void checkConditionAdsSplash(AppCompatActivity activity, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             Log.d(TAG, "removeHandlerDelayAdsSplash");
+            EventTrackingHelper.logEvent(activity, "inter_splash_showad_false_acti_null");
             removeHandlerDelayAdsSplash();
             return;
         }
+
+        Bundle bundle = new Bundle();
+        bundle.putString("message", "isTimerDelayFinished_" + isTimerDelayFinished
+                + "_isAdLoadAdsSplashFinished_" + isAdLoadAdsSplashFinished
+        );
+        EventTrackingHelper.logEventWithMultipleParams(activity, "check_condition_ads_splash", bundle);
+
         if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
             String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
             Log.d(TAG, "===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây");

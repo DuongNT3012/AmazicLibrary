@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">AmazicLibrary</string>
     <string name="app_id">ca-app-pub-3940256099942544~3347511713</string>
-<!--    <string name="facebook_app_id">1439001763964762</string>-->
-<!--    <string name="facebook_client_token">2616ec770c91d6d8afb5128b92852769</string>-->
+    <string name="facebook_app_id">1439001763964762</string>
+    <string name="facebook_client_token">2616ec770c91d6d8afb5128b92852769</string>
 
     <string name="welcome_back">Welcome back</string>
     <string name="updated_and_ready_welcome_back">Updated and ready – welcome back!</string>

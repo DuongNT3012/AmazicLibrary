@@ -99,7 +99,7 @@ public class NativeAfterInterManager {
             return;
         }
 
-        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeAfterInterSplash();
+        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeFullShowSplash();
         Log.d(TAG, "NativeAfterInterManager Splash: preload " + targetCount + " native ads");
 
         // Clear list cũ

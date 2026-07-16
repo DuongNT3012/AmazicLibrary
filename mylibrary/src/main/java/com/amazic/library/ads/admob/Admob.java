@@ -138,8 +138,6 @@ public class Admob {
     private boolean isInitAdmobDone = false;
     //end
 
-    private boolean isUseNativeSplashMeta = true;
-
     public static Admob getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new Admob();
@@ -291,14 +289,6 @@ public class Admob {
 
     public boolean getShowAllAds() {
         return isShowAllAds;
-    }
-
-    public void setUseNativeSplashMeta(boolean isUse) {
-        this.isUseNativeSplashMeta = isUse;
-    }
-
-    public boolean getIsUseNativeSplashMeta() {
-        return isUseNativeSplashMeta;
     }
 
     public void setIsInitAdmobDone(boolean isInitDone) {
@@ -1148,7 +1138,7 @@ public class Admob {
             return;
         }
 
-        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeAfterInterSplash();
+        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeFullShowSplash();
 
         // Timeout handler
         Handler timeoutHandler = new Handler(Looper.getMainLooper());
@@ -1188,10 +1178,14 @@ public class Admob {
         );
     }
 
-    public void loadAndShowMetaNativeFullSplashCount(AppCompatActivity activity, List<String> listIdNative, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
+    public void loadAndShowMetaNativeFullSplashCount(AppCompatActivity activity, InterCallback interCallback) {
         long nativeFullSplashStartTime = System.currentTimeMillis();
-        Log.d(TAG, "AdsSplash META Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash...");
 
+        String adsKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeMetaSplash();
+        String remoteKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeMetaSplash();
+        Log.d(TAG, "AdsSplash META Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash... adsKeyNative = " + adsKeyNative);
+
+        List<String> listIdNative = AdmobApi.getInstance().getListIDByName(adsKeyNative);
         // Check basic conditions
         if (!NetworkUtil.isNetworkActive(activity) || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds) {
             Log.d(TAG, "AdsSplash META Native Full Splash: condition failed → onNextAction");
@@ -1212,7 +1206,7 @@ public class Admob {
             return;
         }
 
-        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeAfterInterSplash();
+        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeFullShowSplash();
 
         // Timeout handler
         Handler timeoutHandler = new Handler(Looper.getMainLooper());
@@ -1227,7 +1221,7 @@ public class Admob {
         timeoutHandler.postDelayed(timeoutRunnable, timeOutCallSplashAds);
 
         MetaNativeManager.loadMetaNativeFullSplash(
-                activity, adsKeyNative, remoteKeyNative, targetCount,
+                activity, listIdNative, adsKeyNative, targetCount,
                 () -> {
                     // First native loaded → navigate immediately
                     if (!hasNavigated[0]) {

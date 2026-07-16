@@ -110,10 +110,15 @@ class AsyncSplash {
 
     //key native after inter splash
     private var keyNativeAfterInterSplash = "native_after_inter"
-    private var numberNativeAfterInterSplash = 1
     //
+    private var numberNativeFullShowSplash = 1
     //id set test native meta
     private var idNativeMetaSplash = ""
+    private var keyNativeMetaSplash = "native_meta_splash"
+    //end
+
+    //native meta splash
+    private var isUseNativeSplashMeta: Boolean = false
     //end
 
     private var isUseAppUpdateManager = false
@@ -251,13 +256,15 @@ class AsyncSplash {
         this.keyIntervalBetweenInterstitial = "interval_between_interstitial"
         this.keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
         this.keyNativeAfterInterSplash = "native_after_inter"
-        this.numberNativeAfterInterSplash = 1
+        this.numberNativeFullShowSplash = 1
         this.isShowNativeAfterInter = false
         this.isUseNativeSplash = false
         this.isUseNativeFullSplash = false
         this.isUseCacheDataCallSplash = false
         this.isUseDetectionVPNOrEmulator = false
         this.idNativeMetaSplash = ""
+        this.isUseNativeSplashMeta = false
+        this.keyNativeMetaSplash = "native_meta_splash"
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
@@ -324,6 +331,14 @@ class AsyncSplash {
         this.keyNativeAfterInterSplash = key
     }
 
+    fun setKeyNativeMetaSplash(key: String){
+        this.keyNativeMetaSplash = key
+    }
+
+    fun getKeyNativeMetaSplash(): String{
+        return  this.keyNativeMetaSplash
+    }
+
     fun setIdNativeMetaSplash(id: String){
         this.idNativeMetaSplash = id
     }
@@ -332,12 +347,12 @@ class AsyncSplash {
         return this.idNativeMetaSplash
     }
 
-    fun setNumberNativeAfterInterSplash(count: Int) {
-        this.numberNativeAfterInterSplash = count
+    fun setNumberNativeFullShowSplash(count: Int) {
+        this.numberNativeFullShowSplash = count
     }
 
-    fun getNumberNativeAfterInterSplash(): Int {
-        return this.numberNativeAfterInterSplash
+    fun getNumberNativeFullShowSplash(): Int {
+        return this.numberNativeFullShowSplash
     }
 
     fun setAsyncSplashAds() { //Show splash ads without wait any thing
@@ -392,6 +407,14 @@ class AsyncSplash {
 
     fun getUseNativeSplash(): Boolean {
         return this.isUseNativeSplash
+    }
+
+    fun setUseNativeSplashMeta(isUse: Boolean) {
+        this.isUseNativeSplashMeta = isUse
+    }
+
+    fun getIsUseNativeSplashMeta(): Boolean {
+        return isUseNativeSplashMeta
     }
 
     fun setUseNativeFullSplash(isUse: Boolean) {

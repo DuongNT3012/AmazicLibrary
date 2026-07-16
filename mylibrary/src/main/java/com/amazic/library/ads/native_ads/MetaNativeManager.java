@@ -107,7 +107,7 @@ public class MetaNativeManager {
 
 //    public static void preloadMetaNativeAfterInterSplash(Activity activity, String placementId,
 //                                                         String adsKey) {
-//        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeAfterInterSplash();
+//        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeFullShowSplash();
 //
 //        Log.d(TAG, "MetaNativeManager Splash: preload " + targetCount + " ads adsKey=" + adsKey);
 //        List<NativeAd> oldList = mapMetaNativeAfterInterSplash.get(adsKey);
@@ -154,7 +154,7 @@ public class MetaNativeManager {
 //    }
 
     // ─── NATIVE FULL SPLASH (thay inter_splash) ──────────────────────
-    public static void loadMetaNativeFullSplash(Activity activity, String placementId,
+    public static void loadMetaNativeFullSplash(Activity activity, List<String> listIdNative,
                                                 String adsKey, int targetCount,
                                                 Runnable onFirstLoaded, Runnable onAllFailed) {
         List<NativeAd> oldList = mapMetaNativeAfterInterSplash.get(adsKey);
@@ -165,7 +165,12 @@ public class MetaNativeManager {
         List<NativeAd> newList = new ArrayList<>();
         mapMetaNativeAfterInterSplash.put(adsKey, newList);
 
-        String idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
+        String idMeta = "";
+        if(!AsyncSplash.Companion.getInstance().getIdNativeMetaSplash().equals("")){
+            idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
+        }else{
+            idMeta = listIdNative.get(0);
+        }
         Log.d(TAG, "MetaNativeFullSplash: start load " + targetCount + " ads key=" + adsKey + " idMeta = " + idMeta);
         loadMetaNativeFullSplashSequentially(activity, idMeta, adsKey, targetCount, newList, 0,
                 new boolean[]{false}, new boolean[]{false}, onFirstLoaded, onAllFailed);

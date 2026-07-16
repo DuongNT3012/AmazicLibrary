@@ -83,13 +83,14 @@ public class AdsSplash {
 
     public void showAdsSplashApi(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "state show: " + getState());
+        if (AsyncSplash.Companion.getInstance().getIsUseNativeSplashMeta()) {
+            Log.d(TAG, "AdsSplash: USE Native META Full Splash");
+            AdmobApi.getInstance().loadAndShowMetaNativeFullSplash(activity, interCallback);
+            return;
+        }
         if (AsyncSplash.Companion.getInstance().getUseNativeFullSplash()) {
-            Log.d(TAG, "AdsSplash: USE Native Full Splash - isUseMeta = " + Admob.getInstance().getIsUseNativeSplashMeta());
-            if (Admob.getInstance().getIsUseNativeSplashMeta()) {
-                AdmobApi.getInstance().loadAndShowMetaNativeFullSplash(activity, adsKeyNative, interCallback, remoteKeyNative);
-            } else {
-                AdmobApi.getInstance().loadAndShowNativeFullSplash(activity, adsKeyNative, interCallback, remoteKeyNative);
-            }
+            Log.d(TAG, "AdsSplash: USE Native Full Splash");
+            AdmobApi.getInstance().loadAndShowNativeFullSplash(activity, adsKeyNative, interCallback, remoteKeyNative);
             return;
         }
         if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {

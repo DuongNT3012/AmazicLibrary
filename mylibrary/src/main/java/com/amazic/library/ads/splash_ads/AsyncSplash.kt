@@ -90,13 +90,14 @@ class AsyncSplash {
     private var isUseAdPreloading = false
     private var numberPreloading = 3
     private var numberPreloadingSplash = 1
-
     private var isShowNativeAfterInter = false
-
     private var isUseNativeSplash = false
     private var isUseNativeFullSplash = false
     private var isUseCacheDataCallSplash = false
     private var isUseDetectionVPNOrEmulator = false
+
+    private var isUseNativeFullSplashAdmobWhenMetaFail = false
+
 
     //1.end
     //2.use for log event
@@ -110,11 +111,17 @@ class AsyncSplash {
 
     //key native after inter splash
     private var keyNativeAfterInterSplash = "native_after_inter"
+
     //
     private var numberNativeFullShowSplash = 1
+
     //id set test native meta
     private var idNativeMetaSplash = ""
-    private var keyNativeMetaSplash = "native_meta_splash"
+    private var keyNativeFullMetaSplash = "native_meta_splash"
+    //end
+
+    //native full splash admob when meta fail
+    private var keyNativeFullAdmobSplash  = ""
     //end
 
     //native meta splash
@@ -264,7 +271,9 @@ class AsyncSplash {
         this.isUseDetectionVPNOrEmulator = false
         this.idNativeMetaSplash = ""
         this.isUseNativeSplashMeta = false
-        this.keyNativeMetaSplash = "native_meta_splash"
+        this.keyNativeFullMetaSplash = "native_meta_splash"
+        this.keyNativeFullAdmobSplash = "native_full_splash"
+        this.isUseNativeFullSplashAdmobWhenMetaFail = false
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
@@ -331,19 +340,27 @@ class AsyncSplash {
         this.keyNativeAfterInterSplash = key
     }
 
-    fun setKeyNativeMetaSplash(key: String){
-        this.keyNativeMetaSplash = key
+    fun setKeyNativeFullMetaSplash(key: String) {
+        this.keyNativeFullMetaSplash = key
     }
 
-    fun getKeyNativeMetaSplash(): String{
-        return  this.keyNativeMetaSplash
+    fun getKeyNativeFullMetaSplash(): String {
+        return this.keyNativeFullMetaSplash
     }
 
-    fun setIdNativeMetaSplash(id: String){
+    fun setKeyNativeFullAdmobSplash(key: String){
+        this.keyNativeFullAdmobSplash = key
+    }
+
+    fun getKeyNativeFullAdmobSplash() : String{
+        return this.keyNativeFullAdmobSplash
+    }
+
+    fun setIdNativeMetaSplash(id: String) {
         this.idNativeMetaSplash = id
     }
 
-    fun getIdNativeMetaSplash(): String{
+    fun getIdNativeMetaSplash(): String {
         return this.idNativeMetaSplash
     }
 
@@ -439,6 +456,14 @@ class AsyncSplash {
 
     fun getUseDetectionVPNOrEmulator(): Boolean {
         return this.isUseDetectionVPNOrEmulator
+    }
+
+    fun setUseNativeFullSplashAdmobWhenMetaFail(isUse: Boolean) {
+        this.isUseNativeFullSplashAdmobWhenMetaFail = isUse
+    }
+
+    fun getUseNativeFullSplashAdmobWhenMetaFail(): Boolean {
+        return this.isUseNativeFullSplashAdmobWhenMetaFail
     }
 
     fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)

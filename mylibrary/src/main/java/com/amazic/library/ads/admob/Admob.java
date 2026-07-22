@@ -1181,9 +1181,9 @@ public class Admob {
     public void loadAndShowMetaNativeFullSplashCount(AppCompatActivity activity, InterCallback interCallback) {
         long nativeFullSplashStartTime = System.currentTimeMillis();
 
-        String adsKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeMetaSplash();
-        String remoteKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeMetaSplash();
-        Log.d(TAG, "AdsSplash META Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash... adsKeyNative = " + adsKeyNative);
+        String adsKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeFullMetaSplash();
+        String remoteKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeFullMetaSplash();
+        Log.d(TAG, "AdsSplash META Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash... adsKeyNative = " + adsKeyNative + ", useNativeFullAdmobWhenMetaFail = " +AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail());
 
         List<String> listIdNative = AdmobApi.getInstance().getListIDByName(adsKeyNative);
         // Check basic conditions

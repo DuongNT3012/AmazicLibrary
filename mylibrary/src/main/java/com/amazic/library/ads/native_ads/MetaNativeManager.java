@@ -11,6 +11,9 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.ads.admob.AdmobApi;
+import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.mylibrary.R;
 import com.facebook.ads.Ad;
@@ -20,6 +23,7 @@ import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
+import com.google.android.gms.ads.LoadAdError;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,7 +34,11 @@ public class MetaNativeManager {
     private static final String TAG = "Admob";
 
     public static final Map<String, NativeAd> mapMetaNativeAfterInter = new HashMap<>();
-    public static final Map<String, List<NativeAd>> mapMetaNativeAfterInterSplash = new HashMap<>();
+    public static final Map<String, List<NativeAd>> mapMetaNativeSplash = new HashMap<>();
+
+    // Thêm map lưu AdMob fallback song song với Meta (TH Meta load fail)
+    public static final Map<String, List<com.google.android.gms.ads.nativead.NativeAd>>
+            mapAdmobNativeSplash = new HashMap<>();
 
 //    // ─── PRELOAD SINGLE ──────────────────────────────────────────────
 //
@@ -157,63 +165,151 @@ public class MetaNativeManager {
     public static void loadMetaNativeFullSplash(Activity activity, List<String> listIdNative,
                                                 String adsKey, int targetCount,
                                                 Runnable onFirstLoaded, Runnable onAllFailed) {
-        List<NativeAd> oldList = mapMetaNativeAfterInterSplash.get(adsKey);
+        // Clean Meta list
+        List<NativeAd> oldList = mapMetaNativeSplash.get(adsKey);
         if (oldList != null) {
             for (NativeAd ad : oldList) destroyMetaNativeAd(ad);
             oldList.clear();
         }
         List<NativeAd> newList = new ArrayList<>();
-        mapMetaNativeAfterInterSplash.put(adsKey, newList);
+        mapMetaNativeSplash.put(adsKey, newList);
 
-        String idMeta = "";
-        if(!AsyncSplash.Companion.getInstance().getIdNativeMetaSplash().equals("")){
-            idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
-        }else{
+        // Clean & init AdMob fallback list
+        String admobKey = AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash();
+        List<com.google.android.gms.ads.nativead.NativeAd> fallbackList = new ArrayList<>();
+        if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+            List<com.google.android.gms.ads.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
+            if (oldFallback != null) {
+                for (com.google.android.gms.ads.nativead.NativeAd ad : oldFallback) ad.destroy();
+                oldFallback.clear();
+            }
+            mapAdmobNativeSplash.put(admobKey, fallbackList);
+        }
+
+        String idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
+        if (idMeta == null || idMeta.isEmpty()) {
             idMeta = listIdNative.get(0);
         }
-        Log.d(TAG, "MetaNativeFullSplash: start load " + targetCount + " ads key=" + adsKey + " idMeta = " + idMeta);
-        loadMetaNativeFullSplashSequentially(activity, idMeta, adsKey, targetCount, newList, 0,
-                new boolean[]{false}, new boolean[]{false}, onFirstLoaded, onAllFailed);
+
+        Log.d(TAG, "MetaNativeFullSplash: start load " + targetCount + " ads key=" + adsKey + " idMeta=" + idMeta);
+
+        loadMetaNativeFullSplashSequentially(
+                activity, idMeta, adsKey, targetCount,
+                newList, fallbackList,
+                0,
+                new boolean[]{false},  // hasNotifiedFirst
+                new boolean[]{false},  // hasNotifiedFail
+                new int[]{0},          // pendingAdmobCount
+                onFirstLoaded, onAllFailed
+        );
     }
 
     private static void loadMetaNativeFullSplashSequentially(Activity activity, String placementId,
                                                              String adsKey, int targetCount,
-                                                             List<NativeAd> list, int loadedCount,
+                                                             List<NativeAd> list,
+                                                             List<com.google.android.gms.ads.nativead.NativeAd> fallbackList,
+                                                             int loadedCount,
                                                              boolean[] hasNotifiedFirst,
                                                              boolean[] hasNotifiedFail,
+                                                             int[] pendingAdmobCount,
                                                              Runnable onFirstLoaded,
                                                              Runnable onAllFailed) {
         if (loadedCount >= targetCount) {
-            Log.d(TAG, "MetaNativeFullSplash: done total=" + list.size());
-            if (list.isEmpty() && !hasNotifiedFail[0]) {
-                hasNotifiedFail[0] = true;
-                new Handler(Looper.getMainLooper()).post(onAllFailed);
+            Log.d(TAG, "MetaNativeFullSplash: Meta done total=" + list.size() + " pendingAdmob=" + pendingAdmobCount[0]);
+            // Chờ AdMob pending xong mới quyết định onAllFailed
+
+            if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+                if (list.isEmpty() && pendingAdmobCount[0] == 0
+                        && !hasNotifiedFirst[0] && !hasNotifiedFail[0]) {
+                    hasNotifiedFail[0] = true;
+                    new Handler(Looper.getMainLooper()).post(onAllFailed);
+                }
+            } else {
+                if (list.isEmpty() && !hasNotifiedFail[0]) {
+                    hasNotifiedFail[0] = true;
+                    new Handler(Looper.getMainLooper()).post(onAllFailed);
+                }
             }
+
             return;
         }
+
         NativeAd nativeAd = new NativeAd(activity, placementId);
         nativeAd.loadAd(
                 nativeAd.buildLoadAdConfig()
                         .withAdListener(new NativeAdListener() {
                             @Override
                             public void onError(Ad ad, AdError adError) {
-                                Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount + ", idMeta = " + placementId + " err=" + adError.getErrorMessage());
+                                Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount
+                                        + " idMeta=" + placementId + " err=" + adError.getErrorMessage());
+
+                                if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+                                    String admobKey = AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash();
+                                    List<String> admobIds = AdmobApi.getInstance().getListIDByName(admobKey);
+
+                                    if (admobIds != null && !admobIds.isEmpty()) {
+                                        pendingAdmobCount[0]++;  // tăng TRƯỚC khi bắt đầu load
+                                        Admob.getInstance().loadNativeAds(
+                                                activity,
+                                                admobIds,
+                                                new NativeCallback() {
+                                                    @Override
+                                                    public void onNativeAdLoaded(com.google.android.gms.ads.nativead.NativeAd admobAd) {
+                                                        super.onNativeAdLoaded(admobAd);
+                                                        fallbackList.add(admobAd);
+                                                        pendingAdmobCount[0]--;
+                                                        Log.d(TAG, "MetaNativeFullSplash: admob fallback loaded total=" + fallbackList.size()
+                                                                + " pendingAdmob=" + pendingAdmobCount[0]);
+
+                                                        // Fire onFirstLoaded nếu Meta all fail và chưa ai fire
+                                                        if (!hasNotifiedFirst[0]) {
+                                                            hasNotifiedFirst[0] = true;
+                                                            new Handler(Looper.getMainLooper()).post(onFirstLoaded);
+                                                        }
+                                                        // Nếu Meta slot khác đã fire onFirstLoaded trước
+                                                        // → hasNotifiedFirst=true → không fire lại, chỉ add vào fallbackList
+                                                    }
+
+                                                    @Override
+                                                    public void onAdFailedToLoad(LoadAdError loadAdError) {
+                                                        super.onAdFailedToLoad(loadAdError);
+                                                        pendingAdmobCount[0]--;
+                                                        Log.d(TAG, "MetaNativeFullSplash: admob fallback failed"
+                                                                + " pendingAdmob=" + pendingAdmobCount[0]);
+
+                                                        // Tất cả Meta + AdMob đều fail và không còn pending
+                                                        if (list.isEmpty() && fallbackList.isEmpty()
+                                                                && pendingAdmobCount[0] == 0
+                                                                && !hasNotifiedFirst[0] && !hasNotifiedFail[0]) {
+                                                            hasNotifiedFail[0] = true;
+                                                            new Handler(Looper.getMainLooper()).post(onAllFailed);
+                                                        }
+                                                    }
+                                                },
+                                                admobKey
+                                        );
+                                    }
+                                }
+
                                 loadMetaNativeFullSplashSequentially(activity, placementId, adsKey,
-                                        targetCount, list, loadedCount + 1,
-                                        hasNotifiedFirst, hasNotifiedFail, onFirstLoaded, onAllFailed);
+                                        targetCount, list, fallbackList, loadedCount + 1,
+                                        hasNotifiedFirst, hasNotifiedFail, pendingAdmobCount,
+                                        onFirstLoaded, onAllFailed);
                             }
 
                             @Override
                             public void onAdLoaded(Ad ad) {
                                 list.add((NativeAd) ad);
-                                Log.d(TAG, "MetaNativeFullSplash: loaded " + list.size() + "/" + targetCount + ", idMeta = " + placementId);
+                                Log.d(TAG, "MetaNativeFullSplash: loaded " + list.size() + "/" + targetCount
+                                        + " idMeta=" + placementId);
                                 if (!hasNotifiedFirst[0]) {
                                     hasNotifiedFirst[0] = true;
                                     new Handler(Looper.getMainLooper()).post(onFirstLoaded);
                                 }
                                 loadMetaNativeFullSplashSequentially(activity, placementId, adsKey,
-                                        targetCount, list, loadedCount + 1,
-                                        hasNotifiedFirst, hasNotifiedFail, onFirstLoaded, onAllFailed);
+                                        targetCount, list, fallbackList, loadedCount + 1,
+                                        hasNotifiedFirst, hasNotifiedFail, pendingAdmobCount,
+                                        onFirstLoaded, onAllFailed);
                             }
 
                             @Override
@@ -230,6 +326,121 @@ public class MetaNativeManager {
                         }).build()
         );
     }
+
+//    public static void loadMetaNativeFullSplash(Activity activity, List<String> listIdNative,
+//                                                String adsKey, int targetCount,
+//                                                Runnable onFirstLoaded, Runnable onAllFailed) {
+//        //Clean Meta list
+//        List<NativeAd> oldList = mapMetaNativeSplash.get(adsKey);
+//        if (oldList != null) {
+//            for (NativeAd ad : oldList) destroyMetaNativeAd(ad);
+//            oldList.clear();
+//        }
+//        List<NativeAd> newList = new ArrayList<>();
+//        mapMetaNativeSplash.put(adsKey, newList);
+//
+//        //create Admob list
+//        String admobKey = AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash();
+//        List<com.google.android.gms.ads.nativead.NativeAd> fallbackList = new ArrayList<>();
+//        if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+//            List<com.google.android.gms.ads.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
+//            if (oldFallback != null) {
+//                for (com.google.android.gms.ads.nativead.NativeAd ad : oldFallback) ad.destroy();
+//                oldFallback.clear();
+//            }
+//            mapAdmobNativeSplash.put(admobKey, fallbackList);
+//        }
+//
+//        String idMeta = "";
+//        if (!AsyncSplash.Companion.getInstance().getIdNativeMetaSplash().equals("")) {
+//            idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
+//        } else {
+//            idMeta = listIdNative.get(0);
+//        }
+//        Log.d(TAG, "MetaNativeFullSplash: start load " + targetCount + " ads key=" + adsKey + " idMeta = " + idMeta);
+//        loadMetaNativeFullSplashSequentially(activity, idMeta, adsKey, targetCount, newList, fallbackList, 0,
+//                new boolean[]{false}, new boolean[]{false}, new int[]{0}, onFirstLoaded, onAllFailed);
+//    }
+//
+//    private static void loadMetaNativeFullSplashSequentially(Activity activity, String placementId,
+//                                                             String adsKey, int targetCount,
+//                                                             List<NativeAd> list,
+//                                                             List<com.google.android.gms.ads.nativead.NativeAd> fallbackList,
+//                                                             int loadedCount,
+//                                                             boolean[] hasNotifiedFirst,
+//                                                             boolean[] hasNotifiedFail,
+//                                                             int[] pendingAdmobCount,
+//                                                             Runnable onFirstLoaded,
+//                                                             Runnable onAllFailed) {
+//        if (loadedCount >= targetCount) {
+//            Log.d(TAG, "MetaNativeFullSplash: done total=" + list.size());
+//            if (list.isEmpty() && !hasNotifiedFail[0]) {
+//                hasNotifiedFail[0] = true;
+//                new Handler(Looper.getMainLooper()).post(onAllFailed);
+//            }
+//            return;
+//        }
+//        NativeAd nativeAd = new NativeAd(activity, placementId);
+//        nativeAd.loadAd(
+//                nativeAd.buildLoadAdConfig()
+//                        .withAdListener(new NativeAdListener() {
+//                            @Override
+//                            public void onError(Ad ad, AdError adError) {
+//                                Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount + ", idMeta = " + placementId + " err=" + adError.getErrorMessage());
+//
+//                                // Load AdMob native song song, không block Meta tiếp tục
+//                                Admob.getInstance().loadNativeAds(
+//                                        activity,
+//                                        AdmobApi.getInstance().getListIDByName(AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash()),
+//                                        new NativeCallback() {
+//                                            @Override
+//                                            public void onNativeAdLoaded(com.google.android.gms.ads.nativead.NativeAd nativeAd) {
+//                                                super.onNativeAdLoaded(nativeAd);
+//                                                fallbackList.add(nativeAd);
+//                                                Log.d(TAG, "MetaNativeFullSplash: admob fallback loaded, total=" + fallbackList.size());
+//                                            }
+//
+//                                            @Override
+//                                            public void onAdFailedToLoad(LoadAdError loadAdError) {
+//                                                super.onAdFailedToLoad(loadAdError);
+//                                                Log.d(TAG, "MetaNativeFullSplash: admob fallback also failed");
+//                                            }
+//                                        },
+//                                        AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash()
+//                                );
+//
+//                                loadMetaNativeFullSplashSequentially(activity, placementId, adsKey,
+//                                        targetCount, list, fallbackList, loadedCount + 1,
+//                                        hasNotifiedFirst, hasNotifiedFail,pendingAdmobCount, onFirstLoaded, onAllFailed);
+//                            }
+//
+//                            @Override
+//                            public void onAdLoaded(Ad ad) {
+//                                list.add((NativeAd) ad);
+//                                Log.d(TAG, "MetaNativeFullSplash: loaded " + list.size() + "/" + targetCount + ", idMeta = " + placementId);
+//                                if (!hasNotifiedFirst[0]) {
+//                                    hasNotifiedFirst[0] = true;
+//                                    new Handler(Looper.getMainLooper()).post(onFirstLoaded);
+//                                }
+//                                loadMetaNativeFullSplashSequentially(activity, placementId, adsKey,
+//                                        targetCount, list, fallbackList, loadedCount + 1,
+//                                        hasNotifiedFirst, hasNotifiedFail,pendingAdmobCount, onFirstLoaded, onAllFailed);
+//                            }
+//
+//                            @Override
+//                            public void onAdClicked(Ad ad) {
+//                            }
+//
+//                            @Override
+//                            public void onLoggingImpression(Ad ad) {
+//                            }
+//
+//                            @Override
+//                            public void onMediaDownloaded(Ad ad) {
+//                            }
+//                        }).build()
+//        );
+//    }
 
     // ─── SHOW IN FRAME (splash) ──────────────────────────────────────
 
@@ -276,7 +487,7 @@ public class MetaNativeManager {
     // ─── HELPER ──────────────────────────────────────────────────────
 
     public static boolean hasMetaNativeAfterInterSplash(String adsKey) {
-        List<NativeAd> list = mapMetaNativeAfterInterSplash.get(adsKey);
+        List<NativeAd> list = mapMetaNativeSplash.get(adsKey);
         return list != null && !list.isEmpty();
     }
 
@@ -295,12 +506,23 @@ public class MetaNativeManager {
 //        destroyMetaNativeAd(mapMetaNativeAfterInter.get(adsKey));
 //        mapMetaNativeAfterInter.remove(adsKey);
 
-        List<NativeAd> splashList = mapMetaNativeAfterInterSplash.get(adsKey);
+        List<NativeAd> splashList = mapMetaNativeSplash.get(adsKey);
         if (splashList != null) {
             for (NativeAd ad : splashList) destroyMetaNativeAd(ad);
             splashList.clear();
         }
-        mapMetaNativeAfterInterSplash.remove(adsKey);
+        mapMetaNativeSplash.remove(adsKey);
+    }
+
+    public static boolean hasAdmobFallback(String adsKey) {
+        List<com.google.android.gms.ads.nativead.NativeAd> list = mapAdmobNativeSplash.get(adsKey);
+        return list != null && !list.isEmpty();
+    }
+
+    public static com.google.android.gms.ads.nativead.NativeAd pollAdmobFallback(String adsKey) {
+        List<com.google.android.gms.ads.nativead.NativeAd> list = mapAdmobNativeSplash.get(adsKey);
+        if (list != null && !list.isEmpty()) return list.remove(0);
+        return null;
     }
 
     // ─── INTERFACE ───────────────────────────────────────────────────

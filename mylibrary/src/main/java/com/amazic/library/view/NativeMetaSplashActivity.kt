@@ -20,6 +20,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.amazic.library.ads.callback.InterCallback
 import com.amazic.library.ads.native_ads.MetaNativeManager
+import com.amazic.library.ads.native_ads.NativeAfterInterManager
+import com.amazic.library.ads.splash_ads.AsyncSplash
 import com.amazic.mylibrary.R
 import kotlin.collections.forEach
 import kotlin.collections.getOrNull
@@ -57,17 +59,40 @@ class NativeMetaSplashActivity : AppCompatActivity() {
     }
 
     private fun init() {
-        val adList = MetaNativeManager.mapMetaNativeAfterInterSplash[adsKey]
+        val adList = MetaNativeManager.mapMetaNativeSplash[adsKey]
         Log.d(
-            "Admob", "initSplashMode: adsKey='${adsKey}'" +
-                    ", mapKeys=${MetaNativeManager.mapMetaNativeAfterInterSplash.keys}" +
-                    ", mapListSize=${MetaNativeManager.mapMetaNativeAfterInterSplash[adsKey]?.size}"
+            "Admob", "MetaSplashActivity: adsKey='${adsKey}'" +
+                    ", mapKeys=${MetaNativeManager.mapMetaNativeSplash.keys}" +
+                    ", mapListSize=${MetaNativeManager.mapMetaNativeSplash[adsKey]?.size}"
         )
         if (adList.isNullOrEmpty()) {
-            Log.d("Admob", "NativeAfterInter Splash: no ads → onNextAction")
-            interCallback?.onNextAction()
-            finish()
-            return
+            if (AsyncSplash.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+                val fallBackList = MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
+                    .getKeyNativeFullAdmobSplash()]
+                Log.d(
+                    "Admob",
+                    "MetaSplashActivity: fallBackList Admob, adsKey = ${
+                        AsyncSplash.getInstance().getKeyNativeFullAdmobSplash()
+                    } " +
+                            ", mapKeys = ${MetaNativeManager.mapAdmobNativeSplash.keys}" +
+                            ", mappListSize = ${
+                                MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
+                                    .getKeyNativeFullAdmobSplash()]?.size
+                            }"
+                )
+
+                if (fallBackList.isNullOrEmpty()) {
+                    Log.d("Admob", "MetaSplashActivity: no ads Meta & Admob → onNextAction")
+                    interCallback?.onNextAction()
+                    finish()
+                    return
+                }
+            } else {
+                Log.d("Admob", "MetaSplashActivity: no ads Meta → onNextAction")
+                interCallback?.onNextAction()
+                finish()
+                return
+            }
         }
 
         ivClose.setOnClickListener {
@@ -81,19 +106,37 @@ class NativeMetaSplashActivity : AppCompatActivity() {
     }
 
     private fun showAdAt(index: Int) {
-        val adList = MetaNativeManager.mapMetaNativeAfterInterSplash[adsKey]
+        val adList = MetaNativeManager.mapMetaNativeSplash[adsKey]
         val nativeAd = adList?.getOrNull(index)
 
         if (nativeAd == null) {
-            Log.d("Admob", "NativeAfterInter Splash: no ad at index $index → onNextAction")
-            interCallback?.onNextAction()
-            finish()
-            return
+            if (AsyncSplash.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+                val admobAd = MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
+                    .getKeyNativeFullAdmobSplash()]?.removeFirstOrNull()
+
+                if (admobAd != null) {
+                    Log.d("Admob", "MetaSplashActivity: show Ads Native Admob")
+
+                    NativeAfterInterManager.showNativeAdInFrameSplash(frAds, admobAd)
+                    startCloseButtonCountdown()
+                } else {
+                    Log.d("Admob", "MetaSplashActivity: no ad ADMOB at index $index → onNextAction")
+                    interCallback?.onNextAction()
+                    finish()
+                    return
+                }
+            } else {
+                Log.d("Admob", "MetaSplashActivity: no ad META at index $index → onNextAction")
+                interCallback?.onNextAction()
+                finish()
+                return
+            }
+
         }
 
         Log.d(
             "Admob",
-            "NativeAfterInter Splash: show ad ${index + 1}/${adList?.size} | responseId=${nativeAd.id}"
+            "MetaSplashActivity: show ad ${index + 1}/${adList?.size} | responseId=${nativeAd?.id}"
         )
         currentAdIndex = index
         ivClose.visibility = View.GONE
@@ -137,14 +180,14 @@ class NativeMetaSplashActivity : AppCompatActivity() {
             override fun onTick(millisUntilFinished: Long) {
                 Log.d(
                     "Admob",
-                    "NativeAfterInter Splash: close button in ${millisUntilFinished / 1000}s"
+                    "MetaSplashActivity: close button in ${millisUntilFinished / 1000}s"
                 )
             }
 
             override fun onFinish() {
                 Log.d(
                     "Admob",
-                    "NativeAfterInter Splash: show close button at ad ${currentAdIndex + 1}"
+                    "MetaSplashActivity: show close button at ad ${currentAdIndex + 1}"
                 )
 
                 if (currentAdIndex % 2 == 0) {
@@ -164,13 +207,14 @@ class NativeMetaSplashActivity : AppCompatActivity() {
         tvClose.visibility = View.GONE
 
         val nextIndex = currentAdIndex + 1
-        val adList = MetaNativeManager.mapMetaNativeAfterInterSplash[adsKey]
+//        val adList = MetaNativeManager.mapMetaNativeSplash[adsKey]
+        val targetCount = AsyncSplash.getInstance().getNumberNativeFullShowSplash()
 
-        if (nextIndex < (adList?.size ?: 0)) {
-            Log.d("Admob", "NativeAfterInter Splash: move to ad ${nextIndex + 1}")
+        if (nextIndex < targetCount) {
+            Log.d("Admob", "MetaSplashActivity: move to ad ${nextIndex + 1}")
             showAdAt(nextIndex)
         } else {
-            Log.d("Admob", "NativeAfterInter Splash: all ads shown → onNextAction")
+            Log.d("Admob", "MetaSplashActivity: all ads shown → onNextAction")
             interCallback?.onNextAction()
             finish()
         }
@@ -179,8 +223,8 @@ class NativeMetaSplashActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         countdownTimer?.cancel()
-        MetaNativeManager.mapMetaNativeAfterInterSplash[adsKey]?.forEach { it.destroy() }
-        MetaNativeManager.mapMetaNativeAfterInterSplash.remove(adsKey)
+        MetaNativeManager.mapMetaNativeSplash[adsKey]?.forEach { it.destroy() }
+        MetaNativeManager.mapMetaNativeSplash.remove(adsKey)
         adsKey = ""
         remoteKey = ""
     }

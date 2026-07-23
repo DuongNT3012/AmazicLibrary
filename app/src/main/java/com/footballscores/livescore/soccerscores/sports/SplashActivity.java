@@ -181,7 +181,7 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setKeyNativeFullMetaSplash("native_after_inter");
 //            AsyncSplash.Companion.getInstance().setIdNativeMetaSplash("1439001763964762_1710436723487930");
             AsyncSplash.Companion.getInstance().setKeyNativeFullAdmobSplash("native_after_inter");
-//            AsyncSplash.Companion.getInstance().setUseNativeFullSplashAdmobWhenMetaFail(true);
+            AsyncSplash.Companion.getInstance().setUseNativeFullSplashAdmobWhenMetaFail(true);
             ///end
 
 //            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);

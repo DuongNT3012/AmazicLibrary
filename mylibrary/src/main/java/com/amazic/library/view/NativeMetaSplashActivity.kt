@@ -111,11 +111,18 @@ class NativeMetaSplashActivity : AppCompatActivity() {
 
         if (nativeAd == null) {
             if (AsyncSplash.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
-                val admobAd = MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
-                    .getKeyNativeFullAdmobSplash()]?.removeFirstOrNull()
+                val admobList = MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
+                    .getKeyNativeFullAdmobSplash()]
+                Log.d(
+                    "Admob", "MetaSplashActivity: admobList = ${admobList?.size}"
+                )
+                val admobAd = admobList?.removeFirstOrNull()
 
                 if (admobAd != null) {
-                    Log.d("Admob", "MetaSplashActivity: show Ads Native Admob")
+                    Log.d(
+                        "Admob",
+                        "MetaSplashActivity: show Ads Native Admob | responseId=${admobAd} "
+                    )
 
                     NativeAfterInterManager.showNativeAdInFrameSplash(frAds, admobAd)
                     startCloseButtonCountdown()

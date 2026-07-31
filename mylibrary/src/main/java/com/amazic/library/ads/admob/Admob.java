@@ -129,12 +129,12 @@ public class Admob {
     public int timeHttpOpen = -1;
 
     //update request check time delay show ads splash
-    private final Handler handlerDelayAdsSplash = new Handler(Looper.getMainLooper());
+//    private final Handler handlerDelayAdsSplash = new Handler(Looper.getMainLooper());
     private Runnable timerDelayRunnable;
     private boolean isTimerDelayFinished = false;
     private boolean isAdLoadAdsSplashFinished = false;
     private long startTime;
-    private int timeDelayAdsSplash = 7000;
+//    private int timeDelayAdsSplash = 7000;
     private boolean isInitAdmobDone = false;
     //end
 
@@ -227,13 +227,13 @@ public class Admob {
         this.timeOutCallSplashAds = timeOutCallSplashAds;
     }
 
-    public int getTimeDelayNativeSplash() {
-        return timeDelayAdsSplash;
-    }
+//    public int getTimeDelayNativeSplash() {
+//        return timeDelayAdsSplash;
+//    }
 
-    public void setTimeDelayNativeSplash(int timeDelay) {
-        this.timeDelayAdsSplash = timeDelay;
-    }
+//    public void setTimeDelayNativeSplash(int timeDelay) {
+//        this.timeDelayAdsSplash = timeDelay;
+//    }
 
     public boolean isDetectTestAdByView() {
         return isDetectTestAdByView;
@@ -1289,30 +1289,30 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //delay ads splash
-        if (AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
-            timerDelayRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "AdsSplash Inter preload: Đã đủ 7 giây đếm ngược.");
-                    isTimerDelayFinished = true;
-
-                    //get data ad inter
-                    if (mInterstitialAdSplash == null) {
-                        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
-                        Log.d(TAG, "Get data ad Timeout 7s: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)) + ", ad = " + mInterstitialAdSplash);
-
-                        //destroy preload ads
-                        InterstitialAdPreloader.destroy(listIdInter.get(0));
-                    }
-
-                    checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
-                }
-            };
-        } else {
-            Log.d(TAG, "AdsSplash Inter preload: không dùng chờ 7 giây đếm ngược.");
+//        if (AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
+//            timerDelayRunnable = new Runnable() {
+//                @Override
+//                public void run() {
+//                    Log.d(TAG, "AdsSplash Inter preload: Đã đủ 7 giây đếm ngược.");
+//                    isTimerDelayFinished = true;
+//
+//                    //get data ad inter
+//                    if (mInterstitialAdSplash == null) {
+//                        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+//                        Log.d(TAG, "Get data ad Timeout 7s: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)) + ", ad = " + mInterstitialAdSplash);
+//
+//                        //destroy preload ads
+//                        InterstitialAdPreloader.destroy(listIdInter.get(0));
+//                    }
+//
+//                    checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
+//                }
+//            };
+//        } else {
+//            Log.d(TAG, "AdsSplash Inter preload: không dùng chờ 7 giây đếm ngược.");
             isTimerDelayFinished = true;
-        }
-        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
+//        }
+//        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end
 
         //Check condition
@@ -2437,20 +2437,20 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
 
         //delay ads splash
-        if (AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
-            timerDelayRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    Log.d(TAG, "Đã đủ 7 giây đếm ngược.");
-                    isTimerDelayFinished = true;
-                    checkConditionAdsSplash(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
-                }
-            };
-        } else {
-            Log.d(TAG, "Không dùng chờ 7 giây đếm ngược.");
+//        if (AsyncSplash.Companion.getInstance().getUseNativeSplash()) {
+//            timerDelayRunnable = new Runnable() {
+//                @Override
+//                public void run() {
+//                    Log.d(TAG, "Đã đủ 7 giây đếm ngược.");
+//                    isTimerDelayFinished = true;
+//                    checkConditionAdsSplash(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+//                }
+//            };
+//        } else {
+//            Log.d(TAG, "Không dùng chờ 7 giây đếm ngược.");
             isTimerDelayFinished = true;
-        }
-        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
+//        }
+//        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end
 
         //Check condition
@@ -2547,10 +2547,10 @@ public class Admob {
     }
 
     public void removeHandlerDelayAdsSplash() {
-        if (handlerDelayAdsSplash != null && timerDelayRunnable != null) {
-            handlerDelayAdsSplash.removeCallbacks(timerDelayRunnable);
-            handlerDelayAdsSplash.removeCallbacksAndMessages(null);
-        }
+//        if (handlerDelayAdsSplash != null && timerDelayRunnable != null) {
+//            handlerDelayAdsSplash.removeCallbacks(timerDelayRunnable);
+//            handlerDelayAdsSplash.removeCallbacksAndMessages(null);
+//        }
     }
 
     public void loadAndShowInterAdSplashLoop(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {

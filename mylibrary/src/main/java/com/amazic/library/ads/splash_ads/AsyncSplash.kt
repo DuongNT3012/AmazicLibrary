@@ -91,7 +91,7 @@ class AsyncSplash {
     private var numberPreloading = 3
     private var numberPreloadingSplash = 1
     private var isShowNativeAfterInter = false
-    private var isUseNativeSplash = false
+//    private var isUseNativeSplash = false
     private var isUseNativeFullSplash = false
     private var isUseCacheDataCallSplash = false
     private var isUseDetectionVPNOrEmulator = false
@@ -265,7 +265,7 @@ class AsyncSplash {
         this.keyNativeAfterInterSplash = "native_after_inter"
         this.numberNativeFullShowSplash = 1
         this.isShowNativeAfterInter = false
-        this.isUseNativeSplash = false
+//        this.isUseNativeSplash = false
         this.isUseNativeFullSplash = false
         this.isUseCacheDataCallSplash = false
         this.isUseDetectionVPNOrEmulator = false
@@ -418,13 +418,13 @@ class AsyncSplash {
         return this.isShowNativeAfterInter
     }
 
-    fun setUseNativeSplash(isUse: Boolean) {
-        this.isUseNativeSplash = isUse
-    }
-
-    fun getUseNativeSplash(): Boolean {
-        return this.isUseNativeSplash
-    }
+//    fun setUseNativeSplash(isUse: Boolean) {
+//        this.isUseNativeSplash = isUse
+//    }
+//
+//    fun getUseNativeSplash(): Boolean {
+//        return this.isUseNativeSplash
+//    }
 
     fun setUseNativeSplashMeta(isUse: Boolean) {
         this.isUseNativeSplashMeta = isUse

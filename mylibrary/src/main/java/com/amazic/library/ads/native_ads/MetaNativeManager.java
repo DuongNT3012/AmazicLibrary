@@ -450,9 +450,10 @@ public class MetaNativeManager {
                 .inflate(R.layout.native_meta_splash, fr, false);
 //        View btnClose = adView.findViewById(R.id.btn_close);
 //        if (btnClose != null) btnClose.setVisibility(View.GONE);
-        bindMetaNativeAdView(adView, nativeAd);
         fr.removeAllViews();
         fr.addView(adView);
+
+        bindMetaNativeAdView(adView, nativeAd);
     }
 
     // ─── BIND DATA → VIEW ────────────────────────────────────────────

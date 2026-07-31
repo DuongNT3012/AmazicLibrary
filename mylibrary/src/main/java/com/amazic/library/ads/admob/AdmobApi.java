@@ -233,6 +233,19 @@ public class AdmobApi {
                         }
                         isSetId = true;
                         Log.d(TAG, "isSetId = true2, listAds size = " + listAds.size());
+
+                        //update jsonIdAdsDefault
+                        StringBuilder sb = new StringBuilder("[");
+                        List<AdsModel> body = response.body();
+                        for (int i = 0; i < body.size(); i++) {
+                            AdsModel ads = body.get(i);
+                            sb.append("{\"name\":\"").append(ads.getName())
+                                    .append("\",\"ads_id\":\"").append(ads.getAds_id()).append("\"}");
+                            if (i < body.size() - 1) sb.append(",");
+                        }
+                        sb.append("]");
+                        jsonIdAdsDefault = sb.toString();
+                        //end
                         callBack.onReady();
                     } else {
                         Log.d(TAG, "xxxxxx2");
@@ -289,7 +302,7 @@ public class AdmobApi {
                 .create(ApiService.class);
 
         String appID_package = appIDTemp + "+" + packageName;
-        Log.d(TAG, "refreshCacheOnly: baseURL = " + baseURL +" , appID_package =" + appID_package);
+        Log.d(TAG, "refreshCacheOnly: baseURL = " + baseURL + " , appID_package =" + appID_package);
 
         tempApiService.callAds(appID_package).enqueue(new Callback<List<AdsModel>>() {
             @Override
@@ -360,6 +373,7 @@ public class AdmobApi {
     public void loadAndShowNativeFullSplash(AppCompatActivity activity, String adsKeyNative, InterCallback interCallback, String remoteKeyNative) {
         Admob.getInstance().loadAndShowNativeFullSplashCount(activity, AdmobApi.getInstance().getListIDByName(adsKeyNative), interCallback, adsKeyNative, remoteKeyNative);
     }
+
     public void loadAndShowMetaNativeFullSplash(AppCompatActivity activity, InterCallback interCallback) {
         Admob.getInstance().loadAndShowMetaNativeFullSplashCount(activity, interCallback);
     }

@@ -6,7 +6,6 @@ import androidx.annotation.Nullable;
 
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAdRevenue;
-import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.AdjustEvent;
 import com.amazic.library.ads.admob.Admob;
 import com.google.android.gms.ads.AdValue;

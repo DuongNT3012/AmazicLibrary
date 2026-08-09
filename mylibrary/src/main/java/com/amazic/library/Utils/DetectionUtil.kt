@@ -37,7 +37,7 @@ class DetectionUtil {
     }
 
     fun isEmulator(): Boolean {
-        if(AsyncSplash.getInstance().getUseDetectionVPNOrEmulator()) {
+        if (AsyncSplash.getInstance().getUseDetectionVPNOrEmulator()) {
             val isEmulatorBuild =
                 Build.FINGERPRINT.startsWith("generic") ||
                         Build.FINGERPRINT.startsWith("unknown") ||
@@ -65,7 +65,7 @@ class DetectionUtil {
             ).any { java.io.File(it).exists() }
 
             return isEmulatorBuild || isEmulatorFiles
-        }else{
+        } else {
             return false
         }
     }

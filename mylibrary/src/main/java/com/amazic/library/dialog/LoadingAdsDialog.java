@@ -16,6 +16,7 @@ import java.util.Random;
 
 public class LoadingAdsDialog extends Dialog {
     private DialogLoadingAdsBinding binding;
+
     public LoadingAdsDialog(@NonNull Context context) {
         super(context, R.style.AppTheme);
     }

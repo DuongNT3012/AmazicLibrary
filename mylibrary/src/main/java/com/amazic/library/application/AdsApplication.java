@@ -12,7 +12,6 @@ import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
 import com.amazic.library.ads.admob.Admob;
-import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.google.android.gms.ads.MobileAds;
@@ -42,17 +41,17 @@ public abstract class AdsApplication extends Application implements Application.
 
     private void initMeta() {
 //        if (AsyncSplash.Companion.getInstance().getIsUseNativeSplashMeta()) {
-            /// chi dung khi debug test ads meta
-            Log.d("Admob", "initMeta - check buildDebug setTestMode = " + buildDebug());
-            if (buildDebug()) {
-                AdSettings.setTestMode(true);
-            }
+        /// chi dung khi debug test ads meta
+        Log.d("Admob", "initMeta - check buildDebug setTestMode = " + buildDebug());
+        if (buildDebug()) {
+            AdSettings.setTestMode(true);
+        }
 
-            if (!AudienceNetworkAds.isInitialized(this)) {
-                AudienceNetworkAds.buildInitSettings(this)
-                        .withInitListener(result -> Log.d("Admob", "initMeta: " + result.getMessage()))
-                        .initialize();
-            }
+        if (!AudienceNetworkAds.isInitialized(this)) {
+            AudienceNetworkAds.buildInitSettings(this)
+                    .withInitListener(result -> Log.d("Admob", "initMeta: " + result.getMessage()))
+                    .initialize();
+        }
 //        }
     }
 

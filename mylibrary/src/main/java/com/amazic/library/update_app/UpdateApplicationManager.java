@@ -34,6 +34,12 @@ import com.google.android.play.core.install.model.UpdateAvailability;
 public class UpdateApplicationManager {
     private static final String TAG = "UpdateApplicationManager";
     private static UpdateApplicationManager INSTANCE;
+    private Dialog dialog;
+    private ProgressBar progressBar;
+    private TextView tvOk;
+    private ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
+    private IonUpdateApplication ionUpdateApplication;
+    private int updateType = AppUpdateType.IMMEDIATE;//must update then can use app
 
     public static UpdateApplicationManager getInstance() {
         if (INSTANCE == null) {
@@ -41,13 +47,6 @@ public class UpdateApplicationManager {
         }
         return INSTANCE;
     }
-
-    private Dialog dialog;
-    private ProgressBar progressBar;
-    private TextView tvOk;
-    private ActivityResultLauncher<IntentSenderRequest> activityResultLauncher;
-    private IonUpdateApplication ionUpdateApplication;
-    private int updateType = AppUpdateType.IMMEDIATE;//must update then can use app
     // or AppUpdateType.FLEXIBLE: can use app when updating app
 
     public void setUseImmediateUpdate() {
@@ -98,12 +97,12 @@ public class UpdateApplicationManager {
     }
 
     public AppUpdateManager checkVersionPlayStore(AppCompatActivity activity,
-                                      boolean isForceUpdate,
-                                      boolean isCancelableDialog,
-                                      String title,
-                                      String content,
-                                      String positiveText,
-                                      String negativeText) {
+                                                  boolean isForceUpdate,
+                                                  boolean isCancelableDialog,
+                                                  String title,
+                                                  String content,
+                                                  String positiveText,
+                                                  String negativeText) {
         EventTrackingHelper.logEvent(activity, "check_version_play_store");
         Log.d(TAG, "Check version play store.");
         AppUpdateManager appUpdateManager = AppUpdateManagerFactory.create(activity);

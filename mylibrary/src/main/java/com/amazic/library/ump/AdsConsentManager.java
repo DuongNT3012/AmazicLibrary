@@ -19,22 +19,18 @@ public class AdsConsentManager {
     private final Activity activity;
     private final AtomicBoolean auAtomicBoolean;
 
-    public interface UMPResultListener {
-        public void onCheckUMPSuccess(boolean result);
-    }
-
     public AdsConsentManager(Activity activity) {
         this.activity = activity;
         this.auAtomicBoolean = new AtomicBoolean(false);
     }
 
-    public void requestUMP(UMPResultListener umpResultListener) {
-        this.requestUMP(false, "", false, umpResultListener);
-    }
-
     public static boolean getConsentResult(Context context) {
         String consentResult = context.getSharedPreferences(context.getPackageName() + "_preferences", 0).getString("IABTCF_PurposeConsents", "");
         return consentResult.isEmpty() || String.valueOf(consentResult.charAt(0)).equals("1");
+    }
+
+    public void requestUMP(UMPResultListener umpResultListener) {
+        this.requestUMP(false, "", false, umpResultListener);
     }
 
     public void requestUMP(Boolean enableDebug, String testDevice, Boolean resetData, UMPResultListener umpResultListener) {
@@ -98,5 +94,9 @@ public class AdsConsentManager {
             UMPResultListener var10000 = umpResultListener;
             var10000.onCheckUMPSuccess(getConsentResult(activity));
         });
+    }
+
+    public interface UMPResultListener {
+        void onCheckUMPSuccess(boolean result);
     }
 }

@@ -1,5 +1,8 @@
 package com.amazic.library.ads.splash_ads
 
+/*import com.amazic.library.iap.BillingCallback
+import com.amazic.library.iap.IAPManager
+import com.amazic.library.iap.ProductDetailCustom*/ //comment for billing
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -21,12 +24,8 @@ import com.amazic.library.ads.app_open_ads.AppOpenManager
 import com.amazic.library.ads.banner_ads.BannerBuilder
 import com.amazic.library.ads.banner_ads.BannerManager
 import com.amazic.library.ads.callback.ApiCallback
-import com.amazic.library.ads.callback.AppOpenCallback
 import com.amazic.library.ads.callback.BannerCallback
 import com.amazic.library.ads.callback.InterCallback
-/*import com.amazic.library.iap.BillingCallback
-import com.amazic.library.iap.IAPManager
-import com.amazic.library.iap.ProductDetailCustom*/ //comment for billing
 import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
 import com.amazic.mylibrary.R
@@ -37,120 +36,13 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.net.URL
 import java.util.Locale
 import kotlin.coroutines.resume
 import kotlin.coroutines.suspendCoroutine
-import kotlin.system.measureTimeMillis
 
-class AsyncSplash {
+class  AsyncSplash {
     private val TAG = "AsyncSplash"
-    private var isTech = false
-    private var adsSplash: AdsSplash? = null
-    private var jsonIdAdsDefault = ""
-    private var timeOutCallApi = 4000
-    private var adjustKey = ""
-    private var linkServer = ""
-    private var appId = ""
-    private var isShowAdsSplash = false
-    private var isTimeout = false
-    private var isNoInternetAction = false
-    private var initWelcomeBack = "Normal"
-    private var welcomeBackClass: Class<*>? = null
-    private var isShowBannerSplash = false
-    private var frAdsBannerSplash: FrameLayout? = null
-    private var listIdBannerSplash: MutableList<String> =
-        arrayListOf("ca-app-pub-3940256099942544/6300978111")
-    private var adsKey: String = ""
-    private var listTurnOffRemoteKeys: MutableList<String> = mutableListOf()
-    private var activity: AppCompatActivity? = null
-    private var interCallback: InterCallback? = null
-    private var appOpenCallback: AppOpenCallback? = null
-    private var isDebug = false
-    private var isUseBilling = false
-
-    //private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf() //comment for billing
-    private var timeOutSplash = 12000L
-    private var isLoopAdsSplash = false
-    private var useTechManagerOrDetectTestAd = DETECT_TEST_AD
-
-    //1.use for log event time out 12s
-    private var initRemoteConfig = false
-    private var initAdmobApi = false
-    private var initAdsConsentManager = false
-    private var initBilling = false
-    private var initTechManager = false
-
-    //
-    private var isUseIdAdsFromRemoteConfig = false
-    private var isPreloadResumeAds = true
-    private var isAsyncSplashAds = false
-
-    //ad preloading
-    private var isUseAdPreloading = false
-    private var numberPreloading = 3
-    private var numberPreloadingSplash = 1
-    private var isShowNativeAfterInter = false
-//    private var isUseNativeSplash = false
-    private var isUseNativeFullSplash = false
-    private var isUseCacheDataCallSplash = false
-    private var isUseDetectionVPNOrEmulator = false
-
-    private var isUseNativeFullSplashAdmobWhenMetaFail = false
-
-
-    //1.end
-    //2.use for log event
-    private var timeStartSplash = System.currentTimeMillis()
-    //2.end
-
-    //Use for inter and open splash 1, 2, 3...
-    private var keyAdsInterSplash = "inter_splash"
-    private var keyAdsOpenSplash = "open_splash"
-    private var keyAdsOpenResume = ""
-
-    //key native after inter splash
-    private var keyNativeAfterInterSplash = "native_after_inter"
-
-    //
-    private var numberNativeFullShowSplash = 1
-
-    //id set test native meta
-    private var idNativeMetaSplash = ""
-    private var keyNativeFullMetaSplash = "native_meta_splash"
-    //end
-
-    //native full splash admob when meta fail
-    private var keyNativeFullAdmobSplash  = ""
-    //end
-
-    //native meta splash
-    private var isUseNativeSplashMeta: Boolean = false
-    //end
-
-    private var isUseAppUpdateManager = false
-    private var remoteKeyIdAdsServer = "id_ads"
-    private var onPrepareLoadInterOpenSplashAds: (() -> Unit?)? = null
-
-    //Log event 26/04/2025
-    private var timeSplashCheck = System.currentTimeMillis()
-
-    //check internet speed
-    private var urlCheckInternetSpeed = "https://www.google.com/"
-
-    //Set loadAndShowIdInterAdSplashAsync 30/05/2025
-    private var loadAndShowIdInterAdSplashAsync = false
-
-    //Set timeout call id remote config
-    private var timeOutCallIdRemoteConfig = 4000L
-    private var isSetId = false
-
-    //Set key interval inter
-    private var keyIntervalBetweenInterstitial = "interval_between_interstitial"
-    private var keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
-    private var timeStep1 = System.currentTimeMillis()
-    private var timeLastStep = System.currentTimeMillis()
-//    private var onInitAdmobDone: (() -> Unit)? = null
+    private val config = AdmobAdsConfig()
 
     fun normalizeFirebaseEventName(input: String): String {
         if (input.isBlank()) return DEFAULT_EVENT_NAME
@@ -175,16 +67,16 @@ class AsyncSplash {
 
     private fun logEventStep(step: String) {
         val bundle = Bundle()
-        val time_between_step = "${System.currentTimeMillis() - timeLastStep}"
-        val time_to_step = "${System.currentTimeMillis() - timeStep1}"
+        val time_between_step = "${System.currentTimeMillis() - config.timeLastStep}"
+        val time_to_step = "${System.currentTimeMillis() - config.timeStep1}"
         bundle.putString("time_between_step", time_between_step)
         bundle.putString("time_to_step", time_to_step)
         EventTrackingHelper.logEventWithMultipleParams(
-            activity,
+            config.activity,
             normalizeFirebaseEventName("AsyncSplash_$step"),
             bundle
         )
-        timeLastStep = System.currentTimeMillis()
+        config.timeLastStep = System.currentTimeMillis()
     }
 
     companion object {
@@ -203,113 +95,58 @@ class AsyncSplash {
 
     fun init(
         activity: AppCompatActivity,
-        appOpenCallback: AppOpenCallback,
         interCallback: InterCallback,
         adjustKey: String,
         linkServer: String,
         appId: String,
         jsonIdAdsDefault: String
     ) {
-        resetVarToDefault()
-        this.activity = activity
+        config.clear()
+        config.activity = activity
         EventTrackingHelper.logEvent(activity, "${TAG}_INIT")
-        timeStep1 = System.currentTimeMillis()
-        timeLastStep = System.currentTimeMillis()
-        this.adjustKey = adjustKey
-        this.jsonIdAdsDefault = jsonIdAdsDefault
-        this.linkServer = linkServer
-        this.appId = appId
-        this.appOpenCallback = appOpenCallback
-        this.interCallback = interCallback
-    }
-
-    private fun resetVarToDefault() {
-        this.isTech = false
-        this.jsonIdAdsDefault = ""
-        this.adjustKey = ""
-        this.linkServer = ""
-        this.appId = ""
-        this.isShowAdsSplash = false
-        this.isTimeout = false
-        this.isNoInternetAction = false
-        this.initWelcomeBack = "Normal"
-        this.welcomeBackClass = null
-        this.isShowBannerSplash = false
-        this.listIdBannerSplash = arrayListOf("ca-app-pub-3940256099942544/6300978111")
-        this.listTurnOffRemoteKeys = mutableListOf()
-        this.isDebug = false
-        this.isUseBilling = false
-        //this.listProductDetailCustoms = arrayListOf() //comment for billing
-        this.timeOutSplash = 12000L
-        this.isLoopAdsSplash = false
-        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
-        this.initRemoteConfig = false
-        this.initAdmobApi = false
-        this.initAdsConsentManager = false
-        this.initBilling = false
-        this.initTechManager = false
-        this.isUseIdAdsFromRemoteConfig = false
-        this.isPreloadResumeAds = true
-        this.numberPreloading = 3
-        this.numberPreloadingSplash = 1
-        this.isUseAdPreloading = false
-        this.isAsyncSplashAds = false
-        this.keyAdsInterSplash = "inter_splash"
-        this.keyAdsOpenSplash = "open_splash"
-        this.keyAdsOpenResume = ""
-        this.loadAndShowIdInterAdSplashAsync = false
-        this.timeOutCallIdRemoteConfig = 4000L
-        this.isSetId = false
-        this.keyIntervalBetweenInterstitial = "interval_between_interstitial"
-        this.keyIntervalInterstitialFromStart = "interval_interstitial_from_start"
-        this.keyNativeAfterInterSplash = "native_after_inter"
-        this.numberNativeFullShowSplash = 1
-        this.isShowNativeAfterInter = false
-//        this.isUseNativeSplash = false
-        this.isUseNativeFullSplash = false
-        this.isUseCacheDataCallSplash = false
-        this.isUseDetectionVPNOrEmulator = false
-        this.idNativeMetaSplash = ""
-        this.isUseNativeSplashMeta = false
-        this.keyNativeFullMetaSplash = "native_meta_splash"
-        this.keyNativeFullAdmobSplash = "native_full_splash"
-        this.isUseNativeFullSplashAdmobWhenMetaFail = false
+        config.timeStep1 = System.currentTimeMillis()
+        config.timeLastStep = System.currentTimeMillis()
+        config.adjustKey = adjustKey
+        config.jsonIdAdsDefault = jsonIdAdsDefault
+        config.linkServer = linkServer
+        config.appId = appId
+        config.interCallback = interCallback
     }
 
     fun setKeyIntervalBetweenInterstitial(keyIntervalBetweenInterstitial: String) {
-        this.keyIntervalBetweenInterstitial = keyIntervalBetweenInterstitial
+        config.keyIntervalBetweenInterstitial = keyIntervalBetweenInterstitial
     }
 
     fun setKeyIntervalInterstitialFromStart(keyIntervalInterstitialFromStart: String) {
-        this.keyIntervalInterstitialFromStart = keyIntervalInterstitialFromStart
+        config.keyIntervalInterstitialFromStart = keyIntervalInterstitialFromStart
     }
 
     fun setTimeOutCallIdRemoteConfig(timeOutCallIdRemoteConfig: Long) {
-        this.timeOutCallIdRemoteConfig = timeOutCallIdRemoteConfig
+        config.timeOutCallIdRemoteConfig = timeOutCallIdRemoteConfig
     }
 
     fun getLoadAndShowIdInterAdSplashAsync(): Boolean {
-        return this.loadAndShowIdInterAdSplashAsync
+        return config.loadAndShowIdInterAdSplashAsync
     }
 
     fun setLoadAndShowIdInterAdSplashAsync() {
-        this.loadAndShowIdInterAdSplashAsync = true
+        config.loadAndShowIdInterAdSplashAsync = true
     }
 
     fun setUrlCheckInternetSpeed(urlCheckInternetSpeed: String) {
-        this.urlCheckInternetSpeed = urlCheckInternetSpeed
+        config.urlCheckInternetSpeed = urlCheckInternetSpeed
     }
 
     fun setTimeSplashCheck() {
-        this.timeSplashCheck = System.currentTimeMillis()
+        config.timeSplashCheck = System.currentTimeMillis()
     }
 
     fun getTimeSplashCheck(): Long {
-        return this.timeSplashCheck
+        return config.timeSplashCheck
     }
 
     fun setOnPrepareLoadInterOpenSplashAds(onPrepareLoadInterOpenSplashAds: () -> Unit) {
-        this.onPrepareLoadInterOpenSplashAds = onPrepareLoadInterOpenSplashAds
+        config.onPrepareLoadInterOpenSplashAds = onPrepareLoadInterOpenSplashAds
     }
 
 //    fun setOnInitAdmobDone(onInitAdmobDone: () -> Unit) {
@@ -317,105 +154,105 @@ class AsyncSplash {
 //    }
 
     fun setUseAppUpdateManager() {
-        this.isUseAppUpdateManager = true
+        config.isUseAppUpdateManager = true
     }
 
     fun setKeyAdsInterSplash(keyAdsInterSplash: String) {
-        this.keyAdsInterSplash = keyAdsInterSplash
+        config.keyAdsInterSplash = keyAdsInterSplash
     }
 
     fun setKeyAdsOpenSplash(keyAdsOpenSplash: String) {
-        this.keyAdsOpenSplash = keyAdsOpenSplash
+        config.keyAdsOpenSplash = keyAdsOpenSplash
     }
 
     fun setKeyAdsOpenResume(keyAdsOpenResume: String) {
-        this.keyAdsOpenResume = keyAdsOpenResume
+        config.keyAdsOpenResume = keyAdsOpenResume
     }
 
     fun getKeyAdsOpenResume(): String {
-        return this.keyAdsOpenResume
+        return config.keyAdsOpenResume
     }
 
     fun setKeyNativeAfterInterSplash(key: String) {
-        this.keyNativeAfterInterSplash = key
+        config.keyNativeAfterInterSplash = key
     }
 
     fun setKeyNativeFullMetaSplash(key: String) {
-        this.keyNativeFullMetaSplash = key
+        config.keyNativeFullMetaSplash = key
     }
 
     fun getKeyNativeFullMetaSplash(): String {
-        return this.keyNativeFullMetaSplash
+        return config.keyNativeFullMetaSplash
     }
 
-    fun setKeyNativeFullAdmobSplash(key: String){
-        this.keyNativeFullAdmobSplash = key
+    fun setKeyNativeFullAdmobSplash(key: String) {
+        config.keyNativeFullAdmobSplash = key
     }
 
-    fun getKeyNativeFullAdmobSplash() : String{
-        return this.keyNativeFullAdmobSplash
+    fun getKeyNativeFullAdmobSplash(): String {
+        return config.keyNativeFullAdmobSplash
     }
 
     fun setIdNativeMetaSplash(id: String) {
-        this.idNativeMetaSplash = id
+        config.idNativeMetaSplash = id
     }
 
     fun getIdNativeMetaSplash(): String {
-        return this.idNativeMetaSplash
+        return config.idNativeMetaSplash
     }
 
     fun setNumberNativeFullShowSplash(count: Int) {
-        this.numberNativeFullShowSplash = count
+        config.numberNativeFullShowSplash = count
     }
 
     fun getNumberNativeFullShowSplash(): Int {
-        return this.numberNativeFullShowSplash
+        return config.numberNativeFullShowSplash
     }
 
     fun setAsyncSplashAds() { //Show splash ads without wait any thing
-        this.isAsyncSplashAds = true
+        config.isAsyncSplashAds = true
     }
 
     fun setPreloadResumeAds(isPreloadResumeAds: Boolean) { //Set can preload resume ads or not (Note: set false when you need to load and show resume ads)
-        this.isPreloadResumeAds = isPreloadResumeAds
+        config.isPreloadResumeAds = isPreloadResumeAds
     }
 
     fun getPreloadResumeAds(): Boolean {
-        return this.isPreloadResumeAds
+        return config.isPreloadResumeAds
     }
 
     fun setKeyNumberPreloading(keyNumber: String) {
         var number: Int =
-            RemoteConfigHelper.getInstance().get_config_long(activity, keyNumber).toInt()
-        this.numberPreloading = number
+            RemoteConfigHelper.getInstance().get_config_long(config.activity, keyNumber).toInt()
+        config.numberPreloading = number
     }
 
     fun getNumberPreloading(): Int {
-        return this.numberPreloading
+        return config.numberPreloading
     }
 
     fun setNumberPreloadingSplash(number: Int) {
-        this.numberPreloadingSplash = number
+        config.numberPreloadingSplash = number
     }
 
     fun getNumberPreloadingSplash(): Int {
-        return this.numberPreloadingSplash
+        return config.numberPreloadingSplash
     }
 
     fun setUseAdPreloading(isUsePreLoading: Boolean) {
-        this.isUseAdPreloading = isUsePreLoading
+        config.isUseAdPreloading = isUsePreLoading
     }
 
     fun getUseAdPreloading(): Boolean {
-        return this.isUseAdPreloading
+        return config.isUseAdPreloading
     }
 
     fun setShowNativeAfterInter(isShowNativeAfterInter: Boolean) {
-        this.isShowNativeAfterInter = isShowNativeAfterInter
+        config.isShowNativeAfterInter = isShowNativeAfterInter
     }
 
     fun getShowNativeAfterInter(): Boolean {
-        return this.isShowNativeAfterInter
+        return config.isShowNativeAfterInter
     }
 
 //    fun setUseNativeSplash(isUse: Boolean) {
@@ -427,130 +264,128 @@ class AsyncSplash {
 //    }
 
     fun setUseNativeSplashMeta(isUse: Boolean) {
-        this.isUseNativeSplashMeta = isUse
+        config.isUseNativeSplashMeta = isUse
     }
 
     fun getIsUseNativeSplashMeta(): Boolean {
-        return isUseNativeSplashMeta
+        return config.isUseNativeSplashMeta
     }
 
     fun setUseNativeFullSplash(isUse: Boolean) {
-        this.isUseNativeFullSplash = isUse
+        config.isUseNativeFullSplash = isUse
     }
 
     fun getUseNativeFullSplash(): Boolean {
-        return this.isUseNativeFullSplash
+        return config.isUseNativeFullSplash
     }
 
     fun setUseCacheDataCallSplash(isUse: Boolean) {
-        this.isUseCacheDataCallSplash = isUse
+        config.isUseCacheDataCallSplash = isUse
     }
 
     fun getUseCacheDataCallSplash(): Boolean {
-        return this.isUseCacheDataCallSplash
+        return config.isUseCacheDataCallSplash
     }
 
     fun setUseDetectionVPNOrEmulator(isUse: Boolean) {
-        this.isUseDetectionVPNOrEmulator = isUse
+        config.isUseDetectionVPNOrEmulator = isUse
     }
 
     fun getUseDetectionVPNOrEmulator(): Boolean {
-        return this.isUseDetectionVPNOrEmulator
+        return config.isUseDetectionVPNOrEmulator
     }
 
     fun setUseNativeFullSplashAdmobWhenMetaFail(isUse: Boolean) {
-        this.isUseNativeFullSplashAdmobWhenMetaFail = isUse
+        config.isUseNativeFullSplashAdmobWhenMetaFail = isUse
     }
 
     fun getUseNativeFullSplashAdmobWhenMetaFail(): Boolean {
-        return this.isUseNativeFullSplashAdmobWhenMetaFail
+        return config.isUseNativeFullSplashAdmobWhenMetaFail
     }
 
     fun setUseIdAdsFromRemoteConfig(remoteKeyIdAdsServer: String) { //Use id ads from remote config or not (Key remote: id_ads)
-        this.isUseIdAdsFromRemoteConfig = true
-        this.remoteKeyIdAdsServer = remoteKeyIdAdsServer
-        this.timeOutCallApi = 0
+        config.isUseIdAdsFromRemoteConfig = true
+        config.remoteKeyIdAdsServer = remoteKeyIdAdsServer
+        config.timeOutCallApi = 0
     }
 
     fun setTimeOutCallApi(timeOutCallApi: Int) { //Timeout call id ads from server
-        this.timeOutCallApi = timeOutCallApi
+        config.timeOutCallApi = timeOutCallApi
     }
 
     fun getUserTechManagerOrDetectTestAd(): String {
-        return this.useTechManagerOrDetectTestAd
+        return config.useTechManagerOrDetectTestAd
     }
 
     fun setUseTechManager() { //Use TechManager (Organic) or not
-        this.useTechManagerOrDetectTestAd = TECH_MANAGER
+        config.useTechManagerOrDetectTestAd = TECH_MANAGER
     }
 
     fun setUseDetectTestAd() {
-        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
+        config.useTechManagerOrDetectTestAd = DETECT_TEST_AD
     }
 
     fun setLoopAdsSplash() { //Load loop splash ads when load fail if time splash < 8s
-        this.isLoopAdsSplash = true
+        config.isLoopAdsSplash = true
     }
 
     fun getShowAdsSplash(): Boolean {
-        return this.isShowAdsSplash
+        return config.isShowAdsSplash
     }
 
     fun getTimeout(): Boolean {
-        return this.isTimeout
+        return config.isTimeout
     }
 
     fun getNoInternetAction(): Boolean {
-        return this.isNoInternetAction
+        return config.isNoInternetAction
     }
 
     fun getTimeStartSplash(): Long {
-        return this.timeStartSplash
+        return config.timeStartSplash
     }
 
     fun setTimeOutSplash(timeOutSplash: Long) {
-        this.timeOutSplash = timeOutSplash
+        config.timeOutSplash = timeOutSplash
     }
 
     /*fun setUseBilling(listProductDetailCustoms: ArrayList<ProductDetailCustom>) { //If need use IAP
-        this.isUseBilling = true
+        config.isUseBilling = true
         this.listProductDetailCustoms.clear()
         this.listProductDetailCustoms.addAll(listProductDetailCustoms)
     }*/ //comment for billing
 
     fun setDebug(isDebug: Boolean) { //Use for TechManager or DetectTestAd
-        this.isDebug = isDebug
+        config.isDebug = isDebug
     }
 
     fun getDebug(): Boolean {
-        return this.isDebug
+        return config.isDebug
     }
 
     fun checkShowSplashWhenFail() { //Call on resume of splash screen (Reshow splash ads when show fail)
-        if (adsSplash != null) {
-            adsSplash?.onCheckShowSplashWhenFail(activity, appOpenCallback, interCallback)
-        }
+        AdsSplash.getInstance().onCheckShowSplashWhenFail(config.activity, config.interCallback)
     }
 
     fun setInitResumeAdsNormal() {
-        this.initWelcomeBack = "Normal"
-        this.isPreloadResumeAds = true
+        config.initWelcomeBack = "Normal"
+        config.isPreloadResumeAds = true
     }
 
     fun setInitWelcomeBackBelowResumeAds(welcomeBackClass: Class<*>) {
-        this.initWelcomeBack = "Below"
-        this.welcomeBackClass = welcomeBackClass
-        this.isPreloadResumeAds = true
+        config.initWelcomeBack = "Below"
+        config.welcomeBackClass = welcomeBackClass
+        config.isPreloadResumeAds = true
     }
 
     fun setInitWelcomeBackAboveResumeAds(welcomeBackClass: Class<*>) {
-        this.initWelcomeBack = "Above"
-        this.welcomeBackClass = welcomeBackClass
-        this.isPreloadResumeAds = false
+        config.initWelcomeBack = "Above"
+        config.welcomeBackClass = welcomeBackClass
+        config.isPreloadResumeAds = false
     }
 
     fun getInitResumeAdsType(): String {
-        return this.initWelcomeBack
+        return config.initWelcomeBack
     }
 
     fun setShowBannerSplash(
@@ -558,16 +393,16 @@ class AsyncSplash {
         listIdBannerSplash: MutableList<String>,
         adsKey: String
     ) {
-        this.isShowBannerSplash = true
-        this.frAdsBannerSplash = frAdsBannerSplash
-        this.listIdBannerSplash.clear()
-        this.listIdBannerSplash.addAll(listIdBannerSplash)
-        this.adsKey = adsKey
+        config.isShowBannerSplash = true
+        config.frAdsBannerSplash = frAdsBannerSplash
+        config.listIdBannerSplash.clear()
+        config.listIdBannerSplash.addAll(listIdBannerSplash)
+        config.adsKey = adsKey
     }
 
     fun setListTurnOffRemoteKeys(listTurnOffRemoteKeys: MutableList<String>) {
-        this.listTurnOffRemoteKeys.clear()
-        this.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
+        config.listTurnOffRemoteKeys.clear()
+        config.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
     }
 
     private fun logEventDoneInit() {
@@ -581,11 +416,11 @@ class AsyncSplash {
         )
         bundle.putString("time_between_step", time)
         EventTrackingHelper.logEventWithMultipleParams(
-            activity,
+            config.activity,
             normalizeFirebaseEventName("AsyncSplash_doneInit"),
             bundle
         )
-        timeLastStep = System.currentTimeMillis()
+        config.timeLastStep = System.currentTimeMillis()
     }
 
     fun handleAsync(
@@ -597,32 +432,32 @@ class AsyncSplash {
     ) {
         logEventStep("handleAsync")
         Admob.getInstance().timeStart = System.currentTimeMillis()
-        timeStartSplash = System.currentTimeMillis()
+        config.timeStartSplash = System.currentTimeMillis()
         lifecycleCoroutineScope.launch {
-            delay(timeOutSplash)
-            Log.d(TAG, "Timeout check $isShowAdsSplash $isNoInternetAction ")
+            delay(config.timeOutSplash)
+            Log.d(TAG, "Timeout check ${config.isShowAdsSplash} ${config.isNoInternetAction} ")
             logEventStep("AsyncTimeout")
 
             val bundleEvent = Bundle()
-            bundleEvent.putString("isTimeout", "$isTimeout")
-            bundleEvent.putString("isNoInternetAction", "$isNoInternetAction")
+            bundleEvent.putString("isTimeout", "${config.isTimeout}")
+            bundleEvent.putString("isNoInternetAction", "${config.isNoInternetAction}")
             EventTrackingHelper.logEventWithMultipleParams(
-                activity,
+                config.activity,
                 normalizeFirebaseEventName("AsyncSplash_VAsyncTimeout"),
                 bundleEvent
             )
-            if (!isShowAdsSplash && !isNoInternetAction) {
+            if (!config.isShowAdsSplash && !config.isNoInternetAction) {
                 //1.log event timeout splash 12s
                 val bundle = Bundle()
                 bundle.putString(
                     "timeout_splash_next_screen_detail",
-                    "${initAdmobApi}_${initRemoteConfig}_${initAdsConsentManager}_${initBilling}_${initTechManager}"
+                    "${config.initAdmobApi}_${config.initRemoteConfig}_${config.initAdsConsentManager}_${config.initBilling}_${config.initTechManager}"
                 )
-                bundle.putString("initAdmobApi", initAdmobApi.toString())
-                bundle.putString("initRemoteConfig", initRemoteConfig.toString())
-                bundle.putString("initAdsConsentManager", initAdsConsentManager.toString())
-                bundle.putString("initBilling", initBilling.toString())
-                bundle.putString("initTechManager", initTechManager.toString())
+                bundle.putString("initAdmobApi", config.initAdmobApi.toString())
+                bundle.putString("initRemoteConfig", config.initRemoteConfig.toString())
+                bundle.putString("initAdsConsentManager", config.initAdsConsentManager.toString())
+                bundle.putString("initBilling", config.initBilling.toString())
+                bundle.putString("initTechManager", config.initTechManager.toString())
                 EventTrackingHelper.logEventWithMultipleParams(
                     context,
                     "timeout_splash_next_screen",
@@ -631,51 +466,42 @@ class AsyncSplash {
                 //1.end log event timeout splash 12s
                 //2.increase splash open
                 SharePreferenceHelper.setInt(
-                    activity,
+                    config.activity,
                     EventTrackingHelper.splash_open,
-                    SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1
+                    SharePreferenceHelper.getInt(config.activity, EventTrackingHelper.splash_open, 1) + 1
                 )
                 //2.end increase splash open
-                if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
-                    if (isTech && !isDebug) {
-                        turnOffSomeRemoteKeys(activity)
+                if (config.useTechManagerOrDetectTestAd == TECH_MANAGER) {
+                    if (config.isTech && !config.isDebug) {
+                        turnOffSomeRemoteKeys(config.activity)
                     }
-                } else if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
-                    if (TechManager.getInstance().isTech(activity) && !isDebug) {
-                        turnOffSomeRemoteKeys(activity)
+                } else if (config.useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
+                    if (TechManager.getInstance().isTech(config.activity) && !config.isDebug) {
+                        turnOffSomeRemoteKeys(config.activity)
                     }
                 }
-                interCallback?.onNextAction()
+                config.interCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
-                isTimeout = true
+                config.isTimeout = true
             }
             return@launch
         }
-        if (NetworkUtil.isNetworkActive(activity)) {
+        if (NetworkUtil.isNetworkActive(config.activity)) {
             logEventStep("AsyncInternet")
-            EventTrackingHelper.logEvent(activity, "splash_have_internet_original")
-            measureDownloadSpeed(urlCheckInternetSpeed) { speedMbps ->
-                Log.d(TAG, "measureDownloadSpeed log event: ${speedMbps.toInt()}")
-                EventTrackingHelper.logEventWithAParam(
-                    activity,
-                    "splash_have_internet",
-                    "internet_speed",
-                    speedMbps.toInt().toString()
-                )
-            }
+            EventTrackingHelper.logEvent(config.activity, "splash_have_internet_original")
             lifecycleCoroutineScope.launch {
                 logEventStep("StartAsyncInit")
-                val asyncAdmobApi = async { initAdmobApi(activity) }
-                val asyncRemoteConfig = async { initRemoteConfig(activity) }
-                val asyncUMP = async { initAdsConsentManager(activity) }
+                val asyncAdmobApi = async { initAdmobApi(config.activity) }
+                val asyncRemoteConfig = async { initRemoteConfig(config.activity) }
+                val asyncUMP = async { initAdsConsentManager(config.activity) }
                 val asyncBilling = async { initBilling() }
-                val asyncTechManager = async { initTechManager(activity) }
+                val asyncTechManager = async { initTechManager(config.activity) }
                 try {
                     //wait to load banner splash (banner splash fix id, don't use api to reduce time load splash)
-                    if (!isAsyncSplashAds) {
+                    if (!config.isAsyncSplashAds) {
                         awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
-                        if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
-                            turnOffSomeRemoteKeys(activity)
+                        if (config.useTechManagerOrDetectTestAd == TECH_MANAGER && config.isTech && !config.isDebug) {
+                            turnOffSomeRemoteKeys(config.activity)
                         }
                     } else {
                         awaitAll(asyncUMP)
@@ -685,11 +511,11 @@ class AsyncSplash {
                 } finally {
                     logEventStep("DoneAsyncInit")
                     loadBannerSplash(
-                        activity,
+                        config.activity,
                         lifecycleOwner,
-                        frAdsBannerSplash,
-                        listIdBannerSplash,
-                        adsKey
+                        config.frAdsBannerSplash,
+                        config.listIdBannerSplash,
+                        config.adsKey
                     )
                     try {
                         logEventStep("StartIDApi")
@@ -701,42 +527,34 @@ class AsyncSplash {
                         e.printStackTrace()
                     } finally {
                         logEventDoneInit()
-                        val timeAsync = (System.currentTimeMillis() - timeSplashCheck) / 1000
+                        val timeAsync = (System.currentTimeMillis() - config.timeSplashCheck) / 1000
                         EventTrackingHelper.logEventWithAParam(
-                            activity,
+                            config.activity,
                             time_splash_check,
                             time_splash_check,
                             timeAsync.toString()
                         )
-                        onPrepareLoadInterOpenSplashAds?.invoke()
+                        config.onPrepareLoadInterOpenSplashAds?.invoke()
 //                        lifecycleCoroutineScope.launch {
                         logEventStep("StartAdSplash")
                         var rateAoaInterSplash: String =
                             RemoteConfigHelper.getInstance().get_config_string(
-                                activity,
+                                config.activity,
                                 RemoteConfigHelper.rate_aoa_inter_splash
                             )
                         if (rateAoaInterSplash.isEmpty()) {
                             rateAoaInterSplash = "0_100"
                         }
                         val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance()
-                            .get_config(activity, keyAdsOpenSplash)
+                            .get_config(config.activity, config.keyAdsOpenSplash)
                         val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance()
-                            .get_config(activity, keyAdsInterSplash)
-                        adsSplash = AdsSplash.init(
-                            isShowOpenSplash,
-                            isShowInterSplash,
-                            rateAoaInterSplash
-                        )
-                        adsSplash?.setKeyAdsInterSplash(keyAdsInterSplash)
-                        adsSplash?.setKeyAdsOpenSplash(keyAdsOpenSplash)
-                        adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
-                        showAdsSplash(activity, appOpenCallback, interCallback)
+                            .get_config(config.activity, config.keyAdsInterSplash)
+                        showAdsSplash(config.activity, config.interCallback)
 //                        }
-                        if (isAsyncSplashAds) {
+                        if (config.isAsyncSplashAds) {
                             awaitAll(asyncRemoteConfig, asyncTechManager)
-                            if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
-                                turnOffSomeRemoteKeys(activity)
+                            if (config.useTechManagerOrDetectTestAd == TECH_MANAGER && config.isTech && !config.isDebug) {
+                                turnOffSomeRemoteKeys(config.activity)
                             }
                         }
 //                        lifecycleCoroutineScope.launch {
@@ -766,56 +584,17 @@ class AsyncSplash {
             }
         } else {
             logEventStep("AsyncNoInternet")
-            if (!isShowAdsSplash && !isTimeout) {
+            if (!config.isShowAdsSplash && !config.isTimeout) {
                 onNoInternetAction.invoke()
-                isNoInternetAction = true
+                config.isNoInternetAction = true
             }
         }
     }
 
     fun turnOffSomeRemoteKeys(activity: Context?) {
-        listTurnOffRemoteKeys.forEach {
+        config.listTurnOffRemoteKeys.forEach {
             Log.d(TAG, "turnOffSomeRemoteKeys: $it")
             RemoteConfigHelper.getInstance().set_config(activity, it, false)
-        }
-    }
-
-    fun measureDownloadSpeed(
-        urlCheckInternetSpeed: String,
-        onResult: (speedMbps: Double) -> Unit
-    ) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val connection = URL(urlCheckInternetSpeed).openConnection()
-                connection.connect()
-
-                val inputStream = connection.getInputStream()
-                val buffer = ByteArray(1024 * 8) // 8KB buffer
-                var totalBytesRead = 0L
-
-                val timeTakenMillis = measureTimeMillis {
-                    while (true) {
-                        val bytesRead = inputStream.read(buffer)
-                        if (bytesRead == -1) break
-                        totalBytesRead += bytesRead
-                        if (totalBytesRead >= 1 * 1024 * 1024) break // Limit 1MB download
-                    }
-                    inputStream.close()
-                }
-
-                val speedBytesPerSec = totalBytesRead / (timeTakenMillis / 1000.0)
-                val speedMbps = (speedBytesPerSec * 8) / (1024 * 1024) // Byte/s → Mbps
-
-                withContext(Dispatchers.Main) {
-                    Log.d(TAG, "measureDownloadSpeed: $speedMbps")
-                    onResult(speedMbps)
-                }
-            } catch (e: Exception) {
-                Log.d(TAG, "measureDownloadSpeed: ${e.message}")
-                withContext(Dispatchers.Main) {
-                    onResult(0.0)
-                }
-            }
         }
     }
 
@@ -825,7 +604,7 @@ class AsyncSplash {
         activity: AppCompatActivity?
     ) = suspendCoroutine<Unit> { continuation ->
         timeInitRemoteConfig = 0L
-        if (isUseAppUpdateManager) {
+        if (config.isUseAppUpdateManager) {
             continuation.resume(Unit)
             return@suspendCoroutine
         } else {
@@ -839,10 +618,10 @@ class AsyncSplash {
 
             //Handle remote config id ads timeout
             Handler(Looper.getMainLooper()).postDelayed({
-                if (isUseIdAdsFromRemoteConfig && !isSetId) {
-                    AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-                    AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
-                    isSetId = true
+                if (config.isUseIdAdsFromRemoteConfig && !config.isSetId) {
+                    AdmobApi.getInstance().jsonIdAdsDefault = config.jsonIdAdsDefault
+                    AdmobApi.getInstance().convertJsonIdAdsDefaultToList(config.jsonIdAdsDefault)
+                    config.isSetId = true
                     Log.d(
                         TAG,
                         "Timeout Remote Config: Id ads size = ${AdmobApi.getInstance().listAdsSize}"
@@ -851,14 +630,14 @@ class AsyncSplash {
                     initWelcomeBack(activity)//17.09.2025
                     timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
                 }
-            }, timeOutCallIdRemoteConfig)
+            }, config.timeOutCallIdRemoteConfig)
 
             Log.d(
                 TAG,
-                "check initRemoteConfig: hasBeenFetchedBefore = $hasBeenFetchedBefore, isUseCacheDataCallSplash = $isUseCacheDataCallSplash"
+                "check initRemoteConfig: hasBeenFetchedBefore = $hasBeenFetchedBefore, isUseCacheDataCallSplash = ${config.isUseCacheDataCallSplash}"
             )
 
-            if (hasBeenFetchedBefore && isUseCacheDataCallSplash) {
+            if (hasBeenFetchedBefore && config.isUseCacheDataCallSplash) {
                 Log.d(TAG, "initRemoteConfig: using SharedPreferences cache")
 
                 // apply config từ SP ngay (get_config đọc từ SP → instant)
@@ -866,27 +645,27 @@ class AsyncSplash {
                     .get_config(activity, RemoteConfigHelper.show_all_ads)
                 Admob.getInstance().setTimeInterval(
                     RemoteConfigHelper.getInstance().get_config_long(
-                        activity, keyIntervalBetweenInterstitial
+                        activity, config.keyIntervalBetweenInterstitial
                     ) * 1000, true
                 )
                 Admob.getInstance().setTimeIntervalFromStart(
                     RemoteConfigHelper.getInstance().get_config_long(
-                        activity, keyIntervalInterstitialFromStart
+                        activity, config.keyIntervalInterstitialFromStart
                     ) * 1000
                 )
-                if (isUseIdAdsFromRemoteConfig && !isSetId) {
+                if (config.isUseIdAdsFromRemoteConfig && !config.isSetId) {
                     // get_config_string cũng đọc từ SP → instant
                     val jsonFromSP = RemoteConfigHelper.getInstance()
                         .get_config_string(activity, RemoteConfigHelper.id_ads)
                     if (jsonFromSP.contains("app_id")) {
                         AdmobApi.getInstance().jsonIdAdsDefault = jsonFromSP
                         AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonFromSP)
-                        isSetId = true
+                        config.isSetId = true
                         EventTrackingHelper.logEvent(activity, "set_id_remote_config")
                     } else {
-                        AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-                        AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
-                        isSetId = true
+                        AdmobApi.getInstance().jsonIdAdsDefault = config.jsonIdAdsDefault
+                        AdmobApi.getInstance().convertJsonIdAdsDefaultToList(config.jsonIdAdsDefault)
+                        config.isSetId = true
                     }
                     initWelcomeBack(activity)
                     EventTrackingHelper.logEvent(
@@ -896,7 +675,7 @@ class AsyncSplash {
                 }
 
                 timeInitRemoteConfig = System.currentTimeMillis() - startTimeInitRemoteConfig
-                initRemoteConfig = true
+                config.initRemoteConfig = true
                 continuation.resume(Unit) // resume ngay
                 Log.d(
                     TAG,
@@ -912,27 +691,27 @@ class AsyncSplash {
                 Log.d(TAG, "initRemoteConfig: first time, fetching from Firebase")
                 var isResumed = false
                 RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
-                    if (isSuccess && isUseCacheDataCallSplash) {
+                    if (isSuccess && config.isUseCacheDataCallSplash) {
                         prefs?.edit()?.putBoolean(PREF_REMOTE_FETCHED_FLAG, true)?.apply()
                     }
                     //Handle remote config id ads
-                    if (isUseIdAdsFromRemoteConfig && !isSetId) {
+                    if (config.isUseIdAdsFromRemoteConfig && !config.isSetId) {
                         val jsonIdAdsFromRemoteConfig = RemoteConfigHelper.getInstance()
                             .get_config_string(activity, RemoteConfigHelper.id_ads)
                         if (jsonIdAdsFromRemoteConfig.contains("app_id") && isSuccess) { //get id ads from remote config successfully
                             AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsFromRemoteConfig
                             AdmobApi.getInstance()
                                 .convertJsonIdAdsDefaultToList(jsonIdAdsFromRemoteConfig)
-                            isSetId = true
+                            config.isSetId = true
                             Log.d(
                                 TAG,
                                 "Set id ads from remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}"
                             )
                             EventTrackingHelper.logEvent(activity, "set_id_remote_config")
                         } else {
-                            AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-                            AdmobApi.getInstance().convertJsonIdAdsDefaultToList(jsonIdAdsDefault)
-                            isSetId = true
+                            AdmobApi.getInstance().jsonIdAdsDefault = config.jsonIdAdsDefault
+                            AdmobApi.getInstance().convertJsonIdAdsDefaultToList(config.jsonIdAdsDefault)
+                            config.isSetId = true
                             Log.d(
                                 TAG,
                                 "Set id ads default case fail remote: Id ads size = ${AdmobApi.getInstance().listAdsSize}"
@@ -970,7 +749,7 @@ class AsyncSplash {
                     if (!isResumed) {
                         isResumed = true
                         continuation.resume(Unit)
-                        initRemoteConfig = true
+                        config.initRemoteConfig = true
                         Log.d(TAG, "initRemoteConfig. time - ${timeInitRemoteConfig / 1000}")
                     }
                     Log.d(
@@ -1003,7 +782,7 @@ class AsyncSplash {
                     }
                     timeInitAdsConsentManager =
                         System.currentTimeMillis() - startTimeInitAdsConsentManager
-                    initAdsConsentManager = true
+                    config.initAdsConsentManager = true
                     continuation.resume(Unit)
                     Log.d(TAG, "initAdsConsentManager.")
                 }
@@ -1016,24 +795,24 @@ class AsyncSplash {
             var isResumed = false
             timeInitTechManager = 0L
             val startTimeInitTechManager = System.currentTimeMillis()
-            if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
-                TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
+            if (config.useTechManagerOrDetectTestAd == TECH_MANAGER) {
+                TechManager.getInstance().getResult(config.isDebug, activity, config.adjustKey) {
                     if (it) {
-                        isTech = true
+                        config.isTech = true
                         AppOpenManager.getInstance().isEnableResume = false
                     }
                     timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
                     if (!isResumed) {
                         isResumed = true
                         continuation.resume(Unit)
-                        initTechManager = true
+                        config.initTechManager = true
                         Log.d(TAG, "initTechManager.")
                     }
                 }
             } else {
                 timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
                 continuation.resume(Unit)
-                initTechManager = true
+                config.initTechManager = true
                 Log.d(TAG, "initTechManager else.")
             }
         }
@@ -1042,24 +821,24 @@ class AsyncSplash {
     private val PREF_CACHED_AD_IDS = "cached_ad_ids"
     private suspend fun initAdmobApi(activity: AppCompatActivity?) =
         suspendCoroutine<Unit> { continuation ->
-            if (!isUseIdAdsFromRemoteConfig) {
+            if (!config.isUseIdAdsFromRemoteConfig) {
                 val startTimeInitAdmobApi = System.currentTimeMillis()
-                AdmobApi.getInstance().jsonIdAdsDefault = jsonIdAdsDefault
-                AdmobApi.getInstance().timeOutCallApi = timeOutCallApi
+                AdmobApi.getInstance().jsonIdAdsDefault = config.jsonIdAdsDefault
+                AdmobApi.getInstance().timeOutCallApi = config.timeOutCallApi
 
                 val prefs = activity?.getSharedPreferences("MY_PRE", Context.MODE_PRIVATE)
                 val cachedJson = prefs?.getString(PREF_CACHED_AD_IDS, "") ?: ""
 
                 Log.d(
                     TAG,
-                    "check initAdmobApi: cachedJson.isNotEmpty() = ${cachedJson.isNotEmpty()}, isUseCacheDataCallSplash = $isUseCacheDataCallSplash"
+                    "check initAdmobApi: cachedJson.isNotEmpty() = ${cachedJson.isNotEmpty()}, isUseCacheDataCallSplash = ${config.isUseCacheDataCallSplash}"
                 )
-                if (cachedJson.isNotEmpty() && isUseCacheDataCallSplash) {
+                if (cachedJson.isNotEmpty() && config.isUseCacheDataCallSplash) {
                     Log.d(TAG, "initAdmobApi: using cache id Ads")
 
                     AdmobApi.getInstance().convertJsonIdAdsDefaultToList(cachedJson)
                     initWelcomeBack(activity)
-                    initAdmobApi = true
+                    config.initAdmobApi = true
                     timeInitAdmobApi = System.currentTimeMillis() - startTimeInitAdmobApi
                     continuation.resume(Unit)
                     Log.d(TAG, "initAdmobApi: END using cache id Ads - ${timeInitAdmobApi / 1000}")
@@ -1071,8 +850,8 @@ class AsyncSplash {
                             withContext(Dispatchers.Main) {
                                 AdmobApi.getInstance().refreshCacheOnly(
                                     activity,
-                                    linkServer,
-                                    appId,
+                                    config.linkServer,
+                                    config.appId,
                                     object : ApiCallback() {
                                         override fun onReady() {
                                             super.onReady()
@@ -1095,12 +874,12 @@ class AsyncSplash {
                     Log.d(TAG, "initAdmobApi: first time, init ads")
 
                     AdmobApi.getInstance()
-                        .init(activity, linkServer, appId, object : ApiCallback() {
+                        .init(activity, config.linkServer, config.appId, object : ApiCallback() {
                             private var isResumed = false
                             override fun onReady() {
                                 super.onReady()
                                 //save cached json id
-                                if (isUseCacheDataCallSplash) {
+                                if (config.isUseCacheDataCallSplash) {
                                     val json = AdmobApi.getInstance().jsonIdAdsDefault
                                     if (json.isNotEmpty()) {
                                         prefs?.edit()?.putString(PREF_CACHED_AD_IDS, json)?.apply()
@@ -1112,7 +891,7 @@ class AsyncSplash {
                                 if (!isResumed) {
                                     isResumed = true
                                     continuation.resume(Unit)
-                                    initAdmobApi = true
+                                    config.initAdmobApi = true
                                     Log.d(TAG, "initAdmobApi.")
                                 }
                             }
@@ -1126,24 +905,24 @@ class AsyncSplash {
         }
 
     private fun initWelcomeBack(activity: AppCompatActivity?) {
-        when (initWelcomeBack) {
+        when (config.initWelcomeBack) {
             "Normal" -> {
                 val listIdResume = mutableListOf<String>()
-                if (keyAdsOpenResume.isNotEmpty()) {
-                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                if (config.keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(config.keyAdsOpenResume))
                 } else {
                     listIdResume.addAll(AdmobApi.getInstance().listIDAppOpenResume)
-                    keyAdsOpenResume = "open_resume"
+                    config.keyAdsOpenResume = "open_resume"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloading) {
+                    if (!config.isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: normal - isUseAdPreloading = $isUseAdPreloading, isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: normal - isUseAdPreloading = ${config.isUseAdPreloading}, isPreloadResumeAds = ${config.isPreloadResumeAds}"
                         )
-                        if (isPreloadResumeAds) {
+                        if (config.isPreloadResumeAds) {
                             AppOpenManager.getInstance()
-                                .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
+                                .loadAdNotCheckRemote(activity, listIdResume, config.keyAdsOpenResume)
                         }
                     }
                     AppOpenManager.getInstance().init(activity, listIdResume)
@@ -1155,26 +934,26 @@ class AsyncSplash {
 
             "Below" -> {
                 val listIdResume = mutableListOf<String>()
-                if (keyAdsOpenResume.isNotEmpty()) {
-                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                if (config.keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(config.keyAdsOpenResume))
                 } else {
                     listIdResume.addAll(
                         AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb)
                     )
-                    keyAdsOpenResume = "resume_wb"
+                    config.keyAdsOpenResume = "resume_wb"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloading) {
+                    if (!config.isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: below - isUseAdPreloading = $isUseAdPreloading ,isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: below - isUseAdPreloading = ${config.isUseAdPreloading} ,isPreloadResumeAds = ${config.isPreloadResumeAds}"
                         )
-                        if (isPreloadResumeAds) {
+                        if (config.isPreloadResumeAds) {
                             AppOpenManager.getInstance()
-                                .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
+                                .loadAdNotCheckRemote(activity, listIdResume, config.keyAdsOpenResume)
                         }
                     }
-                    welcomeBackClass?.let {
+                    config.welcomeBackClass?.let {
                         AppOpenManager.getInstance()
                             .initWelcomeBackBelowAdsResume(activity, listIdResume, it)
                         AppOpenManager.getInstance()
@@ -1188,26 +967,26 @@ class AsyncSplash {
 
             "Above" -> {
                 val listIdResume = mutableListOf<String>()
-                if (keyAdsOpenResume.isNotEmpty()) {
-                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                if (config.keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(config.keyAdsOpenResume))
                 } else {
                     listIdResume.addAll(
                         AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb)
                     )
-                    keyAdsOpenResume = "resume_wb"
+                    config.keyAdsOpenResume = "resume_wb"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloading) {
+                    if (!config.isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: above - isUseAdPreloading = $isUseAdPreloading, isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: above - isUseAdPreloading = ${config.isUseAdPreloading}, isPreloadResumeAds = ${config.isPreloadResumeAds}"
                         )
-                        if (isPreloadResumeAds) {
+                        if (config.isPreloadResumeAds) {
                             AppOpenManager.getInstance()
-                                .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
+                                .loadAdNotCheckRemote(activity, listIdResume, config.keyAdsOpenResume)
                         }
                     }
-                    welcomeBackClass?.let {
+                    config.welcomeBackClass?.let {
                         AppOpenManager.getInstance()
                             .initWelcomeBackAboveAdsResume(activity, listIdResume, it)
                         AppOpenManager.getInstance()
@@ -1221,21 +1000,21 @@ class AsyncSplash {
 
             else -> {
                 val listIdResume = mutableListOf<String>()
-                if (keyAdsOpenResume.isNotEmpty()) {
-                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+                if (config.keyAdsOpenResume.isNotEmpty()) {
+                    listIdResume.addAll(AdmobApi.getInstance().getListIDByName(config.keyAdsOpenResume))
                 } else {
                     listIdResume.addAll(AdmobApi.getInstance().listIDAppOpenResume)
-                    keyAdsOpenResume = "open_resume"
+                    config.keyAdsOpenResume = "open_resume"
                 }
                 if (listIdResume.isNotEmpty()) {
-                    if (!isUseAdPreloading) {
+                    if (!config.isUseAdPreloading) {
                         Log.d(
                             TAG,
-                            "APP Open Preload: else - isUseAdPreloading = $isUseAdPreloading, isPreloadResumeAds = $isPreloadResumeAds"
+                            "APP Open Preload: else - isUseAdPreloading = ${config.isUseAdPreloading}, isPreloadResumeAds = ${config.isPreloadResumeAds}"
                         )
-                        if (isPreloadResumeAds) {
+                        if (config.isPreloadResumeAds) {
                             AppOpenManager.getInstance()
-                                .loadAdNotCheckRemote(activity, listIdResume, keyAdsOpenResume)
+                                .loadAdNotCheckRemote(activity, listIdResume, config.keyAdsOpenResume)
                         }
                     }
                     AppOpenManager.getInstance().init(activity, listIdResume)
@@ -1248,13 +1027,13 @@ class AsyncSplash {
     }
 
     private fun loadAdPreloadResume() {
-        if (isUseAdPreloading) {
+        if (config.isUseAdPreloading) {
             val listIdResume = mutableListOf<String>()
-            if (keyAdsOpenResume.isNotEmpty()) {
-                listIdResume.addAll(AdmobApi.getInstance().getListIDByName(keyAdsOpenResume))
+            if (config.keyAdsOpenResume.isNotEmpty()) {
+                listIdResume.addAll(AdmobApi.getInstance().getListIDByName(config.keyAdsOpenResume))
             } else {
                 listIdResume.addAll(AdmobApi.getInstance().listIDAppOpenResume)
-                keyAdsOpenResume = "open_resume"
+                config.keyAdsOpenResume = "open_resume"
             }
             if (listIdResume.isNotEmpty()) {
                 Log.d(
@@ -1262,9 +1041,9 @@ class AsyncSplash {
                     "APP Open Preload: start loadAdPreloadNotCheckRemote"
                 )
                 AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(
-                    activity,
+                    config.activity,
                     listIdResume,
-                    keyAdsOpenResume
+                    config.keyAdsOpenResume
                 )
             }
         }
@@ -1297,7 +1076,7 @@ class AsyncSplash {
             })
         } else {*/ //comment for billing
         continuation.resume(Unit)
-        initBilling = true
+        config.initBilling = true
         Log.d(TAG, "Not use billing.")
         //} //comment for billing
     }
@@ -1309,10 +1088,10 @@ class AsyncSplash {
         listIdBannerSplash: MutableList<String>,
         adsKey: String
     ) {
-        if (isShowBannerSplash) {
+        if (config.isShowBannerSplash) {
             Log.d(TAG, "loadBannerSplash.")
             //Reset TechManager to false
-            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
+            if (config.useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
                 TechManager.getInstance().detectedTech(activity, false)
             }
             frAdsBanner?.visibility = View.VISIBLE
@@ -1321,8 +1100,8 @@ class AsyncSplash {
             bannerBuilder.callBack = object : BannerCallback() {
                 override fun onAdImpression() {
                     super.onAdImpression()
-                    if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && TechManager.getInstance()
-                            .isTech(activity) && !isDebug
+                    if (config.useTechManagerOrDetectTestAd == DETECT_TEST_AD && TechManager.getInstance()
+                            .isTech(activity) && !config.isDebug
                     ) {
                         turnOffSomeRemoteKeys(activity)
                     }
@@ -1343,29 +1122,28 @@ class AsyncSplash {
 
     private fun showAdsSplash(
         activity: AppCompatActivity?,
-        appOpenCallback: AppOpenCallback?,
         interCallback: InterCallback?
     ) {
-        Log.d(TAG, "showAdsSplash check $isTimeout $isNoInternetAction")
+        Log.d(TAG, "showAdsSplash check ${config.isTimeout} ${config.isNoInternetAction}")
         val bundle = Bundle()
-        bundle.putString("isTimeout", "$isTimeout")
-        bundle.putString("isNoInternetAction", "$isNoInternetAction")
+        bundle.putString("isTimeout", "${config.isTimeout}")
+        bundle.putString("isNoInternetAction", "${config.isNoInternetAction}")
         EventTrackingHelper.logEventWithMultipleParams(
             activity,
             normalizeFirebaseEventName("AsyncSplash_showAdsSplash"),
             bundle
         )
-        if (!isTimeout && !isNoInternetAction) {
-            isShowAdsSplash = true
-            val time = (System.currentTimeMillis() - timeStartSplash) / 1000
+        if (!config.isTimeout && !config.isNoInternetAction) {
+            config.isShowAdsSplash = true
+            val time = (System.currentTimeMillis() - config.timeStartSplash) / 1000
             Log.d(TAG, "----------")
             Log.d(TAG, "showAdsSplash: Time show Ads = $time")
-            adsSplash?.showAdsSplashApi(
+            AdsSplash.getInstance().loadAndShowInterAdSplashDelay(
                 activity,
-                appOpenCallback,
+                AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
                 interCallback,
-                keyNativeAfterInterSplash,
-                keyNativeAfterInterSplash
+                config.keyNativeAfterInterSplash,
+                config.keyNativeAfterInterSplash
             )
             Log.d(TAG, "showAdsSplash.")
         }

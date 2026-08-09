@@ -18,20 +18,18 @@ import com.amazic.library.ads.callback.NativeCallback;
 import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 
-import java.util.Random;
-
 public class NativeManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
     private final NativeBuilder builder;
     private final Context context;
     private final LifecycleOwner lifecycleOwner;
+    private final String remoteKey;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;
     private long intervalReloadNative = 0;
     private boolean isStop = false;
     private boolean isTimerRunning = false;
     private CountDownTimer countDownTimer;
-    private final String remoteKey;
     private String remoteKeySecondary = "";
     private String remoteKeyBackup = "";
     private NativeAd myNativeAdMain;
@@ -44,6 +42,8 @@ public class NativeManager implements LifecycleEventObserver {
     private String remoteKeyAdNativeDisplayOrder = null;
     private int randomPercentShowNativeMain = 100;
     private boolean isShowNativeSecond = false;
+    private boolean isFailedMain = false;
+    private boolean isFailedSecondary = false;
 
     public NativeManager(@NonNull Context context, LifecycleOwner lifecycleOwner, NativeBuilder builder, String remoteKey) {
         this.builder = builder;
@@ -193,11 +193,11 @@ public class NativeManager implements LifecycleEventObserver {
         //
 
         handleTimeoutCallNative();
-        if(isShowNativeSecond){
+        if (isShowNativeSecond) {
             //show ads native second len dau
             loadSecondaryNative();
             loadMainNative();
-        }else {
+        } else {
             //show ads native main len dau
             loadMainNative();
             loadSecondaryNative();
@@ -316,7 +316,6 @@ public class NativeManager implements LifecycleEventObserver {
         }
     }
 
-
     private void handleImpressionNativeSecondary() {
         if (myNativeAdMain != null) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
@@ -332,14 +331,14 @@ public class NativeManager implements LifecycleEventObserver {
         if (myNativeAdMain != null) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 if (isShowNativeSecond) {
-                    Log.d(TAG, "onAdImpression: Second - isShowNativeSecond = "+isShowNativeSecond);
+                    Log.d(TAG, "onAdImpression: Second - isShowNativeSecond = " + isShowNativeSecond);
                     //show ads native second len dau
                     if (builder.nativeAdViewMain != null)
                         builder.nativeAdViewMain.setVisibility(View.GONE);
                     builder.nativeAdViewSecondary.setVisibility(View.VISIBLE);
                     builder.shimmerFrameLayout.setVisibility(View.GONE);
                 } else {
-                    Log.d(TAG, "onAdImpression: Second - isShowNativeSecond = "+isShowNativeSecond);
+                    Log.d(TAG, "onAdImpression: Second - isShowNativeSecond = " + isShowNativeSecond);
                     //show ads native main len dau
                     if (builder.nativeAdViewSecondary != null)
                         builder.nativeAdViewSecondary.setVisibility(View.GONE);
@@ -349,9 +348,6 @@ public class NativeManager implements LifecycleEventObserver {
             }, 800);
         }
     }
-
-    private boolean isFailedMain = false;
-    private boolean isFailedSecondary = false;
 
     private void loadNativeBackup(boolean isMainNative) {
         Admob.getInstance().loadNativeAdsBackup(context, builder.getListIdAdBackup(), new NativeCallback() {

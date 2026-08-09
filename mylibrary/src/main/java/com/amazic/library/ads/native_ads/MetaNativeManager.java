@@ -31,14 +31,12 @@ import java.util.List;
 import java.util.Map;
 
 public class MetaNativeManager {
-    private static final String TAG = "Admob";
-
     public static final Map<String, NativeAd> mapMetaNativeAfterInter = new HashMap<>();
     public static final Map<String, List<NativeAd>> mapMetaNativeSplash = new HashMap<>();
-
     // Thêm map lưu AdMob fallback song song với Meta (TH Meta load fail)
     public static final Map<String, List<com.google.android.gms.ads.nativead.NativeAd>>
             mapAdmobNativeSplash = new HashMap<>();
+    private static final String TAG = "Admob";
 
 //    // ─── PRELOAD SINGLE ──────────────────────────────────────────────
 //

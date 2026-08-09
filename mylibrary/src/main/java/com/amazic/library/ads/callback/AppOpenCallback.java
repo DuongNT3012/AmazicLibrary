@@ -6,9 +6,11 @@ public class AppOpenCallback {
     public void onAdLoaded(AppOpenAd ad) {
 
     }
+
     public void onAdFailedToLoad() {
 
     }
+
     public void onAdDismissedFullScreenContent() {
     }
 

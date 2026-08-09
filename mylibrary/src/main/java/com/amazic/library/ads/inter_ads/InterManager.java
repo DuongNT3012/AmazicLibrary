@@ -6,24 +6,20 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.InterCallback;
-import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.nativead.NativeAd;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class InterManager {
-    private static final String TAG = "InterManager";
     public static final Map<String, InterstitialAd> listInter = new HashMap<>();
+    private static final String TAG = "InterManager";
 
     public static void loadAndShowInterAds(Activity activity, String adsKey, String remoteKey, InterCallback interCallback) {
         Admob.getInstance().loadInterAdsLoadAndShow(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, remoteKey);

@@ -27,15 +27,15 @@ import java.util.List;
 
 public class BannerPictureInPictureManager implements LifecycleEventObserver {
     private static final String TAG = "BannerManager";
-    private Activity currentActivity;
-    private PictureInPictureAd pipAd;
-    private String remoteKey;
-    private List<String> listId;
+    private final LifecycleOwner lifecycleOwner;
+    private final Activity currentActivity;
+    private final PictureInPictureAd pipAd;
+    private final String remoteKey;
+    private final List<String> listId;
     private CountDownTimer countDownTimer;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;
     private long intervalReloadBanner = 0;
-    private final LifecycleOwner lifecycleOwner;
     private boolean isPause = false;
     private PictureInPictureAd.AdPosition positionPIP = PictureInPictureAd.AdPosition.BOTTOM_RIGHT;
     private boolean isLoading = false; // Flag check state load

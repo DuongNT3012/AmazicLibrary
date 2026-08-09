@@ -1,6 +1,8 @@
 package com.amazic.library.ads.native_ads;
 
 import android.app.Activity;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.widget.FrameLayout;
@@ -17,18 +19,15 @@ import com.google.android.gms.ads.LoadAdError;
 import com.google.android.gms.ads.nativead.NativeAd;
 import com.google.android.gms.ads.nativead.NativeAdView;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class NativeAfterInterManager {
-    private static final String TAG = "Admob";
     public static final Map<String, NativeAd> mapNativeAdsAfterInter = new HashMap<>();
     public static final Map<String, List<NativeAd>> mapNativeAdsAfterInterSplash = new HashMap<>();
+    private static final String TAG = "Admob";
 
     public static void preloadNativeAfterInter(Activity activity, String adsKey, String remoteKey) {
         NativeAfterInterActivity.Companion.setAdsKey(adsKey);

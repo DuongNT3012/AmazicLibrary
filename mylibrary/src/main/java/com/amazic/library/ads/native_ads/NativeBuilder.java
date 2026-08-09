@@ -19,7 +19,10 @@ import java.util.List;
 
 public class NativeBuilder {
     private static final String TAG = "NativeBuilder";
-    private NativeCallback callback = new NativeCallback();
+    public boolean useNewAdLoading = false;
+    public int maxRequestBackup = 1;
+    public int maxRequest = 1;
+    public int maxRequestReload = 1;
     List<String> listIdAdMain = new ArrayList<>();
     List<String> listIdAdSecondary = new ArrayList<>();
     List<String> listIdAdBackup = new ArrayList<>();
@@ -27,14 +30,11 @@ public class NativeBuilder {
     NativeAdView nativeAdViewSecondary;
     NativeAdView nativeMetaAdView;
     ShimmerFrameLayout shimmerFrameLayout;
+    private NativeCallback callback = new NativeCallback();
     private FrameLayout flAd;
     private int layoutNativeAdmob;
     private int layoutNativeMeta;
     private int layoutShimmerNative;
-    public boolean useNewAdLoading = false;
-    public int maxRequestBackup = 1;
-    public int maxRequest = 1;
-    public int maxRequestReload = 1;
 
     public NativeBuilder(Context context, @NonNull FrameLayout flAd, @LayoutRes int idLayoutShimmer, @LayoutRes int idLayoutNative, @LayoutRes int idLayoutNativeMeta, boolean useNewAdLoading) {
         this.useNewAdLoading = useNewAdLoading;

@@ -6,32 +6,6 @@ import android.os.Bundle;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
 public class EventTrackingHelper {
-    public static void logEvent(Context context, String eventName) {
-        if (context == null) {
-            return;
-        }
-        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
-        Bundle bundle = new Bundle();
-        firebaseAnalytics.logEvent(eventName, bundle);
-    }
-
-    public static void logEventWithAParam(Context context, String eventName, String param, String value) {
-        if (context == null) {
-            return;
-        }
-        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
-        Bundle bundle = new Bundle();
-        bundle.putString(param, value);
-        firebaseAnalytics.logEvent(eventName, bundle);
-    }
-
-    public static void logEventWithMultipleParams(Context context, String eventName, Bundle bundle) {
-        if (context == null) {
-            return;
-        }
-        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
-        firebaseAnalytics.logEvent(eventName, bundle);
-    }
     public static String time_splash_loading_notshow = "time_splash_loading_notshow";
     public static String time_splash_loading_ad_notshow = "time_splash_loading_ad_notshow";
     public static String time_splash_loading_show = "time_splash_loading_show";
@@ -75,4 +49,31 @@ public class EventTrackingHelper {
     public static String open_splash_click = "open_splash_click";
     public static String inter_splash_showad_time = "inter_splash_showad_time";
     public static String showad_time = "showad_time";
+
+    public static void logEvent(Context context, String eventName) {
+        if (context == null) {
+            return;
+        }
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+        Bundle bundle = new Bundle();
+        firebaseAnalytics.logEvent(eventName, bundle);
+    }
+
+    public static void logEventWithAParam(Context context, String eventName, String param, String value) {
+        if (context == null) {
+            return;
+        }
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+        Bundle bundle = new Bundle();
+        bundle.putString(param, value);
+        firebaseAnalytics.logEvent(eventName, bundle);
+    }
+
+    public static void logEventWithMultipleParams(Context context, String eventName, Bundle bundle) {
+        if (context == null) {
+            return;
+        }
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
+        firebaseAnalytics.logEvent(eventName, bundle);
+    }
 }

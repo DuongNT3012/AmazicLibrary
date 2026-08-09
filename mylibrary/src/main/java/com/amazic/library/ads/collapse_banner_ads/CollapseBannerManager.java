@@ -1,6 +1,5 @@
 package com.amazic.library.ads.collapse_banner_ads;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.CountDownTimer;
 import android.util.Log;
@@ -21,8 +20,9 @@ import com.google.android.gms.ads.AdView;
 public class CollapseBannerManager implements LifecycleEventObserver {
     private static final String TAG = "CollapseBannerManager";
     private final CollapseBannerBuilder builder;
-    private AppCompatActivity currentActivity;
     private final LifecycleOwner lifecycleOwner;
+    public AdView adView;
+    private AppCompatActivity currentActivity;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;
     private long intervalReloadBanner = 0;
@@ -30,32 +30,10 @@ public class CollapseBannerManager implements LifecycleEventObserver {
     private CountDownTimer countDownTimer;
     private Context context;
     private int adWidth;
-    private FrameLayout frContainer;
+    private final FrameLayout frContainer;
     private boolean isLoadBannerFragment = false;
-    public AdView adView;
-    private String remoteKey;
+    private final String remoteKey;
     private boolean isAutoReload = true;
-
-    public void setIntervalReloadBanner(long intervalReloadBanner) {
-        if (intervalReloadBanner > 0) {
-            this.intervalReloadBanner = intervalReloadBanner;
-            countDownTimer = new CountDownTimer(this.intervalReloadBanner, 1000) {
-                @Override
-                public void onTick(long l) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    if (isLoadBannerFragment) {
-                        loadCollapseBannerFragment(frContainer);
-                    } else {
-                        loadCollapseBanner(frContainer);
-                    }
-                }
-            };
-        }
-    }
 
     public CollapseBannerManager(@NonNull AppCompatActivity currentActivity, FrameLayout frContainer, LifecycleOwner lifecycleOwner, CollapseBannerBuilder builder, String remoteKey) {
         this.isLoadBannerFragment = false;
@@ -76,6 +54,27 @@ public class CollapseBannerManager implements LifecycleEventObserver {
         this.remoteKey = remoteKey;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
+    }
+
+    public void setIntervalReloadBanner(long intervalReloadBanner) {
+        if (intervalReloadBanner > 0) {
+            this.intervalReloadBanner = intervalReloadBanner;
+            countDownTimer = new CountDownTimer(this.intervalReloadBanner, 1000) {
+                @Override
+                public void onTick(long l) {
+
+                }
+
+                @Override
+                public void onFinish() {
+                    if (isLoadBannerFragment) {
+                        loadCollapseBannerFragment(frContainer);
+                    } else {
+                        loadCollapseBanner(frContainer);
+                    }
+                }
+            };
+        }
     }
 
     @Override

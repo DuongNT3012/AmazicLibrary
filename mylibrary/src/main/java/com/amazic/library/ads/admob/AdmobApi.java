@@ -33,16 +33,27 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class AdmobApi {
-    private String TAG = "AdmobApi";
+    private static volatile AdmobApi INSTANCE;
+    public String appIDRelease = "ca-app-pub-4973559944609228~2346710863";
+    LinkedHashMap<String, List<String>> listAds = new LinkedHashMap<>();
+    Gson gson = new GsonBuilder()
+            .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            .create();
+    private final String TAG = "AdmobApi";
     private ApiService apiService;
     private String linkServer = "http://language-master.top";
     private String packageName = "";
-    public String appIDRelease = "ca-app-pub-4973559944609228~2346710863";
-    private static volatile AdmobApi INSTANCE;
     private Context context;
     private String jsonIdAdsDefault = "";
     private boolean isSetId = false;
     private int timeOutCallApi = 12000;
+
+    public static synchronized AdmobApi getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new AdmobApi();
+        }
+        return INSTANCE;
+    }
 
     public int getListAdsSize() {
         if (listAds != null) {
@@ -67,8 +78,6 @@ public class AdmobApi {
     public void setTimeOutCallApi(int timeOutCallApi) {
         this.timeOutCallApi = timeOutCallApi;
     }
-
-    LinkedHashMap<String, List<String>> listAds = new LinkedHashMap<>();
 
     public List<String> getListIDOpenSplash() {
         return getListIDByName("open_splash");
@@ -119,17 +128,6 @@ public class AdmobApi {
         if (listAds.get(nameAds.trim()) != null)
             list.addAll(Objects.requireNonNull(listAds.get(nameAds)));
         return list;
-    }
-
-    Gson gson = new GsonBuilder()
-            .setDateFormat("yyyy-MM-dd HH:mm:ss")
-            .create();
-
-    public static synchronized AdmobApi getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new AdmobApi();
-        }
-        return INSTANCE;
     }
 
     public void init(Context context, String linkServerRelease, String AppID, ApiCallback callBack) {

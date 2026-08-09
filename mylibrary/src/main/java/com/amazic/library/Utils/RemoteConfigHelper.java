@@ -14,10 +14,28 @@ import java.util.Map;
 
 public class RemoteConfigHelper {
     private static final String TAG = "RemoteConfigHelper";
+    public static String id_ads = "id_ads";
+    public static String show_all_ads = "show_all_ads";
+    public static String interval_between_interstitial = "interval_between_interstitial";
+    public static String interval_interstitial_from_start = "interval_interstitial_from_start";
+    public static String rate_aoa_inter_splash = "rate_aoa_inter_splash";
+    public static String interval_reload_native = "interval_reload_native";
+    public static String banner_splash = "banner_splash";
+    public static String open_splash = "open_splash";
+    public static String inter_splash = "inter_splash";
+    public static String native_language = "native_language";
+    public static String native_interest = "native_interest";
+    public static String native_intro = "native_intro";
+    public static String native_intro_full = "native_intro_full";
+    public static String inter_intro = "inter_intro";
+    public static String native_permission = "native_permission";
+    public static String banner_all = "banner_all";
+    public static String resume_wb = "resume_wb";
+    public static String native_wb = "native_wb";
     private static RemoteConfigHelper INSTANCE;
-    private ArrayList<String> listRemoteStringName = new ArrayList<>();
-    private ArrayList<String> listRemoteBooleanName = new ArrayList<>();
-    private ArrayList<String> listRemoteLongName = new ArrayList<>();
+    private final ArrayList<String> listRemoteStringName = new ArrayList<>();
+    private final ArrayList<String> listRemoteBooleanName = new ArrayList<>();
+    private final ArrayList<String> listRemoteLongName = new ArrayList<>();
 
     public static RemoteConfigHelper getInstance() {
         if (INSTANCE == null) {
@@ -26,8 +44,24 @@ public class RemoteConfigHelper {
         return INSTANCE;
     }
 
-    public interface IOnFetchDone {
-        void onFetchDone(boolean isSuccess);
+    private static String determineValueType(String value) {
+        if (value == null || value.isEmpty()) {
+            return "String";
+        }
+        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
+            return "Boolean";
+        }
+        try {
+            Long.parseLong(value);
+            return "Long";
+        } catch (NumberFormatException ignored) {
+        }
+        try {
+            Double.parseDouble(value);
+            return "Double";
+        } catch (NumberFormatException ignored) {
+        }
+        return "String";
     }
 
     public void fetchAllKeysAndTypes(Context context, IOnFetchDone iOnFetchDone) {
@@ -83,26 +117,6 @@ public class RemoteConfigHelper {
             }
             iOnFetchDone.onFetchDone(isSuccess);
         });
-    }
-
-    private static String determineValueType(String value) {
-        if (value == null || value.isEmpty()) {
-            return "String";
-        }
-        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) {
-            return "Boolean";
-        }
-        try {
-            Long.parseLong(value);
-            return "Long";
-        } catch (NumberFormatException ignored) {
-        }
-        try {
-            Double.parseDouble(value);
-            return "Double";
-        } catch (NumberFormatException ignored) {
-        }
-        return "String";
     }
 
     private boolean getRemoteConfigBoolean(String adUnitId) {
@@ -176,23 +190,7 @@ public class RemoteConfigHelper {
         SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
         return pre.getLong(name_config, 0);
     }
-
-    public static String id_ads = "id_ads";
-    public static String show_all_ads = "show_all_ads";
-    public static String interval_between_interstitial = "interval_between_interstitial";
-    public static String interval_interstitial_from_start = "interval_interstitial_from_start";
-    public static String rate_aoa_inter_splash = "rate_aoa_inter_splash";
-    public static String interval_reload_native = "interval_reload_native";
-    public static String banner_splash = "banner_splash";
-    public static String open_splash = "open_splash";
-    public static String inter_splash = "inter_splash";
-    public static String native_language = "native_language";
-    public static String native_interest = "native_interest";
-    public static String native_intro = "native_intro";
-    public static String native_intro_full = "native_intro_full";
-    public static String inter_intro = "inter_intro";
-    public static String native_permission = "native_permission";
-    public static String banner_all = "banner_all";
-    public static String resume_wb = "resume_wb";
-    public static String native_wb = "native_wb";
+    public interface IOnFetchDone {
+        void onFetchDone(boolean isSuccess);
+    }
 }

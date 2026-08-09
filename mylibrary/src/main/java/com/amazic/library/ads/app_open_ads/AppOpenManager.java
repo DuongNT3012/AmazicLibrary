@@ -45,7 +45,12 @@ import java.util.List;
 
 public class AppOpenManager implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
     private static final String TAG = "AppOpenManager";
+    public static boolean isLastActionClickAd = false;
     private static AppOpenManager INSTANCE;
+    private final List<String> listIdOpenResumeAd = new ArrayList<>();
+    private final ArrayList<Class> disabledAppOpenList = new ArrayList<>();
+    public ArrayList<Integer> listAnimationDialogRaw = new ArrayList<>();
+    public boolean isShowAdResumeAfterAdClick = true;
     private AppOpenAd appOpenAdSplash = null;
     private boolean isLoadingAdSplash = false;
     private AppOpenAd appOpenAd = null;
@@ -55,17 +60,23 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private Activity currentActivity;
     private Application application;
     private LoadingAdsResumeDialog loadingAdsResumeDialog;
-    public ArrayList<Integer> listAnimationDialogRaw = new ArrayList<>();
     private boolean isCustomAnimationDialog = false;
-    private final List<String> listIdOpenResumeAd = new ArrayList<>();
     private boolean isFailToShowAdSplash = false;
-    private final ArrayList<Class> disabledAppOpenList = new ArrayList<>();
     private boolean isShowWelcomeBelowAdsResume = false;
     private Class welcomeBackClass = null;
     private Handler handlerTimeoutSplash = new Handler(Looper.getMainLooper());
     private Runnable runnable;
     private boolean isSplashResume = true;
     private int countClickInterSplashAds = 0;
+    private boolean isEnableResume = true;
+    private String remoteKey = "open_resume";
+
+    public static AppOpenManager getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new AppOpenManager();
+        }
+        return INSTANCE;
+    }
 
     public boolean isEnableResume() {
         return isEnableResume;
@@ -73,18 +84,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
     public void setEnableResume(boolean enableResume) {
         isEnableResume = enableResume;
-    }
-
-    private boolean isEnableResume = true;
-    private String remoteKey = "open_resume";
-    public static boolean isLastActionClickAd = false;
-    public boolean isShowAdResumeAfterAdClick = true;
-
-    public static AppOpenManager getInstance() {
-        if (INSTANCE == null) {
-            INSTANCE = new AppOpenManager();
-        }
-        return INSTANCE;
     }
 
     public void init(Activity activity, List<String> listIdOpenResume) {
@@ -855,7 +854,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         isLoadingAdSplash = true;
 
-        Log.d(TAG, "App Open Preload SPLASH: number ad preloading = "+AsyncSplash.Companion.getInstance().getNumberPreloadingSplash());
+        Log.d(TAG, "App Open Preload SPLASH: number ad preloading = " + AsyncSplash.Companion.getInstance().getNumberPreloadingSplash());
 
         PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResumeTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash()).build();
 

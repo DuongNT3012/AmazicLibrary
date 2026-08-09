@@ -19,7 +19,6 @@ import com.amazic.library.Utils.EventTrackingHelper;
 import com.amazic.library.Utils.NetworkUtil;
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
-import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ump.AdsConsentManager;
 import com.google.ads.noninterruptive.squeezebackad.SqueezeBackAd;
 import com.google.ads.noninterruptive.squeezebackad.SqueezeBackAdEventCallback;
@@ -32,12 +31,11 @@ import java.util.List;
 
 public class NativeSqueezeBackManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
-
-    //    private SqueezeBackAd backAd;
-    private Activity currentActivity;
-    private String remoteKey;
-    private List<String> listId;
     private final LifecycleOwner lifecycleOwner;
+    //    private SqueezeBackAd backAd;
+    private final Activity currentActivity;
+    private final String remoteKey;
+    private final List<String> listId;
     private CountDownTimer countDownTimer;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;

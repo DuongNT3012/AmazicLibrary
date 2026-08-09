@@ -13,10 +13,14 @@ public class AdsModel {
         this.ads_id = ads_id;
     }
 
-    public int getId() {return id;}
+    public int getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
+
     public String getAds_id() {
         return ads_id;
     }

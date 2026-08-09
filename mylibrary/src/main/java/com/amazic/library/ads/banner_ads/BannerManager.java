@@ -22,8 +22,9 @@ import com.amazic.library.ads.callback.BannerCallback;
 public class BannerManager implements LifecycleEventObserver {
     private static final String TAG = "BannerManager";
     private final BannerBuilder builder;
-    private Activity currentActivity;
     private final LifecycleOwner lifecycleOwner;
+    private final String remoteKey;
+    private Activity currentActivity;
     private boolean isReloadAds = false;
     private boolean isAlwaysReloadOnResume = false;
     private long intervalReloadBanner = 0;
@@ -32,7 +33,6 @@ public class BannerManager implements LifecycleEventObserver {
     private Context context;
     private int adWidth;
     private boolean isLoadBannerFragment = false;
-    private final String remoteKey;
     private String remoteKeySecondary = "";
     private String remoteKeyBackup = "";
     private boolean isLoadedBannerMain = false;

@@ -21,12 +21,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class TechManager {
-    private String advertId = "";
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
-    private Handler handler = new Handler(Looper.getMainLooper());
     public static TechManager INSTANCE;
     public final String TAG = "TechManager";
     public final String CALLED_API = "calledApi";
+    private String advertId = "";
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     public static TechManager getInstance() {
         if (INSTANCE == null) {
@@ -112,11 +112,7 @@ public class TechManager {
                     calledApi(context);
                     //end
                     Log.d(TAG, "onResponse " + result);
-                    if (result.equals(Constant.keyCheck)) {
-                        detectedTech(context, true);
-                    } else {
-                        detectedTech(context, false);
-                    }
+                    detectedTech(context, result.equals(Constant.keyCheck));
                     onCheckResultCallback.onResult(result.equals(Constant.keyCheck));
                 }
             }));

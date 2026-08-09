@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RewardInterManager {
-    private static final String TAG = "RewardInterManager";
     public static final Map<String, RewardedInterstitialAd> listRewardInter = new HashMap<>();
+    private static final String TAG = "RewardInterManager";
 
     public static void loadRewardInterAds(Activity activity, String adsKey, String remoteKey) {
         if (listRewardInter.get(adsKey) == null) {

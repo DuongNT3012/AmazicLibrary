@@ -6,7 +6,6 @@ import android.os.Build
 import android.os.Bundle
 import android.os.CountDownTimer
 import android.util.Log
-import android.view.Gravity
 import android.view.View
 import android.view.Window
 import android.view.WindowManager
@@ -98,9 +97,11 @@ class NativeAfterInterActivity : AppCompatActivity() {
     ///splash
     private fun initSplashMode() {
         val adList = NativeAfterInterManager.mapNativeAdsAfterInterSplash[adsKey]
-        Log.d("Admob", "initSplashMode: adsKey='$adsKey'" +
-                ", mapKeys=${NativeAfterInterManager.mapNativeAdsAfterInterSplash.keys}" +
-                ", mapListSize=${NativeAfterInterManager.mapNativeAdsAfterInterSplash[adsKey]?.size}")
+        Log.d(
+            "Admob", "initSplashMode: adsKey='$adsKey'" +
+                    ", mapKeys=${NativeAfterInterManager.mapNativeAdsAfterInterSplash.keys}" +
+                    ", mapListSize=${NativeAfterInterManager.mapNativeAdsAfterInterSplash[adsKey]?.size}"
+        )
         if (adList.isNullOrEmpty()) {
             Log.d("Admob", "NativeAfterInter Splash: no ads → onNextAction")
             interCallback?.onNextAction()

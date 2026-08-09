@@ -13,8 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class RewardManager {
-    private static final String TAG = "RewardManager";
     public static final Map<String, RewardedAd> listReward = new HashMap<>();
+    private static final String TAG = "RewardManager";
 
     public static void loadAndShowRewardAds(Activity activity, String adsKey, RewardedCallback rewardedCallback, String remoteKey) {
         Admob.getInstance().loadAndShowRewardAds(activity, AdmobApi.getInstance().getListIDByName(adsKey), rewardedCallback, remoteKey);

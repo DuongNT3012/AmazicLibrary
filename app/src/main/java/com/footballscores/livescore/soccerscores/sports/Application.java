@@ -4,7 +4,6 @@ import androidx.annotation.NonNull;
 
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
-import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.application.AdsApplication;
 import com.amazic.mylibrary.BuildConfig;
 

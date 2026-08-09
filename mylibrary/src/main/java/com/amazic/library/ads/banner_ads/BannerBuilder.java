@@ -13,8 +13,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BannerBuilder {
-    private BannerCallback callBack = new BannerCallback();
-    private FrameLayout frContainer;
     public boolean useNewAdLoading = false;
     public AdView bannerAdViewMain;
     public AdView bannerAdViewSecondary;
@@ -23,6 +21,8 @@ public class BannerBuilder {
     public List<String> listIdAdSecondary = new ArrayList<>();
     public List<String> listIdAdBackup = new ArrayList<>();
     public View shimmerBanner;
+    private BannerCallback callBack = new BannerCallback();
+    private FrameLayout frContainer;
 
     public BannerBuilder(FrameLayout frContainer) {
         this.frContainer = frContainer;
@@ -38,13 +38,13 @@ public class BannerBuilder {
         }
     }
 
+    public BannerCallback getCallBack() {
+        return callBack;
+    }
+
     public BannerBuilder setCallBack(BannerCallback callBack) {
         this.callBack = callBack;
         return this;
-    }
-
-    public BannerCallback getCallBack() {
-        return callBack;
     }
 
     public List<String> getListIdAdMain() {

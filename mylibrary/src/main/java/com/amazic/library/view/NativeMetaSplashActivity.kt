@@ -23,9 +23,6 @@ import com.amazic.library.ads.native_ads.MetaNativeManager
 import com.amazic.library.ads.native_ads.NativeAfterInterManager
 import com.amazic.library.ads.splash_ads.AsyncSplash
 import com.amazic.mylibrary.R
-import kotlin.collections.forEach
-import kotlin.collections.getOrNull
-import kotlin.collections.isNullOrEmpty
 
 class NativeMetaSplashActivity : AppCompatActivity() {
     private lateinit var frAds: FrameLayout

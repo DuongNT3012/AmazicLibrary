@@ -316,6 +316,83 @@ public class AdsSplash {
     // checkCondition...: the gate itself - only shows once BOTH the min-wait timer and the ad load are done.
     // showInterAdPreloadingSplashDelay: builds the FullScreenContentCallback and actually calls show().
 
+    private Long timeStartCalInterSplash = 0L;
+    private Boolean isFirstLoadedInterSplash = false;
+
+    public void loadAndShowInterAdPreloadingSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
+        EventTrackingHelper.logEvent(activity, "splash_preload_start_check");
+        ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
+        timeStartCalInterSplash = System.currentTimeMillis();
+        isFirstLoadedInterSplash = true;
+        if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() /*|| IAPManager.getInstance().isPurchase()*/) {
+            Log.d(TAG, "AdsSplash Inter preload: Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" /*+ IAPManager.getInstance().isPurchase()*/);
+            interCallback.onNextAction();
+            removeHandlerSplashAds();
+            Bundle bundle = new Bundle();
+            bundle.putString("failed_message", "lib_internet_" + NetworkUtil.isNetworkActive(activity)
+                    + "_Consent_" + AdsConsentManager.getConsentResult(activity)
+                    + "_isShowAllAds_" + Admob.getInstance().getShowAllAds()
+            );
+            EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_failed_check", bundle);
+            return;
+        }
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash()).build();
+
+        boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
+
+        boolean isEmptyListNativeAfterInter = AdmobApi.getInstance().getListIDByName(adsKeyNative).isEmpty();
+
+        EventTrackingHelper.logEvent(activity, "splash_preload_start_call");
+        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+            @Override
+            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+                super.onAdFailedToPreload(s, adError);
+                Log.d(TAG, "AdsSplash Inter preload: Preload ad " + s + " failed to load with error: " + adError.getMessage());
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", "load_" + adError.getMessage());
+                EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_failed", bundle);
+                interCallback.onAdFailedToLoad();
+                if (listIdInterTemp.size() > 1) {
+                    listIdInterTemp.remove(0);
+                    loadAndShowInterAdPreloadingSplashDelay(activity, listIdInterTemp, interCallback, adsKeyNative, remoteKeyNative);
+                }
+            }
+
+            @Override
+            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+                super.onAdPreloaded(s, responseInfo);
+                if (isFirstLoadedInterSplash){
+                    EventTrackingHelper.logEvent(activity, "splash_preload_loaded");
+                    isFirstLoadedInterSplash = false;
+                }
+                Log.i(TAG, "AdsSplash Inter preload: Ad loaded inter splash.");
+                EventTrackingHelper.logEvent(activity, "splash_delay_true");
+                isAdLoadAdsSplashFinished = true;
+                Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is available.");
+                interCallback.onAdLoaded(null);
+
+                Log.d(TAG, "onAdPreloaded have ad data: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+                //get data ad inter
+                mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+                Log.d(TAG, "onAdPreloaded done: ad = " + mInterstitialAdSplash);
+
+                //destroy preload ads
+                InterstitialAdPreloader.destroy(listIdInter.get(0));
+                /// show ads
+                checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
+                removeHandlerSplashAds();
+            }
+
+
+            @Override
+            public void onAdsExhausted(@NonNull String s) {
+                super.onAdsExhausted(s);
+                Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is exhausted.");
+            }
+        };
+
+        InterstitialAdPreloader.start(listIdInterTemp.get(0), configuration, callback);
+    }
     public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "AdsSplash Inter preload: Bắt đầu tiến trình Load And Show Inter Delay ads...");
         new Handler(Looper.getMainLooper()).post(() ->
@@ -482,7 +559,6 @@ public class AdsSplash {
             showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
             removeHandlerDelayAdsSplash();
         }
-
     }
 
 
@@ -1147,7 +1223,7 @@ public class AdsSplash {
                         Admob.getInstance().dismissLoadingDialog();
                     }
                     isFailToShowAdSplash = true;
-                    if (handlerTimeoutSplash != null && runnable != null) {
+                    if (runnable != null) {
                         handlerTimeoutSplash.removeCallbacks(runnable);
                     }
                 }

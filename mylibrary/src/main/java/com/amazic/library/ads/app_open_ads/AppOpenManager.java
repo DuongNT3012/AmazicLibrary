@@ -71,6 +71,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private boolean isEnableResume = true;
     private String remoteKey = "open_resume";
 
+    public Boolean isAppInBackground = false;
+
     public static AppOpenManager getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new AppOpenManager();
@@ -1543,6 +1545,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     @Override
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
+        isAppInBackground = false;
         Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
         if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {
             if (Admob.getInstance().getIsInitAdmobDone()) {
@@ -1559,5 +1562,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 showAdIfAvailableWelcomeBackLoadAndShow(currentActivity, listIdOpenResumeAd, null, remoteKey, true);
             }
         }
+    }
+
+    @Override
+    public void onStop(@NonNull LifecycleOwner owner) {
+        DefaultLifecycleObserver.super.onStop(owner);
+        isAppInBackground = true;
     }
 }

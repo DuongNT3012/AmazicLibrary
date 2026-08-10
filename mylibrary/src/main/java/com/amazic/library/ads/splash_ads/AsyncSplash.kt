@@ -558,7 +558,7 @@ class AsyncSplash {
             val time = (System.currentTimeMillis() - config.timeStartSplash) / 1000
             Log.d(TAG, "----------")
             Log.d(TAG, "showAdsSplash: Time show Ads = $time")
-            AdsSplash.getInstance().loadAndShowInterAdSplashDelay(
+            AdsSplash.getInstance().loadAndShowInterAdPreloadingSplashDelay(
                 activity,
                 AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
                 interCallback,
@@ -670,7 +670,6 @@ class AsyncSplash {
         val runnable = Runnable {
             if (config.isUseIdAdsFromRemoteConfig && !config.isSetId) {
                 val act = activityRef.get()
-                IDRemoteConfigHelper.setUpDefaultValue(activity.applicationContext, config.jsonIdAdsDefault)
 //                AdmobApi.getInstance().jsonIdAdsDefault = config.jsonIdAdsDefault
 //                AdmobApi.getInstance().convertJsonIdAdsDefaultToList(config.jsonIdAdsDefault)
                 config.isSetId = true

@@ -7,6 +7,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.amazic.library.Utils.IDRemoteConfigHelper;
 import com.amazic.library.Utils.NetworkUtil;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.call_api.AdsModel;
@@ -126,8 +127,17 @@ public class AdmobApi {
     public List<String> getListIDByName(String nameAds) {
         List<String> list = new ArrayList<>();
         if (listAds.get(nameAds.trim()) != null)
-            list.addAll(Objects.requireNonNull(listAds.get(nameAds)));
+            list.addAll(Objects.requireNonNull(listAds.get(nameAds.trim())));
+        else {
+            String remoteAdsKey = "id_" + nameAds.trim();
+            String adsId = IDRemoteConfigHelper.getID(context, remoteAdsKey);
+            if (adsId != null) list.add(adsId);
+        }
         return list;
+    }
+
+    public void init(Context context) {
+        this.context = context;
     }
 
     public void init(Context context, String linkServerRelease, String AppID, ApiCallback callBack) {

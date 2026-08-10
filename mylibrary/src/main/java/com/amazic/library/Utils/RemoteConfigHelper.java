@@ -155,7 +155,12 @@ public class RemoteConfigHelper {
 
     public String get_config_string(Context context, String name_config) {
         SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
-        return pre.getString(name_config, "0_100");
+        return pre.getString(name_config, null);
+    }
+
+    public String get_config_string(Context context, String name_config, String defaultValue) {
+        SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
+        return pre.getString(name_config, defaultValue);
     }
 
     public void set_config_string(Context context, String name_config, String config) {

@@ -19,7 +19,6 @@ public class AdmobAdsConfig {
     private String jsonIdAdsDefault = "";
     private int timeOutCallApi = 4000;
     private String adjustKey = "";
-    private String linkServer = "";
     private String appId = "";
     private boolean isShowAdsSplash = false;
     private boolean isTimeout = false;
@@ -129,7 +128,6 @@ public class AdmobAdsConfig {
         jsonIdAdsDefault = "";
         timeOutCallApi = 4000;
         adjustKey = "";
-        linkServer = "";
         appId = "";
         isShowAdsSplash = false;
         isTimeout = false;
@@ -218,14 +216,6 @@ public class AdmobAdsConfig {
 
     public void setAdjustKey(String adjustKey) {
         this.adjustKey = adjustKey;
-    }
-
-    public String getLinkServer() {
-        return linkServer;
-    }
-
-    public void setLinkServer(String linkServer) {
-        this.linkServer = linkServer;
     }
 
     public String getAppId() {

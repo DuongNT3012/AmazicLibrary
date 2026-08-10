@@ -155,6 +155,7 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadNewAdFormat() {
+        Log.d(TAG, "loadNewAdFormat: ");
         if (remoteKeySecondary.isEmpty()) {
             if (!Admob.getInstance().checkCondition(context, remoteKey)) {
                 builder.shimmerFrameLayout.setVisibility(View.GONE);
@@ -387,6 +388,7 @@ public class NativeManager implements LifecycleEventObserver {
     }
 
     private void loadOldAdFormat(int maxRequest) {
+        Log.d(TAG, "loadOldAdFormat: ");
         if (myNativeAdMain != null) {
             myNativeAdMain.destroy();
         }

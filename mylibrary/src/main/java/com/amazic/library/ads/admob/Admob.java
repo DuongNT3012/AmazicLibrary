@@ -30,6 +30,7 @@ import androidx.lifecycle.LifecycleOwner;
 
 import com.amazic.library.Utils.AdjustUtil;
 import com.amazic.library.Utils.EventTrackingHelper;
+import com.amazic.library.Utils.IDRemoteConfigHelper;
 import com.amazic.library.Utils.NetworkUtil;
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.admob_interface.IOnAdsFailToLoad;
@@ -303,6 +304,7 @@ public class Admob {
     }
 
     public void setShowAllAds(boolean isShowAllAds) {
+        IDRemoteConfigHelper.isTurnOnAds = isShowAllAds;
         this.isShowAllAds = isShowAllAds;
     }
 

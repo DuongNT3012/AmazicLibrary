@@ -2,6 +2,7 @@ package com.amazic.library.Utils;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -49,11 +50,12 @@ public class EventTrackingHelper {
     public static String open_splash_click = "open_splash_click";
     public static String inter_splash_showad_time = "inter_splash_showad_time";
     public static String showad_time = "showad_time";
-
+    private static final String TAG = "EventTrackingHelper";
     public static void logEvent(Context context, String eventName) {
         if (context == null) {
             return;
         }
+        Log.d(TAG, "logEvent: " + eventName);
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         Bundle bundle = new Bundle();
         firebaseAnalytics.logEvent(eventName, bundle);
@@ -63,6 +65,7 @@ public class EventTrackingHelper {
         if (context == null) {
             return;
         }
+        Log.d(TAG, "logEvent: " + eventName);
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         Bundle bundle = new Bundle();
         bundle.putString(param, value);
@@ -73,6 +76,7 @@ public class EventTrackingHelper {
         if (context == null) {
             return;
         }
+        Log.d(TAG, "logEvent: " + eventName);
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         firebaseAnalytics.logEvent(eventName, bundle);
     }

@@ -335,6 +335,7 @@ public class AdsSplash {
         timeStartCalInterSplash = timeStep1;
         timeLastCalInterSplash = timeLastStep;
         isFirstLoadedInterSplash = true;
+        isTimerDelayFinished = true;
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() /*|| IAPManager.getInstance().isPurchase()*/) {
             Log.d(TAG, "AdsSplash Inter preload: Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" /*+ IAPManager.getInstance().isPurchase()*/);
             interCallback.onNextAction();

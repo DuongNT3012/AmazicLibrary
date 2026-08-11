@@ -588,6 +588,7 @@ public class AdsSplash {
             Bundle bundle = new Bundle();
             bundle.putString("failed_message", "timerDelayFi_" + isTimerDelayFinished + "_adLoadAdsFi_" + isAdLoadAdsSplashFinished);
             logEventSplash(activity, "splash_preload_failed_show", bundle);
+            interCallback.onNextAction();
         }
     }
 

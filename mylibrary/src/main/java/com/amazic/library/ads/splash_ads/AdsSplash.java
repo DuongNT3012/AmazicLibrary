@@ -87,7 +87,11 @@ public class AdsSplash {
     private Runnable timerDelayRunnable;
     private boolean isTimerDelayFinished = false;
     private boolean isAdLoadAdsSplashFinished = false;
-    private long startTime;
+
+    private Long timeStartCalInterSplash = 0L;
+    private Long timeLastCalInterSplash = 0L;
+    private Boolean isFirstLoadedInterSplash = false;
+    
     // Show-state / click / result tracking.
     private boolean isSplashResume = true;
     private boolean isFailToShowAdSplash = false;
@@ -316,24 +320,32 @@ public class AdsSplash {
     // checkCondition...: the gate itself - only shows once BOTH the min-wait timer and the ad load are done.
     // showInterAdPreloadingSplashDelay: builds the FullScreenContentCallback and actually calls show().
 
-    private Long timeStartCalInterSplash = 0L;
-    private Boolean isFirstLoadedInterSplash = false;
-
     public void loadAndShowInterAdPreloadingSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
+        Long currentTime = System.currentTimeMillis();
+        loadAndShowInterAdPreloadingSplash(activity, listIdInter, interCallback, adsKeyNative, remoteKeyNative, currentTime,currentTime);
+    }
+
+    public void loadAndShowInterAdPreloadingSplash(AppCompatActivity activity,
+                                                   List<String> listIdInter,
+                                                   InterCallback interCallback,
+                                                   String adsKeyNative, String remoteKeyNative,
+                                                   Long timeStep1, Long timeLastStep) {
         EventTrackingHelper.logEvent(activity, "splash_preload_start_check");
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
-        timeStartCalInterSplash = System.currentTimeMillis();
+        timeStartCalInterSplash = timeStep1;
+        timeLastCalInterSplash = timeLastStep;
         isFirstLoadedInterSplash = true;
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !Admob.getInstance().getShowAllAds() /*|| IAPManager.getInstance().isPurchase()*/) {
             Log.d(TAG, "AdsSplash Inter preload: Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + Admob.getInstance().getShowAllAds() + "_" /*+ IAPManager.getInstance().isPurchase()*/);
             interCallback.onNextAction();
             removeHandlerSplashAds();
             Bundle bundle = new Bundle();
-            bundle.putString("failed_message", "lib_internet_" + NetworkUtil.isNetworkActive(activity)
-                    + "_Consent_" + AdsConsentManager.getConsentResult(activity)
-                    + "_isShowAllAds_" + Admob.getInstance().getShowAllAds()
+            bundle.putString("failed_message", "internet_" + NetworkUtil.isNetworkActive(activity)
+                    + "_Con_" + AdsConsentManager.getConsentResult(activity)
+                    + "_showAllAds_" + Admob.getInstance().getShowAllAds()
             );
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_failed_check", bundle);
+            logEventSplash(activity, "splash_preload_end_failed");
             return;
         }
         PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash()).build();
@@ -350,6 +362,7 @@ public class AdsSplash {
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad " + s + " failed to load with error: " + adError.getMessage());
                 Bundle bundle = new Bundle();
                 bundle.putString("failed_message", "load_" + adError.getMessage());
+                bundle.putString("time_to_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0));
                 EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_failed", bundle);
                 interCallback.onAdFailedToLoad();
                 if (listIdInterTemp.size() > 1) {
@@ -361,12 +374,18 @@ public class AdsSplash {
             @Override
             public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
                 super.onAdPreloaded(s, responseInfo);
+                Bundle bundle = new Bundle();
                 if (isFirstLoadedInterSplash){
-                    EventTrackingHelper.logEvent(activity, "splash_preload_loaded");
+                    timeLastCalInterSplash = System.currentTimeMillis();
+                    bundle.putString("time_to_step", String.format(Locale.US, "%.1f",
+                            (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0));
+                    bundle.putString("time_between_step", String.format(Locale.US, "%.1f",
+                            (System.currentTimeMillis() - timeLastCalInterSplash) / 1000.0));
                     isFirstLoadedInterSplash = false;
+                    EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_loaded_first", bundle);
                 }
                 Log.i(TAG, "AdsSplash Inter preload: Ad loaded inter splash.");
-                EventTrackingHelper.logEvent(activity, "splash_delay_true");
+                EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_loaded", bundle);
                 isAdLoadAdsSplashFinished = true;
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is available.");
                 interCallback.onAdLoaded(null);
@@ -398,7 +417,7 @@ public class AdsSplash {
         new Handler(Looper.getMainLooper()).post(() ->
                 NativeAfterInterManager.preloadNativeAfterInterSplash(activity, adsKeyNative, remoteKeyNative)
         );
-        startTime = System.currentTimeMillis();
+        timeStartCalInterSplash = System.currentTimeMillis();
 
         boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
 
@@ -549,16 +568,42 @@ public class AdsSplash {
     private void checkConditionAdPreloadingSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
         if (activity == null || activity.isFinishing() || activity.isDestroyed()) {
             Log.d(TAG, "removeHandlerDelayAdsSplash");
+            if (activity != null) {
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", "finishing_" + activity.isFinishing() + "destroyed_" + activity.isDestroyed());
+                logEventSplash(activity, "splash_preload_failed_activity", bundle);
+            }
             removeHandlerDelayAdsSplash();
             return;
         }
+
         if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
-            String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
+            String timeFormatted = String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0);
             Log.d(TAG, "AdsSplash Inter preload: ===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây , isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
+            logEventSplash(activity, "splash_preload_start_show");
             EventTrackingHelper.logEventWithAParam(activity, "Splash_time_wait", "time_to_step", timeFormatted);
             showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
             removeHandlerDelayAdsSplash();
+        } else {
+            Bundle bundle = new Bundle();
+            bundle.putString("failed_message", "timerDelayFi_" + isTimerDelayFinished + "_adLoadAdsFi_" + isAdLoadAdsSplashFinished);
+            logEventSplash(activity, "splash_preload_failed_show", bundle);
         }
+    }
+
+    private void logEventSplash(AppCompatActivity activity, String eventName, Bundle bundle) {
+        bundle.putString("time_to_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0));
+        bundle.putString("time_between_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeLastCalInterSplash) / 1000.0));
+        EventTrackingHelper.logEventWithMultipleParams(activity, eventName, bundle);
+        timeLastCalInterSplash = System.currentTimeMillis();
+    }
+
+    private void logEventSplash(AppCompatActivity activity, String eventName) {
+        Bundle bundle = new Bundle();
+        bundle.putString("time_to_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0));
+        bundle.putString("time_between_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeLastCalInterSplash) / 1000.0));
+        EventTrackingHelper.logEventWithMultipleParams(activity, eventName, bundle);
+        timeLastCalInterSplash = System.currentTimeMillis();
     }
 
 
@@ -588,6 +633,7 @@ public class AdsSplash {
 //        Log.d(TAG, "2.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
 
         if (mInterstitialAdSplash == null) {
+            logEventSplash(activity, "splash_preload_failed_inter");
             Log.d(TAG, "AdsSplash Inter preload: The interstitial ad wasn't ready yet.");
             AppOpenManager.getInstance().setEnableResume(true);
             if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
@@ -612,6 +658,7 @@ public class AdsSplash {
 
         if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                logEventSplash(activity, "splash_preload_start_show_inter");
                 mInterstitialAdSplash.setOnPaidEventListener(
                         adValue -> {
                             AdjustUtil.trackRevenue(mInterstitialAdSplash.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), "inter_splash_preloading");
@@ -633,6 +680,7 @@ public class AdsSplash {
 
                     @Override
                     public void onAdDismissedFullScreenContent() {
+                        logEventSplash(activity, "step_inter_splash_dismiss");
                         //increase splash open
                         SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
                         //end increase splash open
@@ -669,6 +717,7 @@ public class AdsSplash {
                     @Override
                     public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
                         //increase splash open
+                        logEventSplash(activity, "step_inter_splash_show_failded");
                         SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
                         //end increase splash open
                         Log.e(TAG, "AdsSplash Inter preload: Ad failed to show fullscreen content.");
@@ -707,6 +756,7 @@ public class AdsSplash {
 
                     @Override
                     public void onAdImpression() {
+                        logEventSplash(activity, "step_inter_splash_impress");
                         // Called when an impression is recorded for an ad.
                         Log.d(TAG, "AdsSplash Inter preload: Ad impression. time - " + (System.currentTimeMillis() - timeSplashLoadingAdShow) / 1000);
                         interCallback.onAdImpression();
@@ -722,6 +772,7 @@ public class AdsSplash {
 
                     @Override
                     public void onAdShowedFullScreenContent() {
+                        logEventSplash(activity, "step_inter_splash_show");
                         // Called when ad is shown.
                         Log.d(TAG, "AdsSplash Inter preload: Ad showed fullscreen content.");
                         interCallback.onAdShowedFullScreenContent();
@@ -752,9 +803,11 @@ public class AdsSplash {
                     }
                     Log.d(TAG, "AdsSplash Inter preload: showInterAdsSplash: show Inter");
                     mInterstitialAdSplash.setImmersiveMode(true);
+                    logEventSplash(activity, "step_inter_splash_call_show");
                     mInterstitialAdSplash.show(activity);
                 } else {
                     Log.e(TAG, "AdsSplash Inter preload: Fail to show on background.");
+                    logEventSplash(activity, "step_inter_splash_in_bg");
                     if (!activity.isFinishing() && !activity.isDestroyed() && Admob.getInstance().loadingAdsDialog != null && Admob.getInstance().loadingAdsDialog.isShowing()) {
                         Admob.getInstance().dismissLoadingDialog();
                     }
@@ -764,6 +817,10 @@ public class AdsSplash {
                     }
                 }
             }, 50);
+        } else {
+            Bundle bundle = new Bundle();
+            bundle.putString("failed_message", "timeout_" + timeOutCallSplashAds + "_finish_" + activity.isFinishing() + "_destroyed_" + activity.isDestroyed());
+            logEventSplash(activity, "splash_preload_start_show_failed", bundle);
         }
     }
     //End Inter Preload
@@ -1427,7 +1484,7 @@ public class AdsSplash {
         new Handler(Looper.getMainLooper()).post(() ->
                 NativeAfterInterManager.preloadNativeAfterInter(activity, adsKeyNative, remoteKeyNative)
         );
-        startTime = System.currentTimeMillis();
+        timeStartCalInterSplash = System.currentTimeMillis();
 
         boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
 
@@ -1562,7 +1619,7 @@ public class AdsSplash {
         EventTrackingHelper.logEventWithMultipleParams(activity, "check_condition_ads_splash", bundle);
 
         if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
-            String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
+            String timeFormatted = String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0);
             Log.d(TAG, "===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây");
             EventTrackingHelper.logEventWithAParam(activity, "Splash_time_wait", "time_to_step", timeFormatted);
             showInterAdsSplashDelay(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);

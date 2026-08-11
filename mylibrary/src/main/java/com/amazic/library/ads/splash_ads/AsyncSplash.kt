@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
 import com.amazic.library.Utils.EventTrackingHelper
-import com.amazic.library.Utils.EventTrackingHelper.time_splash_check
 import com.amazic.library.Utils.IDRemoteConfigHelper
 import com.amazic.library.Utils.NetworkUtil
 import com.amazic.library.Utils.RemoteConfigHelper
@@ -103,7 +102,7 @@ class AsyncSplash {
         Admob.getInstance().timeStart = System.currentTimeMillis()
         config.timeStartSplash = System.currentTimeMillis()
 
-//        launchTimeoutWatcher(lifecycleCoroutineScope, context)
+        launchTimeoutWatcher(lifecycleCoroutineScope, context)
         AdmobApi.getInstance().init(context.applicationContext)
         if (NetworkUtil.isNetworkActive(config.activity)) {
             logEventStep("AsyncInternet")
@@ -392,28 +391,6 @@ class AsyncSplash {
         )
         config.timeLastStep = System.currentTimeMillis()
     }
-
-    private fun logEventDoneInit() {
-        val bundle = Bundle().apply {
-            putString(
-                "time_between_step",
-                String.format(
-                    Locale.US, "%.1f_%.1f",
-                    timeInitRemoteConfig / 1000f,
-                    timeInitAdsConsentManager / 1000f,
-                )
-            )
-        }
-        EventTrackingHelper.logEventWithMultipleParams(
-            config.activity,
-            normalizeFirebaseEventName("AsyncSplash_doneInit"),
-            bundle
-        )
-        config.timeLastStep = System.currentTimeMillis()
-    }
-
-    // endregion
-
     // region Timeout watcher
 
     /** Watches for the overall splash timeout and fires [InterCallback.onNextAction] if nothing showed in time. */
@@ -504,7 +481,6 @@ class AsyncSplash {
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {
-            logEventStep("DoneAsyncInit")
             loadBannerSplash(
                 config.activity,
                 lifecycleOwner,
@@ -512,12 +488,8 @@ class AsyncSplash {
                 config.listIdBannerSplash,
                 config.adsKey
             )
-            logEventDoneInit()
 
-            val timeAsync = (System.currentTimeMillis() - config.timeSplashCheck) / 1000
-            EventTrackingHelper.logEventWithAParam(
-                config.activity, time_splash_check, time_splash_check, timeAsync.toString()
-            )
+            logEventStep("DoneAsyncInit")
             config.onPrepareLoadInterOpenSplashAds?.invoke()
 
             logEventStep("StartAdSplash")
@@ -545,7 +517,6 @@ class AsyncSplash {
     }
 
     private fun showAdsSplash(activity: AppCompatActivity?, interCallback: InterCallback?) {
-        Log.d(TAG, "showAdsSplash check ${config.isTimeout} ${config.isNoInternetAction}")
         val bundle = Bundle().apply {
             putString("isTimeout", "${config.isTimeout}")
             putString("isNoInternetAction", "${config.isNoInternetAction}")
@@ -558,14 +529,21 @@ class AsyncSplash {
             val time = (System.currentTimeMillis() - config.timeStartSplash) / 1000
             Log.d(TAG, "----------")
             Log.d(TAG, "showAdsSplash: Time show Ads = $time")
-            AdsSplash.getInstance().loadAndShowInterAdPreloadingSplashDelay(
+            logEventStep("start_call_splash")
+            AdsSplash.getInstance().loadAndShowInterAdPreloadingSplash(
                 activity,
                 AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
                 interCallback,
                 config.keyNativeAfterInterSplash,
-                config.keyNativeAfterInterSplash
+                config.keyNativeAfterInterSplash,
+                config.timeStep1,
+                config.timeLastStep
             )
             Log.d(TAG, "showAdsSplash.")
+        } else {
+            val bundle = Bundle()
+            bundle.putString("failed_message", "isTimeout_${config.isTimeout}_noInternetAction_${config.isNoInternetAction}")
+            EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_failed_check", bundle);
         }
     }
 
@@ -635,7 +613,7 @@ class AsyncSplash {
         activity: AppCompatActivity?,
         lifecycleCoroutineScope: LifecycleCoroutineScope
     ) = suspendCoroutine<Unit> { continuation ->
-        timeInitRemoteConfig = 0L
+        timeInitRemoteConfig = System.currentTimeMillis()
 
         if (config.isUseAppUpdateManager) {
             continuation.resume(Unit)
@@ -657,9 +635,9 @@ class AsyncSplash {
         )
 
         if (hasBeenFetchedBefore && config.isUseCacheDataCallSplash) {
-            initRemoteConfigFromCache(activity, startTime, lifecycleCoroutineScope, continuation)
+            initRemoteConfigFromCache(activity, lifecycleCoroutineScope, continuation)
         } else {
-            initRemoteConfigFromNetwork(activity, prefs, startTime, continuation)
+            initRemoteConfigFromNetwork(activity, prefs, continuation)
         }
     }
 
@@ -676,7 +654,6 @@ class AsyncSplash {
                 Log.d(TAG, "Timeout Remote Config: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
                 EventTrackingHelper.logEvent(act, "timeout_call_id_remote_config")
                 initWelcomeBack(act) // 17.09.2025
-                timeInitRemoteConfig = System.currentTimeMillis() - startTime
             }
         }
         pendingRemoteConfigTimeoutRunnable = runnable
@@ -690,7 +667,6 @@ class AsyncSplash {
 
     private fun initRemoteConfigFromCache(
         activity: AppCompatActivity?,
-        startTime: Long,
         lifecycleCoroutineScope: LifecycleCoroutineScope,
         continuation: kotlin.coroutines.Continuation<Unit>
     ) {
@@ -709,12 +685,8 @@ class AsyncSplash {
             EventTrackingHelper.logEvent(activity, "set_id_default_case_fail_remote")
         }
 
-        timeInitRemoteConfig = System.currentTimeMillis() - startTime
         config.initRemoteConfig = true
         cancelPendingRemoteConfigTimeout()
-        continuation.resume(Unit) // Resume immediately; cache is trusted.
-        Log.d(TAG, "initRemoteConfig: END using SharedPreferences cache - ${timeInitRemoteConfig / 1000}")
-
         // Refresh in the background so the next session's cache is up to date.
         // Uses the caller's lifecycle scope so this is cancelled with the splash screen
         // instead of leaking an unscoped coroutine.
@@ -723,16 +695,22 @@ class AsyncSplash {
                 Log.d(TAG, "initRemoteConfig: background fetch done, isSuccess=$it")
             }
         }
+        EventTrackingHelper.logEventWithAParam(
+            activity,
+            "done_init_remote_cache",
+            "time_between_step",
+            String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeInitRemoteConfig) / 1000f)
+        )
+        continuation.resume(Unit) // Resume immediately; cache is trusted.
     }
 
     private fun initRemoteConfigFromNetwork(
         activity: AppCompatActivity?,
         prefs: android.content.SharedPreferences?,
-        startTime: Long,
         continuation: kotlin.coroutines.Continuation<Unit>
     ) {
         Log.d(TAG, "initRemoteConfig: first time, fetching from Firebase")
-        var isResumed = false
+        val isResumed = false
 
         RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) { isSuccess ->
             if (isSuccess && config.isUseCacheDataCallSplash) {
@@ -756,15 +734,18 @@ class AsyncSplash {
                 intervalFromStartKey = RemoteConfigHelper.interval_interstitial_from_start
             )
 
-            timeInitRemoteConfig = System.currentTimeMillis() - startTime
             if (!isResumed) {
-                isResumed = true
                 cancelPendingRemoteConfigTimeout()
-                continuation.resume(Unit)
+
+                EventTrackingHelper.logEventWithAParam(
+                    activity,
+                    "done_init_remote_new",
+                    "time_between_step",
+                    String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeInitRemoteConfig) / 1000f)
+                )
                 config.initRemoteConfig = true
-                Log.d(TAG, "initRemoteConfig. time - ${timeInitRemoteConfig / 1000}")
+                continuation.resume(Unit)
             }
-            Log.d(TAG, "initRemoteConfig: END first time, fetching from Firebase - ${timeInitRemoteConfig / 1000}")
         }
     }
 
@@ -794,21 +775,23 @@ class AsyncSplash {
     // region UMP / consent init
 
     private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCoroutine<Unit> { continuation ->
-        timeInitAdsConsentManager = 0L
-        val startTime = System.currentTimeMillis()
+        timeInitAdsConsentManager = System.currentTimeMillis()
         val adsConsentManager = AdsConsentManager(activity)
-        var isResumed = false
+        val isResumed = false
 
         adsConsentManager.requestUMP { canInitAds ->
             if (isResumed) return@requestUMP
-            isResumed = true
 
             if (canInitAds) {
                 Admob.getInstance().initAdmob(activity) { /* no-op */ }
                 activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) }
             }
-
-            timeInitAdsConsentManager = System.currentTimeMillis() - startTime
+            EventTrackingHelper.logEventWithAParam(
+                activity,
+                "done_init_consent",
+                "time_between_step",
+                String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeInitAdsConsentManager) / 1000f)
+            )
             config.initAdsConsentManager = true
             continuation.resume(Unit)
             Log.d(TAG, "initAdsConsentManager.")

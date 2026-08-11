@@ -25,6 +25,8 @@ import com.amazic.library.ads.callback.InterCallback
 import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
 import com.amazic.mylibrary.R
+import com.google.android.gms.ads.interstitial.InterstitialAd
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
@@ -46,6 +48,7 @@ class AsyncSplash {
 
     private val remoteConfigTimeoutHandler = Handler(Looper.getMainLooper())
     private var pendingRemoteConfigTimeoutRunnable: Runnable? = null
+    private var timeOutJob: Job? = null
 
     companion object {
         private const val MAX_EVENT_NAME_LENGTH = 40
@@ -395,7 +398,7 @@ class AsyncSplash {
 
     /** Watches for the overall splash timeout and fires [InterCallback.onNextAction] if nothing showed in time. */
     private fun launchTimeoutWatcher(lifecycleCoroutineScope: LifecycleCoroutineScope, context: Context) {
-        lifecycleCoroutineScope.launch {
+        timeOutJob = lifecycleCoroutineScope.launch {
             delay(config.timeOutSplash)
             Log.d(TAG, "Timeout check ${config.isShowAdsSplash} ${config.isNoInternetAction}")
             logEventStep("AsyncTimeout")
@@ -533,7 +536,52 @@ class AsyncSplash {
             AdsSplash.getInstance().loadAndShowInterAdPreloadingSplash(
                 activity,
                 AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
-                interCallback,
+                object : InterCallback() {
+                    override fun onAdLoaded(interstitialAd: InterstitialAd?) {
+                        super.onAdLoaded(interstitialAd)
+                        interCallback?.onAdLoaded(interstitialAd)
+                    }
+
+                    override fun onAdFailedToLoad() {
+                        super.onAdFailedToLoad()
+                        interCallback?.onAdFailedToLoad()
+                    }
+                    override fun onAdClicked() {
+                        super.onAdClicked()
+                        interCallback?.onAdClicked()
+                    }
+
+                    override fun onAdDismissedFullScreenContent() {
+                        super.onAdDismissedFullScreenContent()
+                        interCallback?.onAdDismissedFullScreenContent()
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent() {
+                        super.onAdFailedToShowFullScreenContent()
+                        interCallback?.onAdFailedToShowFullScreenContent()
+                    }
+
+                    override fun onAdImpression() {
+                        super.onAdImpression()
+                        interCallback?.onAdImpression()
+                        timeOutJob?.cancel()
+                        timeOutJob = null
+                    }
+
+                    override fun onAdShowedFullScreenContent() {
+                        super.onAdShowedFullScreenContent()
+                        timeOutJob?.cancel()
+                        timeOutJob = null
+                        interCallback?.onAdShowedFullScreenContent()
+                    }
+
+                    override fun onNextAction() {
+                        super.onNextAction()
+                        timeOutJob?.cancel()
+                        timeOutJob = null
+                        interCallback?.onNextAction()
+                    }
+                },
                 config.keyNativeAfterInterSplash,
                 config.keyNativeAfterInterSplash,
                 config.timeStep1,

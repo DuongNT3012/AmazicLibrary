@@ -241,7 +241,7 @@ public class MetaNativeManager {
                             @Override
                             public void onError(Ad ad, AdError adError) {
                                 Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount
-                                        + " idMeta=" + placementId + " err=" + adError.getErrorMessage());
+                                        + ", idMeta=" + placementId + ", code = " + adError.getErrorCode() + ", message=" + adError.getErrorMessage());
 
                                 if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
                                     String admobKey = AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash();

@@ -137,6 +137,7 @@ public class Admob {
 //    private int timeDelayAdsSplash = 7000;
     private boolean isInitAdmobDone = false;
     //end
+    private boolean isSetTestModeMeta = true;
 
     public static Admob getInstance() {
         if (INSTANCE == null) {
@@ -297,6 +298,14 @@ public class Admob {
 
     public boolean getIsInitAdmobDone() {
         return isInitAdmobDone;
+    }
+
+    public void setTestModeMeta(boolean isTestMode){
+        this.isSetTestModeMeta = isTestMode;
+    }
+
+    public boolean getTestModeMeta(){
+        return isSetTestModeMeta;
     }
 
     public void removeHandlerInterAds() {

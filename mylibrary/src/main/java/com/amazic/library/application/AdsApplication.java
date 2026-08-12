@@ -42,17 +42,20 @@ public abstract class AdsApplication extends Application implements Application.
 
     private void initMeta() {
 //        if (AsyncSplash.Companion.getInstance().getIsUseNativeSplashMeta()) {
-            /// chi dung khi debug test ads meta
+        /// chi dung khi debug test ads meta
+        Log.d("Admob", "initMeta: Value Test Mode Meta = " + Admob.getInstance().getTestModeMeta());
+        if (Admob.getInstance().getTestModeMeta()) {
             Log.d("Admob", "initMeta - check buildDebug setTestMode = " + buildDebug());
-            if (buildDebug()) {
-                AdSettings.setTestMode(true);
-            }
+            AdSettings.setTestMode(buildDebug());
+        } else {
+            AdSettings.setTestMode(Admob.getInstance().getTestModeMeta());
+        }
 
-            if (!AudienceNetworkAds.isInitialized(this)) {
-                AudienceNetworkAds.buildInitSettings(this)
-                        .withInitListener(result -> Log.d("Admob", "initMeta: " + result.getMessage()))
-                        .initialize();
-            }
+        if (!AudienceNetworkAds.isInitialized(this)) {
+            AudienceNetworkAds.buildInitSettings(this)
+                    .withInitListener(result -> Log.d("Admob", "initMeta: " + result.getMessage()))
+                    .initialize();
+        }
 //        }
     }
 

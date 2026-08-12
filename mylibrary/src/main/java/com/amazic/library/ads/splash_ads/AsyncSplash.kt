@@ -669,13 +669,13 @@ class AsyncSplash {
             return@suspendCoroutine
         }
 
-        val startTime = System.currentTimeMillis()
+        System.currentTimeMillis()
         EventTrackingHelper.logEvent(activity, "initRemoteConfig")
 
         val prefs = activity?.getSharedPreferences(PREF_REMOTE_FILL, Context.MODE_PRIVATE)
         val hasBeenFetchedBefore = prefs?.getBoolean(PREF_REMOTE_FETCHED_FLAG, false) ?: false
 
-        if (activity != null) scheduleRemoteConfigIdTimeoutFallback(activity, startTime)
+        if (activity != null) scheduleRemoteConfigIdTimeoutFallback(activity)
 
         Log.d(
             TAG,
@@ -691,7 +691,7 @@ class AsyncSplash {
     }
 
     /** Fires once, as a fallback, if we're still waiting on remote config after [AdmobAdsConfig.timeOutCallIdRemoteConfig]. */
-    private fun scheduleRemoteConfigIdTimeoutFallback(activity: AppCompatActivity, startTime: Long) {
+    private fun scheduleRemoteConfigIdTimeoutFallback(activity: AppCompatActivity) {
         cancelPendingRemoteConfigTimeout()
         val activityRef = WeakReference(activity)
         val runnable = Runnable {

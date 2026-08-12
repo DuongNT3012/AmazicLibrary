@@ -481,6 +481,7 @@ class AsyncSplash {
             } else {
                 awaitAll(asyncUMP)
             }
+            initWelcomeBack(activity = config.activity)
         } catch (e: Exception) {
             e.printStackTrace()
         } finally {

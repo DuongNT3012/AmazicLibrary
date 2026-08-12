@@ -529,7 +529,6 @@ class AsyncSplash {
             activity, normalizeFirebaseEventName("AsyncSplash_showAdsSplash"), bundle
         )
         if (!config.isTimeout && !config.isNoInternetAction) {
-            config.isShowAdsSplash = true
             val time = (System.currentTimeMillis() - config.timeStartSplash) / 1000
             Log.d(TAG, "----------")
             Log.d(TAG, "showAdsSplash: Time show Ads = $time")

@@ -349,12 +349,15 @@ public class AdsSplash {
             logEventSplash(activity, "splash_preload_end_failed");
             return;
         }
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash()).build();
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0))
+                .setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash())
+                .build();
 
         boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
 
         boolean isEmptyListNativeAfterInter = AdmobApi.getInstance().getListIDByName(adsKeyNative).isEmpty();
 
+        Log.d(TAG, "loadAndShowInterAdPreloadingSplash: " + listIdInterTemp.get(0));
         EventTrackingHelper.logEvent(activity, "splash_preload_start_call");
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override

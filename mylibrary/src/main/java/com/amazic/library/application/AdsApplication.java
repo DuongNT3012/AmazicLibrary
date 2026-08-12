@@ -11,10 +11,13 @@ import androidx.annotation.Nullable;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
+import com.amazic.library.Utils.EventTrackingHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
 import com.google.android.gms.ads.MobileAds;
+
+import java.util.Locale;
 
 public abstract class AdsApplication extends Application implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "AdsApplication";
@@ -31,9 +34,17 @@ public abstract class AdsApplication extends Application implements Application.
 
     private void initAdmob() {
         new Thread(() -> {
+            long startTime = System.currentTimeMillis();
+
             // Initialize the Google Mobile Ads SDK on a background thread.
             MobileAds.initialize(this, initializationStatus -> {
-                Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
+                float timeToInit = (System.currentTimeMillis() - startTime) / 1000.0f;
+                Log.d("AdmobInit", "initAdmob:timeToInit: " + timeToInit + " application - " + initializationStatus.getAdapterStatusMap());
+                EventTrackingHelper.logEventWithAParam(this,
+                        "done_init_admob",
+                        "time_between_step",
+                        String.format(Locale.US, "%.1f", timeToInit)
+                );
                 Admob.getInstance().setIsInitAdmobDone(true);
             });
         }).start();

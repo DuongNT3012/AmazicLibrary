@@ -497,6 +497,9 @@ class AsyncSplash {
             config.onPrepareLoadInterOpenSplashAds?.invoke()
 
             logEventStep("StartAdSplash")
+            while (!Admob.getInstance().isInitAdmobDone) {
+                delay(200)
+            }
             showAdsSplash(config.activity, config.interCallback)
 
             if (config.isAsyncSplashAds) {

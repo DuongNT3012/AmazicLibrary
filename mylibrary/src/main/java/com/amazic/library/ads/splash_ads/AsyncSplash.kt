@@ -384,8 +384,8 @@ class AsyncSplash {
 
     private fun logEventStep(step: String) {
         val bundle = Bundle().apply {
-            putString("time_between_step", "${System.currentTimeMillis() - config.timeLastStep}")
-            putString("time_to_step", "${System.currentTimeMillis() - config.timeStep1}")
+            putString("time_between_step", String.format(Locale.US, "%.2f", (System.currentTimeMillis() - config.timeLastStep) / 1000f))
+            putString("time_to_step", String.format(Locale.US, "%.2f", (System.currentTimeMillis() - config.timeStep1) / 1000f))
         }
         EventTrackingHelper.logEventWithMultipleParams(
             config.activity,

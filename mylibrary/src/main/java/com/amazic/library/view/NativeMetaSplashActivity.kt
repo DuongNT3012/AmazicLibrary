@@ -153,7 +153,7 @@ class NativeMetaSplashActivity : AppCompatActivity() {
 
         if (frAds.childCount == 0) {
             // Ad đầu tiên — kéo vào từ phải
-            MetaNativeManager.showMetaNativeAdInFrameSplash(frAds, nativeAd)
+            MetaNativeManager.getInstance().showMetaNativeAdInFrameSplash(frAds, nativeAd)
             frAds.translationX = slideDistance
             frAds.animate()
                 .translationX(0f)
@@ -168,7 +168,7 @@ class NativeMetaSplashActivity : AppCompatActivity() {
                 .setDuration(300)
                 .setInterpolator(AccelerateInterpolator())
                 .withEndAction {
-                    MetaNativeManager.showMetaNativeAdInFrameSplash(frAds, nativeAd)
+                    MetaNativeManager.getInstance().showMetaNativeAdInFrameSplash(frAds, nativeAd)
                     frAds.translationX = slideDistance
                     frAds.animate()
                         .translationX(0f)

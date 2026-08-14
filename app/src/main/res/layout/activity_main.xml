@@ -10,10 +10,19 @@
         android:id="@+id/fr_ads_native"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent">
 
         <!--<include layout="@layout/layout_shimmer_native" />-->
     </FrameLayout>
+
+    <com.facebook.ads.NativeAdLayout
+        android:id="@+id/native_ad_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@drawable/bg_native_meta"
+        tools:ignore="MissingConstraints" />
 
     <TextView
         android:id="@+id/tv_show_inter"
@@ -22,7 +31,7 @@
         android:text="Show inter ads"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/fr_ads_native" />
+        app:layout_constraintTop_toBottomOf="@id/native_ad_container" />
 
     <TextView
         android:id="@+id/tv_show_inter_native_after"

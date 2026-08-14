@@ -13,6 +13,7 @@ import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
+import com.amazic.library.ads.native_ads.MetaNativeManager;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 /*import com.amazic.library.iap.IAPManager;
@@ -44,6 +45,9 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        MetaNativeManager.getInstance().loadNativeAd(this, "1439001763964762_1710436723487930","native_all");
+
 
         interCallback = new InterCallback() {
             @Override
@@ -176,12 +180,12 @@ public class SplashActivity extends AppCompatActivity {
             /// end
 
             /// use native meta test
-            AsyncSplash.Companion.getInstance().setUseNativeSplashMeta(true);
-            AsyncSplash.Companion.getInstance().setNumberNativeFullShowSplash(3);
-            AsyncSplash.Companion.getInstance().setKeyNativeFullMetaSplash("native_after_inter");
-//            AsyncSplash.Companion.getInstance().setIdNativeMetaSplash("1439001763964762_1710436723487930");
-            AsyncSplash.Companion.getInstance().setKeyNativeFullAdmobSplash("native_after_inter");
-            AsyncSplash.Companion.getInstance().setUseNativeFullSplashAdmobWhenMetaFail(true);
+//            AsyncSplash.Companion.getInstance().setUseNativeSplashMeta(true);
+//            AsyncSplash.Companion.getInstance().setNumberNativeFullShowSplash(3);
+//            AsyncSplash.Companion.getInstance().setKeyNativeFullMetaSplash("native_after_inter");
+////            AsyncSplash.Companion.getInstance().setIdNativeMetaSplash("1439001763964762_1710436723487930");
+//            AsyncSplash.Companion.getInstance().setKeyNativeFullAdmobSplash("native_after_inter");
+//            AsyncSplash.Companion.getInstance().setUseNativeFullSplashAdmobWhenMetaFail(true);
             ///end
 
 //            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);

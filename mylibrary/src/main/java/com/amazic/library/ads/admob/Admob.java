@@ -1220,7 +1220,7 @@ public class Admob {
         };
         timeoutHandler.postDelayed(timeoutRunnable, timeOutCallSplashAds);
 
-        MetaNativeManager.loadMetaNativeFullSplash(
+        MetaNativeManager.getInstance().loadMetaNativeFullSplash(
                 activity, listIdNative, adsKeyNative, targetCount,
                 () -> {
                     // First native loaded → navigate immediately

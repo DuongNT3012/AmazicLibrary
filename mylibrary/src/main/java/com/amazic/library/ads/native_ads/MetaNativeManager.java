@@ -1,6 +1,7 @@
 package com.amazic.library.ads.native_ads;
 
 import android.app.Activity;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -18,6 +19,7 @@ import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
+import com.amazic.library.ump.AdsConsentManager;
 import com.amazic.mylibrary.R;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
@@ -167,8 +169,8 @@ public class MetaNativeManager {
 
     // ─── NATIVE FULL SPLASH (thay inter_splash) ──────────────────────
     public void loadMetaNativeFullSplash(Activity activity, List<String> listIdNative,
-                                                String adsKey, int targetCount,
-                                                Runnable onFirstLoaded, Runnable onAllFailed) {
+                                         String adsKey, int targetCount,
+                                         Runnable onFirstLoaded, Runnable onAllFailed) {
         // Clean Meta list
         List<NativeAd> oldList = mapMetaNativeSplash.get(adsKey);
         if (oldList != null) {
@@ -209,15 +211,15 @@ public class MetaNativeManager {
     }
 
     private void loadMetaNativeFullSplashSequentially(Activity activity, String placementId,
-                                                             String adsKey, int targetCount,
-                                                             List<NativeAd> list,
-                                                             List<com.google.android.gms.ads.nativead.NativeAd> fallbackList,
-                                                             int loadedCount,
-                                                             boolean[] hasNotifiedFirst,
-                                                             boolean[] hasNotifiedFail,
-                                                             int[] pendingAdmobCount,
-                                                             Runnable onFirstLoaded,
-                                                             Runnable onAllFailed) {
+                                                      String adsKey, int targetCount,
+                                                      List<NativeAd> list,
+                                                      List<com.google.android.gms.ads.nativead.NativeAd> fallbackList,
+                                                      int loadedCount,
+                                                      boolean[] hasNotifiedFirst,
+                                                      boolean[] hasNotifiedFail,
+                                                      int[] pendingAdmobCount,
+                                                      Runnable onFirstLoaded,
+                                                      Runnable onAllFailed) {
         if (loadedCount >= targetCount) {
             Log.d(TAG, "MetaNativeFullSplash: Meta done total=" + list.size() + " pendingAdmob=" + pendingAdmobCount[0]);
             // Chờ AdMob pending xong mới quyết định onAllFailed
@@ -430,7 +432,7 @@ public class MetaNativeManager {
     private NativeAd nativeAd;
 
     public static MetaNativeManager getInstance() {
-        if(INSTANCE == null){
+        if (INSTANCE == null) {
             INSTANCE = new MetaNativeManager();
         }
         return INSTANCE;
@@ -440,8 +442,15 @@ public class MetaNativeManager {
      * Gọi để load ad. An toàn khi gọi nhiều lần: sẽ tự destroy ad cũ trước.
      */
     public void loadNativeAd(Activity activity, String placementId, String remoteKey) {
-        if(!NetworkUtil.isNetworkActive(activity) || !Admob.getInstance().getShowAllAds() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)){
-            Log.d(TAG, "Meta: Check condition. NetWork: "+NetworkUtil.isNetworkActive(activity)+", isShowAllAds: "+Admob.getInstance().getShowAllAds()+", config: "+RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+        if (!NetworkUtil.isNetworkActive(activity) || !Admob.getInstance().getShowAllAds() || !RemoteConfigHelper.getInstance().get_config(activity, remoteKey)) {
+            Log.d(TAG, "Meta: Check condition. NetWork: " + NetworkUtil.isNetworkActive(activity) + ", isShowAllAds: " + Admob.getInstance().getShowAllAds() + ", config: " + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+
+            Bundle bundle = new Bundle();
+            bundle.putString("failed_message", "Network_" + NetworkUtil.isNetworkActive(activity)
+                    + "_isShowAllAds_" + Admob.getInstance().getShowAllAds()
+                    + "_remote_" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey)
+            );
+            EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_check_condition", bundle);
             return;
         }
 
@@ -454,12 +463,18 @@ public class MetaNativeManager {
             @Override
             public void onMediaDownloaded(Ad ad) {
                 Log.d(TAG, "Meta: Native ad finished downloading all assets.");
+                EventTrackingHelper.logEvent(activity, remoteKey + "media_downloaded");
             }
 
             @Override
             public void onError(Ad ad, AdError adError) {
                 Log.e(TAG, "Meta: Native ad failed to load: "
                         + adError.getErrorMessage() + ", code = " + adError.getErrorCode());
+                Bundle bundle = new Bundle();
+                bundle.putString("failed_message", "code_" + adError.getErrorCode()
+                        + "_error_" + adError.getErrorMessage()
+                );
+                EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_fail", bundle);
                 // Ad lỗi vẫn có thể giữ resource, dọn luôn.
                 destroy();
             }
@@ -469,19 +484,29 @@ public class MetaNativeManager {
                 if (nativeAd == null || nativeAd != ad) {
                     // Ad đã bị destroy/thay thế trước khi load xong -> bỏ qua.
                     Log.e(TAG, "Meta: Native Ad đã bị destroy/thay thế trước khi load xong.");
+                    Bundle bundle = new Bundle();
+                    bundle.putString("failed_message", "Native ad null");
+                    EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_loaded", bundle);
                     return;
                 }
                 if (nativeAd.isAdInvalidated()) {
                     Log.e(TAG, "Meta: Native ad invalidated.");
+                    Bundle bundle = new Bundle();
+                    bundle.putString("failed_message", "Native ad isAdInvalidated = " + nativeAd.isAdInvalidated());
+                    EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_loaded", bundle);
                     return;
                 }
                 Log.d(TAG, "Meta: Native ad is loaded and ready to be displayed!");
                 if (activity.isFinishing() || activity.isDestroyed()) {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("failed_message", "activity destroy");
+                    EventTrackingHelper.logEventWithMultipleParams(activity, remoteKey + "_loaded", bundle);
                     // Activity đã die trong lúc chờ ad -> destroy ngay, không inflate.
                     destroy();
                     Log.e(TAG, "Meta: Activity đã die trong lúc chờ ad -> destroy ngay, không inflate.");
                     return;
                 }
+                EventTrackingHelper.logEvent(activity, remoteKey + "_load_successful");
                 inflateAd(activity, nativeAd);
             }
 
@@ -493,6 +518,7 @@ public class MetaNativeManager {
             @Override
             public void onLoggingImpression(Ad ad) {
                 Log.d(TAG, "Meta: Native ad impression logged!");
+                EventTrackingHelper.logEvent(activity, remoteKey + "_impression");
             }
         };
 

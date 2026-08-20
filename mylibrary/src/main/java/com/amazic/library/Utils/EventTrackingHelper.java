@@ -51,6 +51,27 @@ public class EventTrackingHelper {
     public static String inter_splash_showad_time = "inter_splash_showad_time";
     public static String showad_time = "showad_time";
     private static final String TAG = "EventTrackingHelper";
+
+    private final Context mContext;
+    private static EventTrackingHelper INSTANCE;
+
+    private EventTrackingHelper(Context context) {
+        this.mContext = context;
+    }
+
+    public static EventTrackingHelper getInstance(Context context) {
+        if (INSTANCE == null) {
+            INSTANCE = new EventTrackingHelper(context.getApplicationContext());
+        }
+        return INSTANCE;
+    }
+
+    public void logEvent(String eventName) {
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(mContext);
+        Bundle bundle = new Bundle();
+        firebaseAnalytics.logEvent(eventName, bundle);
+    }
+
     public static void logEvent(Context context, String eventName) {
         if (context == null) {
             return;
@@ -58,6 +79,14 @@ public class EventTrackingHelper {
         Log.d(TAG, "logEvent: " + eventName);
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         Bundle bundle = new Bundle();
+        firebaseAnalytics.logEvent(eventName, bundle);
+    }
+
+    public void logEventWithAParam(String eventName, String param, String value) {
+        Log.d(TAG, "logEvent: " + eventName);
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(mContext);
+        Bundle bundle = new Bundle();
+        bundle.putString(param, value);
         firebaseAnalytics.logEvent(eventName, bundle);
     }
 
@@ -69,6 +98,12 @@ public class EventTrackingHelper {
         FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(context);
         Bundle bundle = new Bundle();
         bundle.putString(param, value);
+        firebaseAnalytics.logEvent(eventName, bundle);
+    }
+
+    public void logEventWithMultipleParams(String eventName, Bundle bundle) {
+        Log.d(TAG, "logEvent: " + eventName);
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(mContext);
         firebaseAnalytics.logEvent(eventName, bundle);
     }
 

@@ -30,6 +30,7 @@ public abstract class AdsApplication extends Application implements Application.
         initMeta();
         setUpAdjust();
         registerActivityLifecycleCallbacks(this);
+        EventTrackingHelper.getInstance(this);
     }
 
     private void initAdmob() {

@@ -80,16 +80,18 @@ class AsyncSplash {
         interCallback: InterCallback,
         adjustKey: String,
         appId: String,
+        appPackageNanme: String,
         jsonIdAdsDefault: String
     ) {
         config.clear()
         config.activity = activity
-        EventTrackingHelper.logEvent(activity, "${TAG}_INIT")
+        EventTrackingHelper.getInstance(activity).logEvent("${TAG}_INIT")
         config.timeStep1 = System.currentTimeMillis()
         config.timeLastStep = System.currentTimeMillis()
         config.adjustKey = adjustKey
         config.jsonIdAdsDefault = jsonIdAdsDefault
         config.appId = appId
+        config.appPkg = appPackageNanme
         config.interCallback = interCallback
         IDRemoteConfigHelper.setUpDefaultValue(activity.applicationContext, config.jsonIdAdsDefault)
     }
@@ -109,7 +111,7 @@ class AsyncSplash {
         AdmobApi.getInstance().init(context.applicationContext)
         if (NetworkUtil.isNetworkActive(config.activity)) {
             logEventStep("AsyncInternet")
-            EventTrackingHelper.logEvent(config.activity, "splash_have_internet_original")
+            EventTrackingHelper.getInstance(config.activity).logEvent("splash_have_internet_original")
             lifecycleCoroutineScope.launch {
                 runAsyncInitAndShowAds(lifecycleOwner, lifecycleCoroutineScope, onAsyncSplashDone)
             }
@@ -320,6 +322,10 @@ class AsyncSplash {
         config.timeOutSplash = timeOutSplash
     }
 
+    fun setTimeOutInitAdmob(timeOutInitAdmob: Long) {
+        config.timeOutInitAdmob = timeOutInitAdmob
+    }
+
     fun setDebug(isDebug: Boolean) { // Used by TechManager / DetectTestAd
         IDRemoteConfigHelper.isDebug = isDebug
         config.isDebug = isDebug
@@ -384,15 +390,23 @@ class AsyncSplash {
 
     private fun logEventStep(step: String) {
         val bundle = Bundle().apply {
-            putString("time_between_step", String.format(Locale.US, "%.2f", (System.currentTimeMillis() - config.timeLastStep) / 1000f))
-            putString("time_to_step", String.format(Locale.US, "%.2f", (System.currentTimeMillis() - config.timeStep1) / 1000f))
+            putString("time_between_step", formatStepTime(System.currentTimeMillis() - config.timeLastStep))
+            putString("time_to_step", formatStepTime(System.currentTimeMillis() - config.timeStep1))
         }
-        EventTrackingHelper.logEventWithMultipleParams(
-            config.activity,
+        EventTrackingHelper.getInstance(config.activity).logEventWithMultipleParams(
             normalizeFirebaseEventName("AsyncSplash_$step"),
             bundle
         )
         config.timeLastStep = System.currentTimeMillis()
+    }
+
+    private fun formatStepTime(timeMs: Long): String {
+        val seconds = timeMs / 1000.0
+
+        val step = if (seconds < 10) 0.5 else 5.0
+        val rounded = kotlin.math.round(seconds / step) * step
+
+        return String.format(Locale.US, "%.1f", rounded)
     }
     // region Timeout watcher
 
@@ -407,8 +421,7 @@ class AsyncSplash {
                 putString("isTimeout", "${config.isTimeout}")
                 putString("isNoInternetAction", "${config.isNoInternetAction}")
             }
-            EventTrackingHelper.logEventWithMultipleParams(
-                config.activity,
+            EventTrackingHelper.getInstance(config.activity).logEventWithMultipleParams(
                 normalizeFirebaseEventName("AsyncSplash_VAsyncTimeout"),
                 bundleEvent
             )
@@ -431,13 +444,14 @@ class AsyncSplash {
                 "${config.initAdmobApi}_${config.initRemoteConfig}_${config.initAdsConsentManager}_" +
                         "${config.initBilling}_${config.initTechManager}"
             )
+            putBoolean("isInitAdmob", Admob.getInstance().isInitAdmobDone)
             putString("initAdmobApi", config.initAdmobApi.toString())
             putString("initRemoteConfig", config.initRemoteConfig.toString())
             putString("initAdsConsentManager", config.initAdsConsentManager.toString())
             putString("initBilling", config.initBilling.toString())
             putString("initTechManager", config.initTechManager.toString())
         }
-        EventTrackingHelper.logEventWithMultipleParams(context, "timeout_splash_next_screen", bundle)
+        EventTrackingHelper.getInstance(context).logEventWithMultipleParams( "timeout_splash_next_screen", bundle)
     }
 
     private fun incrementSplashOpenCount() {
@@ -497,10 +511,17 @@ class AsyncSplash {
             config.onPrepareLoadInterOpenSplashAds?.invoke()
 
             logEventStep("StartAdSplash")
-            while (!Admob.getInstance().isInitAdmobDone) {
+            var totalTimeWainInit = 0
+            var isUseAdPreloading = config.isUseAdPreloading
+
+            while (!Admob.getInstance().isInitAdmobDone && totalTimeWainInit < config.timeOutInitAdmob) {
                 delay(200)
+                totalTimeWainInit += 200
             }
-            showAdsSplash(config.activity, config.interCallback)
+            if (!Admob.getInstance().isInitAdmobDone) {
+                isUseAdPreloading = false
+            }
+            showAdsSplash(config.activity, config.interCallback, isUseAdPreloading)
 
             if (config.isAsyncSplashAds) {
                 awaitAll(asyncRemoteConfig)
@@ -523,78 +544,122 @@ class AsyncSplash {
         AppOpenManager.getInstance().setCustomAnimationDialog(listAnim)
     }
 
-    private fun showAdsSplash(activity: AppCompatActivity?, interCallback: InterCallback?) {
+    private fun showAdsSplash(activity: AppCompatActivity?, interCallback: InterCallback?, isUseAdPreloading: Boolean) {
         val bundle = Bundle().apply {
             putString("isTimeout", "${config.isTimeout}")
             putString("isNoInternetAction", "${config.isNoInternetAction}")
         }
-        EventTrackingHelper.logEventWithMultipleParams(
-            activity, normalizeFirebaseEventName("AsyncSplash_showAdsSplash"), bundle
+        EventTrackingHelper.getInstance(activity).logEventWithMultipleParams(
+            normalizeFirebaseEventName("AsyncSplash_showAdsSplash"), bundle
         )
         if (!config.isTimeout && !config.isNoInternetAction) {
             val time = (System.currentTimeMillis() - config.timeStartSplash) / 1000
             Log.d(TAG, "----------")
             Log.d(TAG, "showAdsSplash: Time show Ads = $time")
             logEventStep("start_call_splash")
-            AdsSplash.getInstance().loadAndShowInterAdPreloadingSplash(
-                activity,
-                AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
-                object : InterCallback() {
-                    override fun onAdLoaded(interstitialAd: InterstitialAd?) {
-                        super.onAdLoaded(interstitialAd)
-                        interCallback?.onAdLoaded(interstitialAd)
-                    }
-
-                    override fun onAdFailedToLoad() {
-                        super.onAdFailedToLoad()
-                        interCallback?.onAdFailedToLoad()
-                    }
-                    override fun onAdClicked() {
-                        super.onAdClicked()
-                        interCallback?.onAdClicked()
-                    }
-
-                    override fun onAdDismissedFullScreenContent() {
-                        super.onAdDismissedFullScreenContent()
-                        interCallback?.onAdDismissedFullScreenContent()
-                    }
-
-                    override fun onAdFailedToShowFullScreenContent() {
-                        super.onAdFailedToShowFullScreenContent()
-                        interCallback?.onAdFailedToShowFullScreenContent()
-                    }
-
-                    override fun onAdImpression() {
-                        super.onAdImpression()
-                        interCallback?.onAdImpression()
-                        timeOutJob?.cancel()
-                        timeOutJob = null
-                    }
-
-                    override fun onAdShowedFullScreenContent() {
-                        super.onAdShowedFullScreenContent()
-                        timeOutJob?.cancel()
-                        timeOutJob = null
-                        interCallback?.onAdShowedFullScreenContent()
-                    }
-
-                    override fun onNextAction() {
-                        super.onNextAction()
-                        timeOutJob?.cancel()
-                        timeOutJob = null
-                        interCallback?.onNextAction()
-                    }
-                },
-                config.keyNativeAfterInterSplash,
-                config.keyNativeAfterInterSplash,
-                config.timeStep1,
-                config.timeLastStep
-            )
+            if (isUseAdPreloading)
+                startCallPreloadSplash(activity, interCallback)
+            else
+                startCallNormalSplash(activity, interCallback)
             Log.d(TAG, "showAdsSplash.")
         } else {
             val bundle = Bundle()
             bundle.putString("failed_message", "isTimeout_${config.isTimeout}_noInternetAction_${config.isNoInternetAction}")
-            EventTrackingHelper.logEventWithMultipleParams(activity, "splash_preload_failed_check", bundle);
+            EventTrackingHelper.getInstance(activity).logEventWithMultipleParams("start_call_splash_failed", bundle)
+        }
+    }
+
+    private fun startCallPreloadSplash(activity: AppCompatActivity?, interCallback: InterCallback?) {
+        AdsSplash.getInstance().loadAndShowInterAdPreloadingSplash(
+            activity,
+            AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
+            callbackInternSplash(interCallback),
+            config.keyNativeAfterInterSplash,
+            config.keyNativeAfterInterSplash,
+            config.timeStep1,
+            config.timeLastStep
+        )
+    }
+
+    private fun startCallNormalSplash(activity: AppCompatActivity?, interCallback: InterCallback?) {
+        if (config.isLoopAdsSplash) {
+            Log.d(TAG, "Show Ads 1")
+            AdsSplash.getInstance().loadAndShowInterAdSplashLoop(
+                activity,
+                AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
+                callbackInternSplash(interCallback),
+                config.timeStep1,
+                config.timeLastStep
+            )
+        } else {
+            if (!config.loadAndShowIdInterAdSplashAsync) {
+                Log.d(TAG, "Show Ads 2")
+                AdsSplash.getInstance().loadAndShowInterAdSplashDelay(
+                    activity,
+                    AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
+                    callbackInternSplash(interCallback),
+                    config.keyNativeAfterInterSplash, config.keyNativeAfterInterSplash,
+                    config.timeStep1,
+                    config.timeLastStep
+                )
+            } else {
+                Log.d(TAG, "Show Ads 3")
+                AdsSplash.getInstance().loadAndShowIdInterAdSplashAsync(
+                    activity,
+                    AdmobApi.getInstance().getListIDByName(config.keyAdsInterSplash),
+                    callbackInternSplash(interCallback),
+                    config.timeStep1,
+                    config.timeLastStep
+                )
+            }
+        }
+    }
+
+    private fun callbackInternSplash(interCallback: InterCallback?): InterCallback = object : InterCallback() {
+        override fun onAdLoaded(interstitialAd: InterstitialAd?) {
+            super.onAdLoaded(interstitialAd)
+            interCallback?.onAdLoaded(interstitialAd)
+        }
+
+        override fun onAdFailedToLoad() {
+            super.onAdFailedToLoad()
+            interCallback?.onAdFailedToLoad()
+        }
+
+        override fun onAdClicked() {
+            super.onAdClicked()
+            interCallback?.onAdClicked()
+        }
+
+        override fun onAdDismissedFullScreenContent() {
+            super.onAdDismissedFullScreenContent()
+            interCallback?.onAdDismissedFullScreenContent()
+        }
+
+        override fun onAdFailedToShowFullScreenContent() {
+            super.onAdFailedToShowFullScreenContent()
+            interCallback?.onAdFailedToShowFullScreenContent()
+        }
+
+        override fun onAdImpression() {
+            super.onAdImpression()
+            interCallback?.onAdImpression()
+            timeOutJob?.cancel()
+            timeOutJob = null
+        }
+
+        override fun onAdShowedFullScreenContent() {
+            super.onAdShowedFullScreenContent()
+            timeOutJob?.cancel()
+            timeOutJob = null
+            interCallback?.onAdShowedFullScreenContent()
+        }
+
+        override fun onNextAction() {
+            super.onNextAction()
+            timeOutJob?.cancel()
+            timeOutJob = null
+            interCallback?.onNextAction()
         }
     }
 
@@ -672,7 +737,7 @@ class AsyncSplash {
         }
 
         System.currentTimeMillis()
-        EventTrackingHelper.logEvent(activity, "initRemoteConfig")
+        EventTrackingHelper.getInstance(activity).logEvent("initRemoteConfig")
 
         val prefs = activity?.getSharedPreferences(PREF_REMOTE_FILL, Context.MODE_PRIVATE)
         val hasBeenFetchedBefore = prefs?.getBoolean(PREF_REMOTE_FETCHED_FLAG, false) ?: false
@@ -703,7 +768,7 @@ class AsyncSplash {
 //                AdmobApi.getInstance().convertJsonIdAdsDefaultToList(config.jsonIdAdsDefault)
                 config.isSetId = true
                 Log.d(TAG, "Timeout Remote Config: Id ads size = ${AdmobApi.getInstance().listAdsSize}")
-                EventTrackingHelper.logEvent(act, "timeout_call_id_remote_config")
+                EventTrackingHelper.getInstance(act).logEvent("timeout_call_id_remote_config")
                 initWelcomeBack(act) // 17.09.2025
             }
         }
@@ -733,7 +798,7 @@ class AsyncSplash {
             val jsonFromSP = RemoteConfigHelper.getInstance().get_config_string(activity, RemoteConfigHelper.id_ads)
             applyIdAdsJson(activity, jsonFromSP, successEvent = "set_id_remote_config")
             initWelcomeBack(activity)
-            EventTrackingHelper.logEvent(activity, "set_id_default_case_fail_remote")
+            EventTrackingHelper.getInstance(activity).logEvent("set_id_default_case_fail_remote")
         }
 
         config.initRemoteConfig = true
@@ -746,8 +811,7 @@ class AsyncSplash {
                 Log.d(TAG, "initRemoteConfig: background fetch done, isSuccess=$it")
             }
         }
-        EventTrackingHelper.logEventWithAParam(
-            activity,
+        EventTrackingHelper.getInstance(activity).logEventWithAParam(
             "done_init_remote_cache",
             "time_between_step",
             String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeInitRemoteConfig) / 1000f)
@@ -788,8 +852,7 @@ class AsyncSplash {
             if (!isResumed) {
                 cancelPendingRemoteConfigTimeout()
 
-                EventTrackingHelper.logEventWithAParam(
-                    activity,
+                EventTrackingHelper.getInstance(activity).logEventWithAParam(
                     "done_init_remote_new",
                     "time_between_step",
                     String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeInitRemoteConfig) / 1000f)
@@ -818,7 +881,7 @@ class AsyncSplash {
         IDRemoteConfigHelper.setUpDefaultValue(activity.applicationContext, json)
         config.isSetId = true
         Log.d(TAG, "Set id ads ($successEvent): Id ads size = ${AdmobApi.getInstance().listAdsSize}")
-        EventTrackingHelper.logEvent(activity, successEvent)
+        EventTrackingHelper.getInstance(activity).logEvent(successEvent)
     }
 
     // endregion
@@ -837,8 +900,7 @@ class AsyncSplash {
                 Admob.getInstance().initAdmob(activity) { /* no-op */ }
                 activity?.let { AppOpenManager.getInstance().disableAppResumeWithActivity(it.javaClass) }
             }
-            EventTrackingHelper.logEventWithAParam(
-                activity,
+            EventTrackingHelper.getInstance(activity).logEventWithAParam(
                 "done_init_consent",
                 "time_between_step",
                 String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeInitAdsConsentManager) / 1000f)

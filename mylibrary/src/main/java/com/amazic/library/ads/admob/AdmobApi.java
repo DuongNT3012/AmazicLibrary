@@ -129,7 +129,7 @@ public class AdmobApi {
         if (listAds.get(nameAds.trim()) != null)
             list.addAll(Objects.requireNonNull(listAds.get(nameAds.trim())));
         else {
-            String remoteAdsKey = "id_" + nameAds.trim();
+            String remoteAdsKey = nameAds.startsWith("id_") ? nameAds.trim() : "id_" + nameAds.trim();
             String adsId = IDRemoteConfigHelper.getID(context, remoteAdsKey);
             if (adsId != null) list.add(adsId);
         }
@@ -354,7 +354,8 @@ public class AdmobApi {
         Admob.getInstance().loadAndShowInterAdSplash(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback);
     }
 
-    public void loadInterAdSplashFloorDelayAds(AppCompatActivity activity, String adsKey, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
+    public void loadInterAdSplashFloorDelayAds(AppCompatActivity activity, String adsKey, InterCallback interCallback, String adsKeyNative,
+                                               String remoteKeyNative) {
         Admob.getInstance().loadAndShowInterAdSplashDelay(activity, AdmobApi.getInstance().getListIDByName(adsKey), interCallback, adsKeyNative, remoteKeyNative);
     }
 

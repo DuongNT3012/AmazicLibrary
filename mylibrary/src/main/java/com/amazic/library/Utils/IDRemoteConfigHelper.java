@@ -61,11 +61,15 @@ public class IDRemoteConfigHelper {
 
     public static void setUpDefaultValue(Context context, String jsonDefault) {
         RemoteConfigHelper remoteConfigHelper = new RemoteConfigHelper();
+
+        if (remoteConfigHelper.get_config(context, "is_set_default")) return;
+
         Gson gson = new Gson();
         List<AdsModel> ids = gson.fromJson(jsonDefault, new com.google.gson.reflect.TypeToken<List<AdsModel>>() {
         });
         ids.forEach(adsModel -> {
             remoteConfigHelper.set_config_string(context, "id_" + adsModel.getName() + "_default", adsModel.getAds_id());
         });
+        remoteConfigHelper.set_config(context, "is_set_default", true);
     }
 }

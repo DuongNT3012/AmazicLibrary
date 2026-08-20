@@ -20,6 +20,7 @@ public class AdmobAdsConfig {
     private int timeOutCallApi = 4000;
     private String adjustKey = "";
     private String appId = "";
+    private String appPkg = "";
     private boolean isShowAdsSplash = false;
     private boolean isTimeout = false;
     private boolean isNoInternetAction = false;
@@ -38,6 +39,7 @@ public class AdmobAdsConfig {
 
     //private List<ProductDetailCustom> listProductDetailCustoms = new ArrayList<>(); //comment for billing
     private long timeOutSplash = 12000L;
+    private long timeOutInitAdmob = 12000L;
     private boolean isLoopAdsSplash = false;
     private String useTechManagerOrDetectTestAd = AsyncSplash.DETECT_TEST_AD;
 
@@ -218,6 +220,13 @@ public class AdmobAdsConfig {
         this.adjustKey = adjustKey;
     }
 
+    public String getAppPkg() {
+        return appPkg;
+    }
+
+    public void setAppPkg(String appId) {
+        this.appPkg = appId;
+    }
     public String getAppId() {
         return appId;
     }
@@ -344,6 +353,13 @@ public class AdmobAdsConfig {
 
     public void setTimeOutSplash(long timeOutSplash) {
         this.timeOutSplash = timeOutSplash;
+    }
+    public long getTimeOutInitAdmob() {
+        return timeOutInitAdmob;
+    }
+
+    public void setTimeOutInitAdmob(long timeOutInitAdmob) {
+        this.timeOutInitAdmob = timeOutInitAdmob;
     }
 
     public boolean isLoopAdsSplash() {

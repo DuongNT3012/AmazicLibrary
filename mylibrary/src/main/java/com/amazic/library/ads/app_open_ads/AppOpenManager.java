@@ -57,7 +57,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     private boolean isLoadingAd = false;
     private boolean isShowingAd = false;
     private long loadTime = 0;
-    private Activity currentActivity;
+    public Activity currentActivity;
     private Application application;
     private LoadingAdsResumeDialog loadingAdsResumeDialog;
     private boolean isCustomAnimationDialog = false;
@@ -1546,7 +1546,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
         isAppInBackground = false;
-        Log.d(TAG, "onStart: " + currentActivity + "-RemoteKey: " + remoteKey);
         if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {
             if (Admob.getInstance().getIsInitAdmobDone()) {
                 Log.d(TAG, "APP Open Preload: initAdmob Done have data preload -> show ads preload");

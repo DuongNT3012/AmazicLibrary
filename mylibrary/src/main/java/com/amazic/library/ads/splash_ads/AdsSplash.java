@@ -600,6 +600,7 @@ public class AdsSplash {
     private void logEventSplash(AppCompatActivity activity, String eventName, Bundle bundle) {
         bundle.putString("time_to_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0));
         bundle.putString("time_between_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeLastCalInterSplash) / 1000.0));
+        bundle.putString("isTimeout", AsyncSplash.Companion.getInstance().getTimeout() + "");
         EventTrackingHelper.getInstance(activity).logEventWithMultipleParams(eventName, bundle);
         timeLastCalInterSplash = System.currentTimeMillis();
     }
@@ -608,6 +609,7 @@ public class AdsSplash {
         Bundle bundle = new Bundle();
         bundle.putString("time_to_step", formatStepTime(System.currentTimeMillis() - timeStartCalInterSplash));
         bundle.putString("time_between_step", formatStepTime(System.currentTimeMillis() - timeLastCalInterSplash));
+        bundle.putString("isTimeout", AsyncSplash.Companion.getInstance().getTimeout() + "");
         EventTrackingHelper.getInstance(activity).logEventWithMultipleParams(eventName, bundle);
         timeLastCalInterSplash = System.currentTimeMillis();
     }

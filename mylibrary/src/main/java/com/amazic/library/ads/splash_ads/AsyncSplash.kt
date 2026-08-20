@@ -392,6 +392,7 @@ class AsyncSplash {
         val bundle = Bundle().apply {
             putString("time_between_step", formatStepTime(System.currentTimeMillis() - config.timeLastStep))
             putString("time_to_step", formatStepTime(System.currentTimeMillis() - config.timeStep1))
+            putString("isTimeout", config.isTimeout.toString())
         }
         EventTrackingHelper.getInstance(config.activity).logEventWithMultipleParams(
             normalizeFirebaseEventName("AsyncSplash_$step"),

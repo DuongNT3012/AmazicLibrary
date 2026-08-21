@@ -241,7 +241,7 @@ public class AdsSplash {
         loadInterSplashLegacy(activity, adUnitId, remoteKey, new InterCallback() {
             @Override
             public void onAdLoaded(InterstitialAd interstitialAd) {
-                if (AsyncSplash.Companion.getInstance().getTimeout()) {
+                if (AdmobAdsConfig.getInstance().isTimeout()) {
                     Bundle bundle = new Bundle();
                     String messageFailed = "time_out_splash_screen";
                     bundle.putString(KeyParameterEventSplash.KEY_FAILED_MESSAGE, messageFailed);
@@ -277,7 +277,7 @@ public class AdsSplash {
                 if (InterstitialAdPreloader.getNumAdsAvailable(adUnitId) >= numberPreload) {
                     pushAdToCache(Objects.requireNonNull(InterstitialAdPreloader.pollAd(adUnitId)), adUnitId);
                     cancelPreload(adUnitId);
-                    if (AsyncSplash.Companion.getInstance().getTimeout()) {
+                    if (AdmobAdsConfig.getInstance().isTimeout()) {
                         Bundle bundle = new Bundle();
                         String messageFailed = "time_out_splash_screen";
                         bundle.putString(KeyParameterEventSplash.KEY_FAILED_MESSAGE, messageFailed);

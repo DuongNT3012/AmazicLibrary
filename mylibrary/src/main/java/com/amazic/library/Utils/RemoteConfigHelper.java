@@ -66,9 +66,8 @@ public class RemoteConfigHelper {
 
     public void fetchAllKeysAndTypes(Context context, IOnFetchDone iOnFetchDone) {
         FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
-        firebaseRemoteConfig.reset();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
-                .setMinimumFetchIntervalInSeconds(10)
+                .setMinimumFetchIntervalInSeconds(60)
                 .build();
         FirebaseRemoteConfig.getInstance().setConfigSettingsAsync(configSettings);
         FirebaseRemoteConfig.getInstance().setDefaultsAsync(R.xml.remote_config_defaults);
@@ -137,6 +136,10 @@ public class RemoteConfigHelper {
     public boolean get_config(Context context, String name_config) {
         SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
         return pre.getBoolean(name_config, true);
+    }
+    public boolean get_config(Context context, String name_config, boolean defaultValue) {
+        SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
+        return pre.getBoolean(name_config, defaultValue);
     }
 
     public void set_config(Context context, String name_config, boolean config) {

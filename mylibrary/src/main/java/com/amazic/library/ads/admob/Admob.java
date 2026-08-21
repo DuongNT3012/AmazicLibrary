@@ -1,7 +1,5 @@
 package com.amazic.library.ads.admob;
 
-import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -44,8 +42,8 @@ import com.amazic.library.ads.callback.RewardedCallback;
 import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.collapse_banner_ads.CollapseBannerHelper;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
-import com.amazic.library.ads.splash_ads.AdsSplash;
-import com.amazic.library.ads.splash_ads.AsyncSplash;
+import com.amazic.library.ads.splash_ads.AdmobAdsConfig;
+import com.amazic.library.ads.splash_ads.older_version.AdsSplashOld;
 import com.amazic.library.dialog.LoadingAdsDialog;
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
@@ -138,7 +136,7 @@ public class Admob {
     }
 
     private void resetVariable() {
-        AdsSplash.getInstance().resetSplashTimeoutFlag();
+        AdsSplashOld.getInstance().resetSplashTimeoutFlag();
     }
 
     public void initLoadingDialog(Context context) {
@@ -153,20 +151,20 @@ public class Admob {
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#getTimeDelayWaitInterHigh()}. Kept here so existing
+     * @deprecated moved to {@link AdsSplashOld#getTimeDelayWaitInterHigh()}. Kept here so existing
      * call sites (Admob.getInstance().getTimeDelayWaitInterHigh()) keep compiling.
      */
     @Deprecated
     public int getTimeDelayWaitInterHigh() {
-        return AdsSplash.getInstance().getTimeDelayWaitInterHigh();
+        return AdsSplashOld.getInstance().getTimeDelayWaitInterHigh();
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#setTimeDelayWaitInterHigh(int)}.
+     * @deprecated moved to {@link AdsSplashOld#setTimeDelayWaitInterHigh(int)}.
      */
     @Deprecated
     public void setTimeDelayWaitInterHigh(int timeDelayWaitInterHigh) {
-        AdsSplash.getInstance().setTimeDelayWaitInterHigh(timeDelayWaitInterHigh);
+        AdsSplashOld.getInstance().setTimeDelayWaitInterHigh(timeDelayWaitInterHigh);
     }
 
     public boolean isCustomAnimationDialog() {
@@ -184,35 +182,35 @@ public class Admob {
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#getInterstitialAdSplashHigh()}.
+     * @deprecated moved to {@link AdsSplashOld#getInterstitialAdSplashHigh()}.
      */
     @Deprecated
     public InterstitialAd getInterstitialAdSplashHigh() {
-        return AdsSplash.getInstance().getInterstitialAdSplashHigh();
+        return AdsSplashOld.getInstance().getInterstitialAdSplashHigh();
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#setInterstitialAdSplashHigh(InterstitialAd)}.
+     * @deprecated moved to {@link AdsSplashOld#setInterstitialAdSplashHigh(InterstitialAd)}.
      */
     @Deprecated
     public void setInterstitialAdSplashHigh(InterstitialAd mInterstitialAdSplashHigh) {
-        AdsSplash.getInstance().setInterstitialAdSplashHigh(mInterstitialAdSplashHigh);
+        AdsSplashOld.getInstance().setInterstitialAdSplashHigh(mInterstitialAdSplashHigh);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#getInterstitialAdSplash()}.
+     * @deprecated moved to {@link AdsSplashOld#getInterstitialAdSplash()}.
      */
     @Deprecated
     public InterstitialAd getInterstitialAdSplash() {
-        return AdsSplash.getInstance().getInterstitialAdSplash();
+        return AdsSplashOld.getInstance().getInterstitialAdSplash();
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#setInterstitialAdSplash(InterstitialAd)}.
+     * @deprecated moved to {@link AdsSplashOld#setInterstitialAdSplash(InterstitialAd)}.
      */
     @Deprecated
     public void setInterstitialAdSplash(InterstitialAd mInterstitialAdSplash) {
-        AdsSplash.getInstance().setInterstitialAdSplash(mInterstitialAdSplash);
+        AdsSplashOld.getInstance().setInterstitialAdSplash(mInterstitialAdSplash);
     }
 
     public int getTimeOutCallInterAds() {
@@ -224,11 +222,11 @@ public class Admob {
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#getTimeOutCallSplashAds()}.
+     * @deprecated moved to {@link AdsSplashOld#getTimeOutCallSplashAds()}.
      */
     @Deprecated
     public int getTimeOutCallSplashAds() {
-        return AdsSplash.getInstance().getTimeOutCallSplashAds();
+        return AdsSplashOld.getInstance().getTimeOutCallSplashAds();
     }
 
 //    public int getTimeDelayNativeSplash() {
@@ -240,11 +238,11 @@ public class Admob {
 //    }
 
     /**
-     * @deprecated moved to {@link AdsSplash#setTimeOutCallSplashAds(int)}.
+     * @deprecated moved to {@link AdsSplashOld#setTimeOutCallSplashAds(int)}.
      */
     @Deprecated
     public void setTimeOutCallSplashAds(int timeOutCallSplashAds) {
-        AdsSplash.getInstance().setTimeOutCallSplashAds(timeOutCallSplashAds);
+        AdsSplashOld.getInstance().setTimeOutCallSplashAds(timeOutCallSplashAds);
     }
 
     public boolean isDetectTestAdByView() {
@@ -325,12 +323,12 @@ public class Admob {
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#removeHandlerSplashAds()}. Kept here so existing
+     * @deprecated moved to {@link AdsSplashOld#removeHandlerSplashAds()}. Kept here so existing
      * call sites (Admob.getInstance().removeHandlerSplashAds()) keep compiling.
      */
     @Deprecated
     public void removeHandlerSplashAds() {
-        AdsSplash.getInstance().removeHandlerSplashAds();
+        AdsSplashOld.getInstance().removeHandlerSplashAds();
     }
 
     public void removeHandlerRewardAds() {
@@ -341,7 +339,7 @@ public class Admob {
     }
 
     /**
-     * Not private anymore: {@link AdsSplash} (and any other extracted ad-format class) also
+     * Not private anymore: {@link AdsSplashOld} (and any other extracted ad-format class) also
      * needs to dismiss the shared loading dialog.
      */
     public void dismissLoadingDialog() {
@@ -523,7 +521,7 @@ public class Admob {
             }
             if (interCallback != null) {
                 isLoadInterAdsIdTimeout = true;
-                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                     if (isShowNativeAfterInter) {
                         NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
                         if (nativeAd == null) {
@@ -615,7 +613,7 @@ public class Admob {
         }
         if (mInterstitialAd == null) {
             Log.d(TAG, "INTER: The interstitial ad wasn't ready yet. " + remoteKeyInter);
-            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+            if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                 if (isShowNativeAfterInter) {
                     NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
                     if (nativeAd == null) {
@@ -649,7 +647,7 @@ public class Admob {
                     Log.d(TAG, "INTER: Ad dismissed fullscreen content. " + remoteKeyInter + " ,openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
                     interCallback.onAdDismissedFullScreenContent();
 //                    if (!openActivityAfterShowInterAds) {
-                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                         if (isShowNativeAfterInter) {
                             startNativeAfterInter(activity, interCallback);
                         } else {
@@ -662,7 +660,7 @@ public class Admob {
                     }
 //                    } else {
 //                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                        if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
 //                            if (isShowNativeAfterInter) {
 //                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
 //                                if (nativeAd == null) {
@@ -682,7 +680,7 @@ public class Admob {
                     Log.e(TAG, "INTER: Ad failed to show fullscreen content. " + remoteKeyInter);
                     interCallback.onAdFailedToShowFullScreenContent();
 //                    if (!openActivityAfterShowInterAds) {
-                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                         if (isShowNativeAfterInter) {
                             startNativeAfterInter(activity, interCallback);
                         } else {
@@ -695,7 +693,7 @@ public class Admob {
                     }
 //                    } else {
 //                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                        if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
 //                            if (isShowNativeAfterInter) {
 //                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
 //                                if (nativeAd == null) {
@@ -728,7 +726,7 @@ public class Admob {
             });
             isInterOrRewardedShowing = true;
             if (openActivityAfterShowInterAds) {
-                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
 //                    if (isShowNativeAfterInter) {
 //                        startNativeAfterInter(activity, interCallback);
 //                    } else {
@@ -762,8 +760,8 @@ public class Admob {
         }
         EventTrackingHelper.logEvent(context, remoteKey + "_true");
 
-        Log.d(TAG, "INTER Ad Preload: number ad preloading = " + AsyncSplash.Companion.getInstance().getNumberPreloading());
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInter.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
+        Log.d(TAG, "INTER Ad Preload: number ad preloading = " + AdmobAdsConfig.getInstance().getNumberPreloading());
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInter.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloading()).build();
 
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override
@@ -814,8 +812,8 @@ public class Admob {
         Log.d(TAG, "INTER Ad Preload: Check isAdAvailable InterstitialAdPreloader - " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
         if (!InterstitialAdPreloader.isAdAvailable(listIdInter.get(0))) {
             Log.d(TAG, "INTER Ad Preload: The interstitial ad wasn't ready yet. " + remoteKey);
-            Log.d(TAG, "INTER Ad Preload: InterstitialAdPreloader.isAdAvailable - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter);
-            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+            Log.d(TAG, "INTER Ad Preload: InterstitialAdPreloader.isAdAvailable - getShowNativeAfterInter =  " + AdmobAdsConfig.getInstance().isShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter);
+            if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                 if (isShowNativeAfterInter) {
                     NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
                     if (nativeAd == null) {
@@ -862,10 +860,10 @@ public class Admob {
                     EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_dismiss");
                     interCallback.onAdDismissedFullScreenContent();
 
-                    Log.d(TAG, "INTER Ad Preload: onAdDismissedFullScreenContent - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
+                    Log.d(TAG, "INTER Ad Preload: onAdDismissedFullScreenContent - getShowNativeAfterInter =  " + AdmobAdsConfig.getInstance().isShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
 
 //                    if (!openActivityAfterShowInterAds) {
-                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                         if (isShowNativeAfterInter) {
                             startNativeAfterInter(activity, interCallback);
                         } else {
@@ -878,7 +876,7 @@ public class Admob {
                     }
 //                    } else {
 //                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                        if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
 //                            if (isShowNativeAfterInter) {
 //                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
 //                                if (nativeAd == null) {
@@ -897,10 +895,10 @@ public class Admob {
                     Log.e(TAG, "INTER Ad Preload: Ad failed to show fullscreen content. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "inter_preload_failed_to_show");
                     interCallback.onAdFailedToShowFullScreenContent();
-                    Log.d(TAG, "INTER Ad Preload: onAdFailedToShowFullScreenContent - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
+                    Log.d(TAG, "INTER Ad Preload: onAdFailedToShowFullScreenContent - getShowNativeAfterInter =  " + AdmobAdsConfig.getInstance().isShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
 
 //                    if (!openActivityAfterShowInterAds) {
-                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                         if (isShowNativeAfterInter) {
                             startNativeAfterInter(activity, interCallback);
                         } else {
@@ -913,7 +911,7 @@ public class Admob {
                     }
 //                    } else {
 //                        /// can check neu truong hop load fail native after inter thi dismiss chuyen onnext
-//                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+//                        if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
 //                            if (isShowNativeAfterInter) {
 //                                NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
 //                                if (nativeAd == null) {
@@ -951,10 +949,10 @@ public class Admob {
                 }
             });
             isInterOrRewardedShowing = true;
-            Log.d(TAG, "INTER Ad Preload: call show ads - getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
+            Log.d(TAG, "INTER Ad Preload: call show ads - getShowNativeAfterInter =  " + AdmobAdsConfig.getInstance().isShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
 
             if (openActivityAfterShowInterAds) {
-                if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
 //                    if (isShowNativeAfterInter) {
 //                        startNativeAfterInter(activity, interCallback);
 //                    } else {
@@ -966,9 +964,9 @@ public class Admob {
             }
             ad.show(activity);
         } else {
-            Log.d(TAG, "INTER Ad Preload: not call show ads- getShowNativeAfterInter =  " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
+            Log.d(TAG, "INTER Ad Preload: not call show ads- getShowNativeAfterInter =  " + AdmobAdsConfig.getInstance().isShowNativeAfterInter() + ", isShowNativeAfterInter = " + isShowNativeAfterInter + ", openActivityAfterShowInterAds = " + openActivityAfterShowInterAds);
 
-            if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+            if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                 if (isShowNativeAfterInter) {
                     NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNative);
                     if (nativeAd == null) {
@@ -1022,8 +1020,8 @@ public class Admob {
                 }
                 if (interCallback != null) {
                     isLoadInterAdsIdTimeout = true;
-                    Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow - inter_ads_id_timeout: getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
-                    if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                    Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow - inter_ads_id_timeout: getShowNativeAfterInter = " + AdmobAdsConfig.getInstance().isShowNativeAfterInter());
+                    if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                         Log.d(TAG, "INTER Ad Preload: loadInterAdsLoadAndShow - inter_ads_id_timeout: isShowNativeAfterInter = " + isShowNativeAfterInter);
                         if (isShowNativeAfterInter) {
                             NativeAd nativeAd = NativeAfterInterManager.mapNativeAdsAfterInter.get(adsKeyNativeAfterInter);
@@ -1071,7 +1069,7 @@ public class Admob {
             EventTrackingHelper.logEvent(activity, remoteKey + "_true");
 
 
-            PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
+            PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloading()).build();
 
             final AtomicBoolean isFirstLoadAd = new AtomicBoolean(true);
             PreloadCallbackV2 callback = new PreloadCallbackV2() {
@@ -1085,8 +1083,8 @@ public class Admob {
                     }
 
                     if (isFirstLoadAd.getAndSet(false)) {
-                        Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - getShowNativeAfterInter = " + AsyncSplash.Companion.getInstance().getShowNativeAfterInter());
-                        if (AsyncSplash.Companion.getInstance().getShowNativeAfterInter()) {
+                        Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - getShowNativeAfterInter = " + AdmobAdsConfig.getInstance().isShowNativeAfterInter());
+                        if (AdmobAdsConfig.getInstance().isShowNativeAfterInter()) {
                             if (isShowNativeAfterInter) {
                                 Log.d(TAG, "INTER Ad Preload - loadAndShow: onAdFailedToPreload - show Native after inter");
                                 startNativeAfterInter(activity, interCallback);
@@ -1131,35 +1129,35 @@ public class Admob {
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#loadAndShowNativeFullSplashCount}.
+     * @deprecated moved to {@link AdsSplashOld#loadAndShowNativeFullSplashCount}.
      */
     @Deprecated
     public void loadAndShowNativeFullSplashCount(AppCompatActivity activity, List<String> listIdNative, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
-        AdsSplash.getInstance().loadAndShowNativeFullSplashCount(activity, listIdNative, interCallback, adsKeyNative, remoteKeyNative);
+        AdsSplashOld.getInstance().loadAndShowNativeFullSplashCount(activity, listIdNative, interCallback, adsKeyNative, remoteKeyNative);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#loadAndShowMetaNativeFullSplashCount}.
+     * @deprecated moved to {@link AdsSplashOld#loadAndShowMetaNativeFullSplashCount}.
      */
     @Deprecated
     public void loadAndShowMetaNativeFullSplashCount(AppCompatActivity activity, InterCallback interCallback) {
-        AdsSplash.getInstance().loadAndShowMetaNativeFullSplashCount(activity, interCallback);
+        AdsSplashOld.getInstance().loadAndShowMetaNativeFullSplashCount(activity, interCallback);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#loadAndShowInterAdPreloadingSplashDelay}.
+     * @deprecated moved to {@link AdsSplashOld#loadAndShowInterAdPreloadingSplashDelay}.
      */
     @Deprecated
     public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
-        AdsSplash.getInstance().loadAndShowInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, adsKeyNative, remoteKeyNative);
+        AdsSplashOld.getInstance().loadAndShowInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, adsKeyNative, remoteKeyNative);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#showInterAdPreloadingSplashDelay}.
+     * @deprecated moved to {@link AdsSplashOld#showInterAdPreloadingSplashDelay}.
      */
     @Deprecated
     public void showInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
-        AdsSplash.getInstance().showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
+        AdsSplashOld.getInstance().showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
     }
 
     public void loadInterAds(Context context, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
@@ -1297,78 +1295,78 @@ public class Admob {
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#showInterAdsSplashDelay}.
+     * @deprecated moved to {@link AdsSplashOld#showInterAdsSplashDelay}.
      */
     @Deprecated
     public void showInterAdsSplashDelay(AppCompatActivity activity, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
-        AdsSplash.getInstance().showInterAdsSplashDelay(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
+        AdsSplashOld.getInstance().showInterAdsSplashDelay(activity, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#showInterAdsSplash}.
+     * @deprecated moved to {@link AdsSplashOld#showInterAdsSplash}.
      */
     @Deprecated
     public void showInterAdsSplash(AppCompatActivity activity, InterCallback interCallback) {
-        AdsSplash.getInstance().showInterAdsSplash(activity, interCallback);
+        AdsSplashOld.getInstance().showInterAdsSplash(activity, interCallback);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#showInterAdsSplashAsync}.
+     * @deprecated moved to {@link AdsSplashOld#showInterAdsSplashAsync}.
      */
     @Deprecated
     public void showInterAdsSplashAsync(InterstitialAd interSplash, AppCompatActivity activity, InterCallback interCallback) {
-        AdsSplash.getInstance().showInterAdsSplashAsync(interSplash, activity, interCallback);
+        AdsSplashOld.getInstance().showInterAdsSplashAsync(interSplash, activity, interCallback);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#loadAndShowIdInterAdSplashAsync}.
+     * @deprecated moved to {@link AdsSplashOld#loadAndShowIdInterAdSplashAsync}.
      */
     @Deprecated
     public void loadAndShowIdInterAdSplashAsync(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
-        AdsSplash.getInstance().loadAndShowIdInterAdSplashAsync(activity, listIdInter, interCallback);
+        AdsSplashOld.getInstance().loadAndShowIdInterAdSplashAsync(activity, listIdInter, interCallback);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#loadAndShowInterAdSplash}.
+     * @deprecated moved to {@link AdsSplashOld#loadAndShowInterAdSplash}.
      */
     @Deprecated
     public void loadAndShowInterAdSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
-        AdsSplash.getInstance().loadAndShowInterAdSplash(activity, listIdInter, interCallback);
+        AdsSplashOld.getInstance().loadAndShowInterAdSplash(activity, listIdInter, interCallback);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#loadAndShowInterAdSplashDelay}.
+     * @deprecated moved to {@link AdsSplashOld#loadAndShowInterAdSplashDelay}.
      */
     @Deprecated
     public void loadAndShowInterAdSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
-        AdsSplash.getInstance().loadAndShowInterAdSplashDelay(activity, listIdInter, interCallback, adsKeyNative, remoteKeyNative);
+        AdsSplashOld.getInstance().loadAndShowInterAdSplashDelay(activity, listIdInter, interCallback, adsKeyNative, remoteKeyNative);
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#removeHandlerDelayAdsSplash}.
+     * @deprecated moved to {@link AdsSplashOld#removeHandlerDelayAdsSplash}.
      */
     @Deprecated
     public void removeHandlerDelayAdsSplash() {
-        AdsSplash.getInstance().removeHandlerDelayAdsSplash();
+        AdsSplashOld.getInstance().removeHandlerDelayAdsSplash();
     }
 
     /**
-     * @deprecated moved to {@link AdsSplash#loadAndShowInterAdSplashLoop}.
+     * @deprecated moved to {@link AdsSplashOld#loadAndShowInterAdSplashLoop}.
      */
     @Deprecated
     public void loadAndShowInterAdSplashLoop(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback) {
-        AdsSplash.getInstance().loadAndShowInterAdSplashLoop(activity, listIdInter, interCallback);
+        AdsSplashOld.getInstance().loadAndShowInterAdSplashLoop(activity, listIdInter, interCallback);
     }
 
 
     //================================end inter ads================================
 
     /**
-     * @deprecated moved to {@link AdsSplash#onCheckShowSplashWhenFail}.
+     * @deprecated moved to {@link AdsSplashOld#onCheckShowSplashWhenFail}.
      */
     @Deprecated
     public void onCheckShowSplashWhenFail(AppCompatActivity activity, InterCallback interCallback) {
-        AdsSplash.getInstance().onCheckShowSplashWhenFail(activity, interCallback);
+        AdsSplashOld.getInstance().onCheckShowSplashWhenFail(activity, interCallback);
     }
 
     //================================Start banner ads================================
@@ -1446,22 +1444,22 @@ public class Admob {
 
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)) {
                     TechManager.getInstance().detectedTech(activity, false);
                 }
                 if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                        && !AdmobAdsConfig.getInstance().isDebug()
+                        && AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
                     EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                    if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                             && TechManager.getInstance().isTech(activity)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                            && !AdmobAdsConfig.getInstance().isDebug()) {
+                        AdmobAdsConfig.getInstance().turnOffSomeRemoteKeys(activity);
                     }
                 }
 
@@ -1560,22 +1558,22 @@ public class Admob {
 
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)) {
                     TechManager.getInstance().detectedTech(activity, false);
                 }
                 if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                        && !AdmobAdsConfig.getInstance().isDebug()
+                        && AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
                     EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                    if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                             && TechManager.getInstance().isTech(activity)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                            && !AdmobAdsConfig.getInstance().isDebug()) {
+                        AdmobAdsConfig.getInstance().turnOffSomeRemoteKeys(activity);
                     }
                 }
 
@@ -1689,22 +1687,22 @@ public class Admob {
 
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)) {
                     TechManager.getInstance().detectedTech(activity, false);
                 }
                 if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                        && !AdmobAdsConfig.getInstance().isDebug()
+                        && AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
                     EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(activity, isTestAd);
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                    if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                             && TechManager.getInstance().isTech(activity)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+                            && !AdmobAdsConfig.getInstance().isDebug()) {
+                        AdmobAdsConfig.getInstance().turnOffSomeRemoteKeys(activity);
                     }
                 }
 
@@ -1834,22 +1832,22 @@ public class Admob {
                 }
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+                if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)) {
                     TechManager.getInstance().detectedTech(context, false);
                 }
                 if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                        && !AdmobAdsConfig.getInstance().isDebug()
+                        && AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                 ) {
                     boolean isTestAd = detectTestAd(adView);
                     EventTrackingHelper.logEvent(context, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(context));
                     Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
                     TechManager.getInstance().detectedTech(context, isTestAd);
 
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+                    if (AdmobAdsConfig.getInstance().getUseTechManagerOrDetectTestAd().equals(AdmobAdsConfig.DETECT_TEST_AD)
                             && TechManager.getInstance().isTech(context)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);
+                            && !AdmobAdsConfig.getInstance().isDebug()) {
+                        AdmobAdsConfig.getInstance().turnOffSomeRemoteKeys(context);
                     }
                 }
                 bannerCallback.onAdLoaded();
@@ -3329,7 +3327,7 @@ public class Admob {
                 loadingAdsDialog.show();
             }
 
-            PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdRewarded.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
+            PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdRewarded.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloading()).build();
 
             final AtomicBoolean isFirstLoadAd = new AtomicBoolean(true);
 
@@ -3379,9 +3377,9 @@ public class Admob {
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         //end log event can request ads
 
-        Log.d(TAG, "REWARD Ad Preload: number ad preloading = " + AsyncSplash.Companion.getInstance().getNumberPreloading());
+        Log.d(TAG, "REWARD Ad Preload: number ad preloading = " + AdmobAdsConfig.getInstance().getNumberPreloading());
 
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdRewarded.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdRewarded.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloading()).build();
 
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override

@@ -14,7 +14,7 @@ import android.widget.TextView;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.NativeCallback;
-import com.amazic.library.ads.splash_ads.AsyncSplash;
+import com.amazic.library.ads.splash_ads.AdmobAdsConfig;
 import com.amazic.mylibrary.R;
 import com.facebook.ads.Ad;
 import com.facebook.ads.AdError;
@@ -113,7 +113,7 @@ public class MetaNativeManager {
 
 //    public static void preloadMetaNativeAfterInterSplash(Activity activity, String placementId,
 //                                                         String adsKey) {
-//        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeFullShowSplash();
+//        int targetCount = AdmobAdsConfig.getInstance().getNumberNativeFullShowSplash();
 //
 //        Log.d(TAG, "MetaNativeManager Splash: preload " + targetCount + " ads adsKey=" + adsKey);
 //        List<NativeAd> oldList = mapMetaNativeAfterInterSplash.get(adsKey);
@@ -173,9 +173,9 @@ public class MetaNativeManager {
         mapMetaNativeSplash.put(adsKey, newList);
 
         // Clean & init AdMob fallback list
-        String admobKey = AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash();
+        String admobKey = AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash();
         List<com.google.android.gms.ads.nativead.NativeAd> fallbackList = new ArrayList<>();
-        if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+        if (AdmobAdsConfig.getInstance().isUseNativeFullSplashAdmobWhenMetaFail()) {
             List<com.google.android.gms.ads.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
             if (oldFallback != null) {
                 for (com.google.android.gms.ads.nativead.NativeAd ad : oldFallback) ad.destroy();
@@ -184,7 +184,7 @@ public class MetaNativeManager {
             mapAdmobNativeSplash.put(admobKey, fallbackList);
         }
 
-        String idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
+        String idMeta = AdmobAdsConfig.getInstance().getIdNativeMetaSplash();
         if (idMeta == null || idMeta.isEmpty()) {
             idMeta = listIdNative.get(0);
         }
@@ -216,7 +216,7 @@ public class MetaNativeManager {
             Log.d(TAG, "MetaNativeFullSplash: Meta done total=" + list.size() + " pendingAdmob=" + pendingAdmobCount[0]);
             // Chờ AdMob pending xong mới quyết định onAllFailed
 
-            if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+            if (AdmobAdsConfig.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
                 if (list.isEmpty() && pendingAdmobCount[0] == 0
                         && !hasNotifiedFirst[0] && !hasNotifiedFail[0]) {
                     hasNotifiedFail[0] = true;
@@ -241,8 +241,8 @@ public class MetaNativeManager {
                                 Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount
                                         + " idMeta=" + placementId + " err=" + adError.getErrorMessage());
 
-                                if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
-                                    String admobKey = AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash();
+                                if (AdmobAdsConfig.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+                                    String admobKey = AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash();
                                     List<String> admobIds = AdmobApi.getInstance().getListIDByName(admobKey);
 
                                     if (admobIds != null && !admobIds.isEmpty()) {
@@ -338,9 +338,9 @@ public class MetaNativeManager {
 //        mapMetaNativeSplash.put(adsKey, newList);
 //
 //        //create Admob list
-//        String admobKey = AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash();
+//        String admobKey = AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash();
 //        List<com.google.android.gms.ads.nativead.NativeAd> fallbackList = new ArrayList<>();
-//        if (AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+//        if (AdmobAdsConfig.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
 //            List<com.google.android.gms.ads.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
 //            if (oldFallback != null) {
 //                for (com.google.android.gms.ads.nativead.NativeAd ad : oldFallback) ad.destroy();
@@ -350,8 +350,8 @@ public class MetaNativeManager {
 //        }
 //
 //        String idMeta = "";
-//        if (!AsyncSplash.Companion.getInstance().getIdNativeMetaSplash().equals("")) {
-//            idMeta = AsyncSplash.Companion.getInstance().getIdNativeMetaSplash();
+//        if (!AdmobAdsConfig.getInstance().getIdNativeMetaSplash().equals("")) {
+//            idMeta = AdmobAdsConfig.getInstance().getIdNativeMetaSplash();
 //        } else {
 //            idMeta = listIdNative.get(0);
 //        }
@@ -389,7 +389,7 @@ public class MetaNativeManager {
 //                                // Load AdMob native song song, không block Meta tiếp tục
 //                                Admob.getInstance().loadNativeAds(
 //                                        activity,
-//                                        AdmobApi.getInstance().getListIDByName(AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash()),
+//                                        AdmobApi.getInstance().getListIDByName(AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash()),
 //                                        new NativeCallback() {
 //                                            @Override
 //                                            public void onNativeAdLoaded(com.google.android.gms.ads.nativead.NativeAd nativeAd) {
@@ -404,7 +404,7 @@ public class MetaNativeManager {
 //                                                Log.d(TAG, "MetaNativeFullSplash: admob fallback also failed");
 //                                            }
 //                                        },
-//                                        AsyncSplash.Companion.getInstance().getKeyNativeFullAdmobSplash()
+//                                        AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash()
 //                                );
 //
 //                                loadMetaNativeFullSplashSequentially(activity, placementId, adsKey,

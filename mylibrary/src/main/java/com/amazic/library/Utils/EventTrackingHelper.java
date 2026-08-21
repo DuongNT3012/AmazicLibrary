@@ -67,9 +67,7 @@ public class EventTrackingHelper {
     }
 
     public void logEvent(String eventName) {
-        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(mContext);
-        Bundle bundle = new Bundle();
-        firebaseAnalytics.logEvent(eventName, bundle);
+        logEvent(mContext, eventName);
     }
 
     public static void logEvent(Context context, String eventName) {
@@ -83,11 +81,7 @@ public class EventTrackingHelper {
     }
 
     public void logEventWithAParam(String eventName, String param, String value) {
-        Log.d(TAG, "logEvent: " + eventName);
-        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(mContext);
-        Bundle bundle = new Bundle();
-        bundle.putString(param, value);
-        firebaseAnalytics.logEvent(eventName, bundle);
+        logEventWithAParam(mContext, eventName, param, value);
     }
 
     public static void logEventWithAParam(Context context, String eventName, String param, String value) {
@@ -102,9 +96,7 @@ public class EventTrackingHelper {
     }
 
     public void logEventWithMultipleParams(String eventName, Bundle bundle) {
-        Log.d(TAG, "logEvent: " + eventName);
-        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(mContext);
-        firebaseAnalytics.logEvent(eventName, bundle);
+        logEventWithMultipleParams(mContext, eventName, bundle);
     }
 
     public static void logEventWithMultipleParams(Context context, String eventName, Bundle bundle) {

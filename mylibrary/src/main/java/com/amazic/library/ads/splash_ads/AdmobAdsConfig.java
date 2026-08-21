@@ -1,20 +1,32 @@
 package com.amazic.library.ads.splash_ads;
 
-import android.widget.FrameLayout;
+import android.content.Context;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.callback.InterCallback;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import kotlin.Unit;
-import kotlin.jvm.functions.Function0;
-
 public class AdmobAdsConfig {
 
+
+    public static final String WELCOME_BACK_NORMAL = "Normal";
+    public static final String WELCOME_BACK_BELOW = "Below";
+    public static final String WELCOME_BACK_ABOVE = "Above";
+    public static final String  DETECT_TEST_AD = "DetectTestAd";
+    public static final String  TECH_MANAGER = "TechManager";
+
+    private static AdmobAdsConfig INSTANCE = null;
+
+    public static AdmobAdsConfig getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new AdmobAdsConfig();
+        }
+        return INSTANCE;
+    }
+    
     private boolean isTech = false;
     private String jsonIdAdsDefault = "";
     private int timeOutCallApi = 4000;
@@ -27,12 +39,10 @@ public class AdmobAdsConfig {
     private String initWelcomeBack = "Normal";
     private Class<?> welcomeBackClass = null;
     private boolean isShowBannerSplash = false;
-    private FrameLayout frAdsBannerSplash = null;
     private List<String> listIdBannerSplash =
             new ArrayList<>(Arrays.asList("ca-app-pub-3940256099942544/6300978111"));
     private String adsKey = "";
     private List<String> listTurnOffRemoteKeys = new ArrayList<>();
-    private AppCompatActivity activity = null;
     private InterCallback interCallback = null;
     private boolean isDebug = false;
     private boolean isUseBilling = false;
@@ -41,7 +51,7 @@ public class AdmobAdsConfig {
     private long timeOutSplash = 12000L;
     private long timeOutInitAdmob = 12000L;
     private boolean isLoopAdsSplash = false;
-    private String useTechManagerOrDetectTestAd = AsyncSplash.DETECT_TEST_AD;
+    private String useTechManagerOrDetectTestAd = DETECT_TEST_AD;
 
     //1.use for log event time out 12s
     private boolean initRemoteConfig = false;
@@ -99,7 +109,6 @@ public class AdmobAdsConfig {
 
     private boolean isUseAppUpdateManager = false;
     private String remoteKeyIdAdsServer = "id_ads";
-    private Function0<Unit> onPrepareLoadInterOpenSplashAds = null;
 
     //Log event 26/04/2025
     private long timeSplashCheck = System.currentTimeMillis();
@@ -137,17 +146,15 @@ public class AdmobAdsConfig {
         initWelcomeBack = "Normal";
         welcomeBackClass = null;
         isShowBannerSplash = false;
-        frAdsBannerSplash = null;
         listIdBannerSplash = new ArrayList<>(Arrays.asList("ca-app-pub-3940256099942544/6300978111"));
         adsKey = "";
         listTurnOffRemoteKeys = new ArrayList<>();
-        activity = null;
         interCallback = null;
         isDebug = false;
         isUseBilling = false;
         timeOutSplash = 12000L;
         isLoopAdsSplash = false;
-        useTechManagerOrDetectTestAd = AsyncSplash.DETECT_TEST_AD;
+        useTechManagerOrDetectTestAd = DETECT_TEST_AD;
         initRemoteConfig = false;
         initAdmobApi = false;
         initAdsConsentManager = false;
@@ -176,7 +183,6 @@ public class AdmobAdsConfig {
         isUseNativeSplashMeta = false;
         isUseAppUpdateManager = false;
         remoteKeyIdAdsServer = "id_ads";
-        onPrepareLoadInterOpenSplashAds = null;
         timeSplashCheck = System.currentTimeMillis();
         urlCheckInternetSpeed = "https://www.google.com/";
         loadAndShowIdInterAdSplashAsync = false;
@@ -263,10 +269,22 @@ public class AdmobAdsConfig {
         return initWelcomeBack;
     }
 
-    public void setInitWelcomeBack(String initWelcomeBack) {
-        this.initWelcomeBack = initWelcomeBack;
+    public void setInitResumeAdsNormal() {
+        initWelcomeBack = WELCOME_BACK_NORMAL;
+        isPreloadResumeAds = true;
     }
 
+    public void setInitWelcomeBackBelowResumeAds(Class<?> welcomeBackClass) {
+        initWelcomeBack = WELCOME_BACK_BELOW;
+        this.welcomeBackClass = welcomeBackClass;
+        isPreloadResumeAds = true;
+    }
+
+    public void setInitWelcomeBackAboveResumeAds(Class<?> welcomeBackClass) {
+        initWelcomeBack = WELCOME_BACK_ABOVE;
+        this.welcomeBackClass = welcomeBackClass;
+        isPreloadResumeAds = false;
+    }
     public Class<?> getWelcomeBackClass() {
         return welcomeBackClass;
     }
@@ -281,14 +299,6 @@ public class AdmobAdsConfig {
 
     public void setShowBannerSplash(boolean showBannerSplash) {
         isShowBannerSplash = showBannerSplash;
-    }
-
-    public FrameLayout getFrAdsBannerSplash() {
-        return frAdsBannerSplash;
-    }
-
-    public void setFrAdsBannerSplash(FrameLayout frAdsBannerSplash) {
-        this.frAdsBannerSplash = frAdsBannerSplash;
     }
 
     public List<String> getListIdBannerSplash() {
@@ -313,14 +323,6 @@ public class AdmobAdsConfig {
 
     public void setListTurnOffRemoteKeys(List<String> listTurnOffRemoteKeys) {
         this.listTurnOffRemoteKeys = listTurnOffRemoteKeys;
-    }
-
-    public AppCompatActivity getActivity() {
-        return activity;
-    }
-
-    public void setActivity(AppCompatActivity activity) {
-        this.activity = activity;
     }
 
     public InterCallback getInterCallback() {
@@ -374,6 +376,9 @@ public class AdmobAdsConfig {
         return useTechManagerOrDetectTestAd;
     }
 
+    public void setUseDetectTestAd() {
+        useTechManagerOrDetectTestAd = DETECT_TEST_AD;
+    }
     public void setUseTechManagerOrDetectTestAd(String useTechManagerOrDetectTestAd) {
         this.useTechManagerOrDetectTestAd = useTechManagerOrDetectTestAd;
     }
@@ -601,16 +606,11 @@ public class AdmobAdsConfig {
         return remoteKeyIdAdsServer;
     }
 
-    public void setRemoteKeyIdAdsServer(String remoteKeyIdAdsServer) {
+    public void setUseIdAdsFromRemoteConfig(String remoteKeyIdAdsServer) {
+        // Use id ads from remote config or not (remote key: id_ads)
+        this.isUseIdAdsFromRemoteConfig = true;
         this.remoteKeyIdAdsServer = remoteKeyIdAdsServer;
-    }
-
-    public Function0<Unit> getOnPrepareLoadInterOpenSplashAds() {
-        return onPrepareLoadInterOpenSplashAds;
-    }
-
-    public void setOnPrepareLoadInterOpenSplashAds(Function0<Unit> onPrepareLoadInterOpenSplashAds) {
-        this.onPrepareLoadInterOpenSplashAds = onPrepareLoadInterOpenSplashAds;
+        this.timeOutCallApi = 0;
     }
 
     public long getTimeSplashCheck() {
@@ -684,5 +684,12 @@ public class AdmobAdsConfig {
 
     public void setTimeLastStep(long timeLastStep) {
         this.timeLastStep = timeLastStep;
+    }
+
+
+    public void turnOffSomeRemoteKeys(Context activity) {
+        listTurnOffRemoteKeys.forEach(remote -> {
+            RemoteConfigHelper.getInstance().set_config(activity, remote, false);
+        });
     }
 }

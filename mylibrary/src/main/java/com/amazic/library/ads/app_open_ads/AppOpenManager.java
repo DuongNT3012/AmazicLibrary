@@ -24,6 +24,7 @@ import com.amazic.library.Utils.SharePreferenceHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.AppOpenCallback;
+import com.amazic.library.ads.splash_ads.AdmobAdsConfig;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.dialog.LoadingAdsResumeDialog;
 import com.amazic.library.organic.TechManager;
@@ -642,8 +643,8 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         //end log event can request ads
 
-        Log.d(TAG, "APP Open Preload: number ad preloading = " + AsyncSplash.Companion.getInstance().getNumberPreloading());
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResume.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloading()).build();
+        Log.d(TAG, "APP Open Preload: number ad preloading = " + AdmobAdsConfig.getInstance().getNumberPreloading());
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResume.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloading()).build();
 
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override
@@ -856,9 +857,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         isLoadingAdSplash = true;
 
-        Log.d(TAG, "App Open Preload SPLASH: number ad preloading = " + AsyncSplash.Companion.getInstance().getNumberPreloadingSplash());
+        Log.d(TAG, "App Open Preload SPLASH: number ad preloading = " + AdmobAdsConfig.getInstance().getNumberPreloadingSplash());
 
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResumeTemp.get(0)).setBufferSize(AsyncSplash.Companion.getInstance().getNumberPreloadingSplash()).build();
+        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResumeTemp.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloadingSplash()).build();
 
         PreloadCallbackV2 callback = new PreloadCallbackV2() {
             @Override
@@ -974,7 +975,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                         handlerTimeoutSplash.removeCallbacks(runnable);
                     }
                     //log event
-                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AdmobAdsConfig.getInstance().getTimeStartSplash()) / 1000);
                     //end log event
                 }
 
@@ -1010,7 +1011,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     AppOpenAdPreloader.destroy(listIdOpenResume.get(0));
                     appOpenCallback.onAdImpression();
                     //log event
-                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AdmobAdsConfig.getInstance().getTimeStartSplash()) / 1000);
                     int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
                     if (splashOpenTimes <= 3) {
                         EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_impression + "_" + splashOpenTimes);
@@ -1221,7 +1222,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                         handlerTimeoutSplash.removeCallbacks(runnable);
                     }
                     //log event
-                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "false_" + (System.currentTimeMillis() - AdmobAdsConfig.getInstance().getTimeStartSplash()) / 1000);
                     //end log event
                 }
 
@@ -1258,7 +1259,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     Log.d(TAG, "SPLASH: onAdImpression.");
                     appOpenCallback.onAdImpression();
                     //log event
-                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AsyncSplash.Companion.getInstance().getTimeStartSplash()) / 1000);
+                    EventTrackingHelper.logEventWithAParam(activity, EventTrackingHelper.inter_splash_showad_time, EventTrackingHelper.showad_time, "true_" + (System.currentTimeMillis() - AdmobAdsConfig.getInstance().getTimeStartSplash()) / 1000);
                     int splashOpenTimes = SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1);
                     if (splashOpenTimes <= 3) {
                         EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_impression + "_" + splashOpenTimes);
@@ -1404,8 +1405,9 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         String idOpenResume = listIdOpenResume.get(0);
 
         // If have action startActivity by timeout or no internet in splash, do not load ads.
-        if (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000 || AsyncSplash.Companion.getInstance().getTimeout() || AsyncSplash.Companion.getInstance().getNoInternetAction()) {
-            Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
+        if (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000 || AdmobAdsConfig.getInstance().isTimeout() || AdmobAdsConfig.getInstance().isNoInternetAction()) {
+            Log.d(TAG,
+                    "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AdmobAdsConfig.getInstance().isTimeout() + "_" + AdmobAdsConfig.getInstance().isNoInternetAction());
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout_8s);
             appOpenCallback.onNextAction();
             if (handlerTimeoutSplash != null && runnable != null) {
@@ -1505,14 +1507,14 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     @Override
     public void onActivityStarted(@NonNull Activity activity) {
         currentActivity = activity;
-        if (AsyncSplash.Companion.getInstance().getKeyAdsOpenResume().isEmpty()) {
-            if (AsyncSplash.Companion.getInstance().getInitResumeAdsType().equals("Normal")) {
+        if (AdmobAdsConfig.getInstance().getKeyAdsOpenResume().isEmpty()) {
+            if (AdmobAdsConfig.getInstance().getInitWelcomeBack().equals("Normal")) {
                 remoteKey = "open_resume";
             } else {
                 remoteKey = "resume_wb";
             }
         } else {
-            remoteKey = AsyncSplash.Companion.getInstance().getKeyAdsOpenResume();
+            remoteKey = AdmobAdsConfig.getInstance().getKeyAdsOpenResume();
         }
         Log.d(TAG, "onActivityStarted: " + currentActivity + "-RemoteKey: " + remoteKey);
     }
@@ -1546,7 +1548,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
     public void onStart(@NonNull LifecycleOwner owner) {
         DefaultLifecycleObserver.super.onStart(owner);
         isAppInBackground = false;
-        if (AsyncSplash.Companion.getInstance().getUseAdPreloading()) {
+        if (AdmobAdsConfig.getInstance().isPreloadResumeAds()) {
             if (Admob.getInstance().getIsInitAdmobDone()) {
                 Log.d(TAG, "APP Open Preload: initAdmob Done have data preload -> show ads preload");
                 showAdPreload(currentActivity, listIdOpenResumeAd, null, remoteKey);
@@ -1555,7 +1557,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 loadAndShowAdsResumeCheckDisableAppOpen(currentActivity, listIdOpenResumeAd, null, remoteKey);
             }
         } else {
-            if (AsyncSplash.Companion.getInstance().getPreloadResumeAds()) {
+            if (AdmobAdsConfig.getInstance().isPreloadResumeAds()) {
                 showAdIfAvailable(currentActivity, listIdOpenResumeAd, null, remoteKey);
             } else {
                 showAdIfAvailableWelcomeBackLoadAndShow(currentActivity, listIdOpenResumeAd, null, remoteKey, true);

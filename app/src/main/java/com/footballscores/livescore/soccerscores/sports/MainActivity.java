@@ -84,8 +84,8 @@ public class MainActivity extends AppCompatActivity {
         NativeManager nativeManager = new NativeManager(this, this, nativeBuilder, "native_wb", "native_wb", "ad_native_display_order");
         nativeManager.setIntervalReloadNative(5000);
         nativeManager.setAlwaysReloadOnResume(true);
-        nativeBuilder.setListIdAdSecondary("native_wb");
-        nativeBuilder.setListIdAdMain("native_wb");
+        nativeBuilder.setListIdAdSecondary("native_wb_2");
+        nativeBuilder.setListIdAdMain("native_wb_2");
         /*BannerBuilder bannerBuilder = new BannerBuilder(this, binding.adViewContainer, true);
         bannerBuilder.setListIdAdMain(AdmobApi.getInstance().getListIDByName("banner_all"));
         bannerBuilder.setListIdAdSecondary(AdmobApi.getInstance().getListIDByName("banner_all"));

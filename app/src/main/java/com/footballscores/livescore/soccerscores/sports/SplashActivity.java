@@ -3,7 +3,6 @@ package com.footballscores.livescore.soccerscores.sports;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -15,9 +14,9 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
+import com.amazic.library.ads.splash_ads.AdmobAdsConfig;
+import com.amazic.library.ads.splash_ads.AdsSplash;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
-/*import com.amazic.library.iap.IAPManager;
-import com.amazic.library.iap.ProductDetailCustom;*/
 import com.amazic.library.update_app.UpdateApplicationManager;
 import com.footballscores.livescore.soccerscores.sports.databinding.ActivitySplashBinding;
 import com.google.android.play.core.appupdate.AppUpdateManager;
@@ -33,7 +32,19 @@ public class SplashActivity extends AppCompatActivity {
     private ActivitySplashBinding binding;
     private InterCallback interCallback;
     private AppOpenCallback appOpenCallback;
-    private String jsonIdAdsDefault = "[{\"id\":4325,\"package_name\":\"com.fallingfilter.effect.dropmotion.loopme\",\"app name\":\"Falling Filter: Funny Effect\",\"app_id\":\"ca-app-pub-6485839283816071~9823488462\",\"name\":\"banner_setting\",\"ads_id\":\"ca-app-pub-3940256099942544/9214589741\"},{\"id\":4326,\"package_name\":\"com.fallingfilter.effect.dropmotion.loopme\",\"app name\":\"Falling Filter: Funny Effect\",\"app_id\":\"\",\"name\":\"open_splash\",\"ads_id\":\"ca-app-pub-3940256099942544/1033173712\"},{\"id\":4327,\"package_name\":\"com.fallingfilter.effect.dropmotion.loopme\",\"app name\":\"Falling Filter: Funny Effect\",\"app_id\":\"ca-app-pub-6485839283816071~9823488462\",\"name\":\"inter_splash\",\"ads_id\":\"ca-app-pub-3940256099942544/1033173712\"}]";
+    private String jsonIdAdsDefault =
+            "[\n" +
+            "  {\n" +
+            "    \"id\": 4462,\n" +
+            "    \"package_name\": \"com.footballscores.livescore.soccerscores\",\n" +
+            "    \"app name\": \"EMF & Metal Detector\",\n" +
+            "    \"app_id\": \"ca-app-pub-6485839283816071~1724815634\",\n" +
+            "    \"name\": \"id_native_wb_2\",\n" +
+            "    \"ads_id\": \"ca-app-pub-3940256099942544/2247696110\"\n" +
+            "  }" +
+            "]";
+
+    private static final String ID_INTER= "ca-app-pub-3940256099942544/1033173712";
     public static AppUpdateManager appUpdateManager;
     public static InstallStateUpdatedListener installStateUpdatedListener;
     private boolean isHandleAsyncSplash = false;
@@ -131,21 +142,24 @@ public class SplashActivity extends AppCompatActivity {
         if (!isHandleAsyncSplash) {
             AsyncSplash.Companion.getInstance().init(this,  interCallback, "c193nrau3dhc", "", jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
-            AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
+            AdmobAdsConfig.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
-            AsyncSplash.Companion.getInstance().setDebug(false); //use for TechManager, DetectTestAd
+            AdmobAdsConfig.getInstance().setDebug(false); //use for TechManager, DetectTestAd
+            IDRemoteConfigHelper.isUsingIdDebug = false;
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
-            AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
+            AdmobAdsConfig.getInstance().setPreloadResumeAds(false);
+            AdmobAdsConfig.getInstance().setAppPkg(getPackageName());
+            AdmobAdsConfig.getInstance().setTimeOutInitAdmob(20_000);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
 //            AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
-            AsyncSplash.Companion.getInstance().setTimeOutSplash(90_000);
+            AdmobAdsConfig.getInstance().setTimeOutSplash(90_000);
 //            AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig("id_ads");
             //AsyncSplash.Companion.getInstance().setTimeOutCallIdRemoteConfig(5000);
 //            ArrayList<ProductDetailCustom> listIAP = new ArrayList<>();
 //            listIAP.add(new ProductDetailCustom(IAPManager.PRODUCT_ID_TEST, IAPManager.typeSub));
 //            AsyncSplash.Companion.getInstance().setUseBilling(listIAP); //if app use IAP
-            AsyncSplash.Companion.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
+            AdmobAdsConfig.getInstance().setInitResumeAdsNormal(); //init resume ads without welcome back
 //            AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back above
 //            AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
             ArrayList<String> listTurnOffRemote = new ArrayList<>();
@@ -153,12 +167,12 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
             ArrayList<String> listIdBannerSplash = new ArrayList<>();
             listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
-            AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
-            AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
-            AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("open_splash");
+            AdmobAdsConfig.getInstance().setKeyAdsInterSplash("inter_splash");
+            AdmobAdsConfig.getInstance().setKeyAdsOpenSplash("open_splash");
+            AdmobAdsConfig.getInstance().setKeyAdsOpenResume("open_splash");
             Admob.getInstance().setOpenActivityAfterShowInterAds(false);
-            AsyncSplash.Companion.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");
-            AsyncSplash.Companion.getInstance().setKeyIntervalInterstitialFromStart("interval_interstitial_from_start");
+            AdmobAdsConfig.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");
+            AdmobAdsConfig.getInstance().setKeyIntervalInterstitialFromStart("interval_interstitial_from_start");
             AsyncSplash.Companion.getInstance().setShowBannerSplash(binding.bannerContainerView, listIdBannerSplash, "banner_splash");
             AsyncSplash.Companion.getInstance().setOnPrepareLoadInterOpenSplashAds(new Function0<Unit>() {
                 @Override
@@ -175,12 +189,12 @@ public class SplashActivity extends AppCompatActivity {
             /// end
 
             /// use native meta test
-            AsyncSplash.Companion.getInstance().setUseNativeSplashMeta(true);
-            AsyncSplash.Companion.getInstance().setNumberNativeFullShowSplash(3);
-            AsyncSplash.Companion.getInstance().setKeyNativeFullMetaSplash("native_after_inter");
+            AdmobAdsConfig.getInstance().setUseNativeSplashMeta(true);
+            AdmobAdsConfig.getInstance().setNumberNativeFullShowSplash(3);
+            AdmobAdsConfig.getInstance().setKeyNativeFullMetaSplash("native_after_inter");
 //            AsyncSplash.Companion.getInstance().setIdNativeMetaSplash("1439001763964762_1710436723487930");
-            AsyncSplash.Companion.getInstance().setKeyNativeFullAdmobSplash("native_after_inter");
-            AsyncSplash.Companion.getInstance().setUseNativeFullSplashAdmobWhenMetaFail(true);
+            AdmobAdsConfig.getInstance().setKeyNativeFullAdmobSplash("native_after_inter");
+            AdmobAdsConfig.getInstance().setUseNativeFullSplashAdmobWhenMetaFail(true);
             ///end
 
 //            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
@@ -199,7 +213,7 @@ public class SplashActivity extends AppCompatActivity {
             /// end
 
 
-            AsyncSplash.Companion.getInstance().handleAsync(this, this,
+            AsyncSplash.Companion.getInstance().handleAsync(this,
                     LifecycleOwnerKt.getLifecycleScope(this), new Function0<Unit>() {
                         @Override
                         public Unit invoke() { //no internet
@@ -227,7 +241,7 @@ public class SplashActivity extends AppCompatActivity {
         Log.d("SplashActivity", "startNextAct. " + AdmobApi.getInstance().getListIDByName("resume_wb").size());
         Intent intent = new Intent(SplashActivity.this, MainActivity.class);
         startActivity(intent);
-        finish();
+        AdsSplash.getInstance().cancelPreload(ID_INTER);
     }
 
     @Override

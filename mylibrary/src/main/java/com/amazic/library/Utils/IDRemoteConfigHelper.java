@@ -13,7 +13,7 @@ public class IDRemoteConfigHelper {
     private IDRemoteConfigHelper() {
     }
 
-    public static boolean isDebug = true;
+    public static boolean isUsingIdDebug = true;
     public static boolean isTurnOnAds = true;
 
     private static final String NATIVE_ID_TEST = "ca-app-pub-3940256099942544/2247696110";
@@ -26,7 +26,7 @@ public class IDRemoteConfigHelper {
     @Nullable
     public static String getID(Context context, String key) {
         RemoteConfigHelper remoteConfigHelper = new RemoteConfigHelper();
-        if (isDebug) {
+        if (isUsingIdDebug) {
             if (key.toLowerCase().startsWith("id_native") || key.toLowerCase().startsWith("native")) {
                 return NATIVE_ID_TEST;
             }
@@ -62,13 +62,15 @@ public class IDRemoteConfigHelper {
     public static void setUpDefaultValue(Context context, String jsonDefault) {
         RemoteConfigHelper remoteConfigHelper = new RemoteConfigHelper();
 
-        if (remoteConfigHelper.get_config(context, "is_set_default")) return;
+        if (remoteConfigHelper.get_config(context, "is_set_default", false)) return;
 
         Gson gson = new Gson();
         List<AdsModel> ids = gson.fromJson(jsonDefault, new com.google.gson.reflect.TypeToken<List<AdsModel>>() {
         });
         ids.forEach(adsModel -> {
-            remoteConfigHelper.set_config_string(context, "id_" + adsModel.getName() + "_default", adsModel.getAds_id());
+            String nameIdDefault = adsModel.getName() + "_default";
+            if (!nameIdDefault.startsWith("id_")) nameIdDefault = "id_" + nameIdDefault;
+            remoteConfigHelper.set_config_string(context, nameIdDefault, adsModel.getAds_id());
         });
         remoteConfigHelper.set_config(context, "is_set_default", true);
     }

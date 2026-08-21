@@ -12,6 +12,7 @@ import androidx.appcompat.widget.AppCompatButton;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.NativeCallback;
+import com.amazic.library.ads.splash_ads.AdmobAdsConfig;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.mylibrary.R;
@@ -98,7 +99,7 @@ public class NativeAfterInterManager {
             return;
         }
 
-        int targetCount = AsyncSplash.Companion.getInstance().getNumberNativeFullShowSplash();
+        int targetCount = AdmobAdsConfig.getInstance().getNumberNativeFullShowSplash();
         Log.d(TAG, "NativeAfterInterManager Splash: preload " + targetCount + " native ads");
 
         // Clear list cũ

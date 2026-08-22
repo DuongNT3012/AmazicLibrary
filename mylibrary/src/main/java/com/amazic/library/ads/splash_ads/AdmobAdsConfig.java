@@ -1,7 +1,6 @@
 package com.amazic.library.ads.splash_ads;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.callback.InterCallback;
@@ -461,7 +460,9 @@ public class AdmobAdsConfig {
     }
 
     public void setNumberPreloadingSplash(int numberPreloadingSplash) {
+        if (numberPreloadingSplash > 0)
         this.numberPreloadingSplash = numberPreloadingSplash;
+        else this.numberPreloadingSplash = 3;
     }
 
     public boolean isShowNativeAfterInter() {

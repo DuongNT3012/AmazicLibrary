@@ -42,7 +42,6 @@ public class AdmobAdsConfig {
     private List<String> listIdBannerSplash =
             new ArrayList<>(Arrays.asList("ca-app-pub-3940256099942544/6300978111"));
     private List<String> listTurnOffRemoteKeys = new ArrayList<>();
-    private InterCallback interCallback = null;
     private boolean isDebug = false;
     private boolean isUseBilling = false;
 
@@ -146,7 +145,6 @@ public class AdmobAdsConfig {
         isShowBannerSplash = false;
         listIdBannerSplash = new ArrayList<>(Arrays.asList("ca-app-pub-3940256099942544/6300978111"));
         listTurnOffRemoteKeys = new ArrayList<>();
-        interCallback = null;
         isDebug = false;
         isUseBilling = false;
         timeOutSplash = 12000L;
@@ -312,14 +310,6 @@ public class AdmobAdsConfig {
 
     public void setListTurnOffRemoteKeys(List<String> listTurnOffRemoteKeys) {
         this.listTurnOffRemoteKeys = listTurnOffRemoteKeys;
-    }
-
-    public InterCallback getInterCallback() {
-        return interCallback;
-    }
-
-    public void setInterCallback(InterCallback interCallback) {
-        this.interCallback = interCallback;
     }
 
     public boolean isDebug() {

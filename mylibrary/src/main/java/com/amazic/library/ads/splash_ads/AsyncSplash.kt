@@ -45,6 +45,8 @@ class AsyncSplash {
     private var mainJob: Job? = null
     private var isFailToShowInterSplash = false
     private var isStartingLoadSplash = false
+    private var interSplashCallback: InterCallback? = null;
+
 
     companion object {
         private const val MAX_EVENT_NAME_LENGTH = 40
@@ -72,6 +74,7 @@ class AsyncSplash {
         config.clear()
         isStartingLoadSplash = false
         remoteKeyBanner = ""
+        interSplashCallback = null;
         frAdsBannerSplash = null
         onPrepareLoadInterOpenSplashAds = null
         AdmobApi.getInstance().init(activity.applicationContext)
@@ -82,7 +85,7 @@ class AsyncSplash {
         config.adjustKey = adjustKey
         config.jsonIdAdsDefault = jsonIdAdsDefault
         config.appId = appId
-        config.interCallback = callbackInternSplash(interCallback)
+        interSplashCallback = callbackInternSplash(interCallback)
     }
 
     private fun callbackInternSplash(interCallback: InterCallback): InterCallback {
@@ -139,6 +142,10 @@ class AsyncSplash {
             }
 
         }
+    }
+
+    fun setInterCallback(interCallback: InterCallback) {
+        interSplashCallback = callbackInternSplash(interCallback)
     }
 
     fun handleAsync(
@@ -208,7 +215,7 @@ class AsyncSplash {
         mainJob?.cancel()
         mainJob = null
         if (isStartingLoadSplash)
-            config.interCallback.onNextAction()
+            interSplashCallback?.onNextAction()
         else
             loadInterSplash(mActivity!!, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
         mActivity = null
@@ -239,7 +246,7 @@ class AsyncSplash {
         isStartingLoadSplash = true
         logEventStep(EventNameSplash.EVENT_START_LOAD_AND_SHOW_INTER, Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
         AdsSplash.getInstance()
-            .loadAndShow(activity, adUnitId, config.keyAdsInterSplash, config.numberPreloadingSplash, config.interCallback, isUseAdPreloading)
+            .loadAndShow(activity, adUnitId, config.keyAdsInterSplash, config.numberPreloadingSplash, interSplashCallback, isUseAdPreloading)
     }
 
 
@@ -263,14 +270,14 @@ class AsyncSplash {
                 adUnitId,
                 config.keyAdsInterSplash,
                 config.numberPreloadingSplash,
-                config.interCallback,
+                interSplashCallback,
                 isUseAdPreloading
             )
     }
 
     private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCancellableCoroutine { continuation ->
         if (config.initAdsConsentManager) {
-            continuation.resume(Unit)
+            if (continuation.isActive) continuation.resume(Unit)
             return@suspendCancellableCoroutine
         }
         val adsConsentManager = AdsConsentManager(activity)
@@ -282,7 +289,7 @@ class AsyncSplash {
                 normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_CONSENT),
                 Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
             )
-            continuation.resume(Unit)
+            if (continuation.isActive) continuation.resume(Unit)
         }
     }
 
@@ -294,7 +301,7 @@ class AsyncSplash {
                 normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_REMOTE_CONFIG),
                 Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
             )
-            continuation.resume(Unit)
+            if (continuation.isActive) continuation.resume(Unit)
         }
     }
 
@@ -303,10 +310,12 @@ class AsyncSplash {
         val adUnitId = IDRemoteConfigHelper.getID(activity, config.keyAdsInterSplash)
         if (adUnitId == null) {
             logEventStep(EventNameSplash.EVENT_LOAD_FAILED_SPLASH_ID_NULL)
+            if (isAlwaysOnNextAction) interSplashCallback?.onNextAction()
             return
         }
-        if (isFailToShowInterSplash) AdsSplash.getInstance().showCacheInterSplash(mActivity, adUnitId, config.keyAdsInterSplash, config.interCallback)
-        else if (isAlwaysOnNextAction) config.interCallback.onNextAction()
+
+        if (isFailToShowInterSplash) AdsSplash.getInstance().showCacheInterSplash(activity, adUnitId, config.keyAdsInterSplash, interSplashCallback)
+        else if (isAlwaysOnNextAction) interSplashCallback?.onNextAction()
     }
 
     // endregion

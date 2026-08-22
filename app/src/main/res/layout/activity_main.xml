@@ -17,7 +17,7 @@
         <!--<include layout="@layout/layout_shimmer_native" />-->
     </FrameLayout>
 
-    <TextView
+    <Button
         android:id="@+id/tv_show_inter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

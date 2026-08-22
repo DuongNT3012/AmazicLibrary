@@ -49,7 +49,7 @@ class AsyncSplashOld {
     private var frAdsBannerSplash: FrameLayout? = null
     var onPrepareLoadInterOpenSplashAds: (() -> Unit)? = null
     private var adsKeyBanner: String = ""
-    private var numberPreloadingSplash= 1
+    private var interSplashCallback: InterCallback?= null
 
     // Timing captured for the "AsyncSplash_doneInit" analytics event.
     private var timeInitRemoteConfig = 0L
@@ -94,7 +94,7 @@ class AsyncSplashOld {
         config.adjustKey = adjustKey
         config.jsonIdAdsDefault = jsonIdAdsDefault
         config.appId = appId
-        config.interCallback = interCallback
+        interSplashCallback = interCallback
         IDRemoteConfigHelper.setUpDefaultValue(activity.applicationContext, config.jsonIdAdsDefault)
     }
 
@@ -127,7 +127,7 @@ class AsyncSplashOld {
     }
 
     fun checkShowSplashWhenFail() { // Call on resume of splash screen (reshow splash ads when show fails)
-        AdsSplashOld.getInstance().onCheckShowSplashWhenFail(mActivity, callbackInternSplash(config.interCallback))
+        AdsSplashOld.getInstance().onCheckShowSplashWhenFail(mActivity, callbackInternSplash(interSplashCallback))
     }
 
     fun turnOffSomeRemoteKeys(activity: Context?) {
@@ -409,7 +409,7 @@ class AsyncSplashOld {
                 logTimeoutSplashNextScreenEvent(context)
                 incrementSplashOpenCount()
                 turnOffRemoteKeysIfTech(mActivity)
-                config.interCallback?.onNextAction()
+                interSplashCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
                 config.isTimeout = true
             }
@@ -500,7 +500,7 @@ class AsyncSplashOld {
             if (!Admob.getInstance().isInitAdmobDone) {
                 isUseAdPreloading = false
             }
-            showAdsSplash(mActivity, config.interCallback, isUseAdPreloading)
+            showAdsSplash(mActivity, interSplashCallback, isUseAdPreloading)
 
             if (config.isAsyncSplashAds) {
                 awaitAll(asyncRemoteConfig)

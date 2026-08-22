@@ -17,6 +17,7 @@ import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RemoteConfigHelper {
     private static final String TAG = "RemoteConfigHelper";
@@ -43,12 +44,17 @@ public class RemoteConfigHelper {
     private final ArrayList<String> listRemoteBooleanName = new ArrayList<>();
     private final ArrayList<String> listRemoteLongName = new ArrayList<>();
     private ConfigUpdateListenerRegistration configUpdateListenerRegistration;
-
+    private IOnFetchDone iOnFetchDone = null;
+    private AtomicBoolean isFetching = new AtomicBoolean(false);
     public static RemoteConfigHelper getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new RemoteConfigHelper();
         }
         return INSTANCE;
+    }
+
+    public void setIOnFetchDone(IOnFetchDone iOnFetchDone) {
+        this.iOnFetchDone = iOnFetchDone;
     }
 
     private static String determineValueType(String value) {
@@ -72,6 +78,9 @@ public class RemoteConfigHelper {
     }
 
     public void fetchAllKeysAndTypes(Context context, IOnFetchDone iOnFetchDone) {
+        this.iOnFetchDone = iOnFetchDone;
+        Log.d(TAG, "fetchAllKeysAndTypes: "+ isFetching.get());
+        if (isFetching.get()) return;
         FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         FirebaseRemoteConfigSettings configSettings = new FirebaseRemoteConfigSettings.Builder()
                 .setMinimumFetchIntervalInSeconds(60)
@@ -107,6 +116,7 @@ public class RemoteConfigHelper {
                 }
                 //if have a change from remote config
                 if (task.getResult()) {
+                    isFetching.set(true);
                     for (String key : listRemoteStringName) {
                         set_config_string(context, key, getRemoteConfigString(key));
                     }
@@ -116,19 +126,21 @@ public class RemoteConfigHelper {
                     for (String key : listRemoteLongName) {
                         set_config_long(context, key, getRemoteConfigLong(key));
                     }
+                    isFetching.set(false);
                 }
                 isSuccess = true;
                 if (configUpdateListenerRegistration == null) {
-                    listenForConfigUpdates(context, null);
+                    listenForConfigUpdates(context);
                 }
             } else {
                 Log.d(TAG, "Failed to fetch Remote Config values.");
             }
-            iOnFetchDone.onFetchDone(isSuccess);
+            if (this.iOnFetchDone != null) this.iOnFetchDone.onFetchDone(isSuccess);
         });
     }
 
-    public void listenForConfigUpdates(Context context, IOnFetchDone iOnFetchDone) {
+    public void listenForConfigUpdates(Context context) {
+        Log.d(TAG, "listenForConfigUpdates: ");
         FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         if (configUpdateListenerRegistration != null) {
             configUpdateListenerRegistration.remove();
@@ -159,18 +171,12 @@ public class RemoteConfigHelper {
                             }
                         }
                     }
-                    if (iOnFetchDone != null) {
-                        iOnFetchDone.onFetchDone(isSuccess);
-                    }
                 });
             }
 
             @Override
             public void onError(@NonNull FirebaseRemoteConfigException error) {
                 Log.e(TAG, "Config update error", error);
-                if (iOnFetchDone != null) {
-                    iOnFetchDone.onFetchDone(false);
-                }
             }
         });
     }

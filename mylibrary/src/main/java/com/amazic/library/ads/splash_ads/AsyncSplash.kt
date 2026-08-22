@@ -42,6 +42,7 @@ class AsyncSplash {
     var onPrepareLoadInterOpenSplashAds: (() -> Unit)? = null
     private var remoteKeyBanner: String = ""
     private var timeoutSplashJob: Job? = null
+    private var mainJob: Job? = null
     private var isFailToShowInterSplash = false
     private var isStartingLoadSplash = false
 
@@ -158,7 +159,7 @@ class AsyncSplash {
             onNoInternetAction.invoke()
             return
         }
-        lifecycleCoroutineScope.launch {
+        mainJob = lifecycleCoroutineScope.launch {
             runAsyncInitAndShowAds(mActivity!!) {
                 initWelcomeBack(mActivity)
                 loadBannerSplash(
@@ -204,6 +205,8 @@ class AsyncSplash {
         }
         logEventStep(EventNameSplash.EVENT_TIMEOUT_SPLASH)
         isFailToShowInterSplash = true
+        mainJob?.cancel()
+        mainJob = null
         if (isStartingLoadSplash)
             config.interCallback.onNextAction()
         else

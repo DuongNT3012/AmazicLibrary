@@ -32,6 +32,7 @@ public abstract class AdsApplication extends Application implements Application.
         setUpAdjust();
         registerActivityLifecycleCallbacks(this);
         EventTrackingHelper.getInstance(this);
+        RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(this, null);
     }
 
     private void initAdmob() {

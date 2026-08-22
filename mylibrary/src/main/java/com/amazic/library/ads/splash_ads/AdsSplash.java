@@ -250,7 +250,7 @@ public class AdsSplash {
                 }
 
                 pushAdToCache(interstitialAd, adUnitId);
-                showInterSplash(activity, remoteKey, adUnitId, interCallback);
+                showInterSplash(activity, adUnitId, remoteKey, interCallback);
             }
 
             @Override
@@ -267,6 +267,24 @@ public class AdsSplash {
             AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, adUnitId, "inter_splash");
         });
         mInterstitialAd = interstitialAd;
+    }
+
+    public void loadAd(Activity activity, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback,
+                      boolean isUseAdPreloading) {
+        if (isUseAdPreloading) {
+            loadInterSplashPreload(activity, adUnitId, remoteKey, numberPreload, interCallback);
+        } else {
+            loadInterSplashLegacy(activity, adUnitId, remoteKey, interCallback);
+        }
+    }
+
+    public void loadAndShow(Activity activity, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback, boolean isUseAdPreloading) {
+        if (isUseAdPreloading) {
+            AdsSplash.getInstance()
+                    .loadAndShowPreload(activity, adUnitId, remoteKey, numberPreload, interCallback);
+        } else {
+            AdsSplash.getInstance().loadAndShowLegacy(activity, adUnitId, remoteKey, interCallback);
+        }
     }
 
     public void loadAndShowPreload(Activity activity, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback) {
@@ -286,7 +304,7 @@ public class AdsSplash {
                         AsyncSplash.Companion.getInstance().logEventStep(TAG, EventNameSplash.EVENT_SHOW_FAILED_SPLASH_TIMEOUT, bundle);
                         return;
                     }
-                    showInterSplash(activity, remoteKey, adUnitId, interCallback);
+                    showInterSplash(activity, adUnitId, remoteKey, interCallback);
                 }
             }
 
@@ -303,7 +321,7 @@ public class AdsSplash {
             cancelPreload(adUnitId);
             EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
         }
-        showInterSplash(activity, remoteKey, adUnitId, interCallback);
+        showInterSplash(activity, adUnitId, remoteKey, interCallback);
     }
 
     private static boolean checkNotAllowCondition(

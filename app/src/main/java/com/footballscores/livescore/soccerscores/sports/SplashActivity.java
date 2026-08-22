@@ -257,7 +257,7 @@ public class SplashActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        AsyncSplash.Companion.getInstance().checkShowSplashWhenFail(this);
+        AsyncSplash.Companion.getInstance().checkShowSplashWhenFail(this,false);
         appUpdateManager.registerListener(installStateUpdatedListener);
     }
 

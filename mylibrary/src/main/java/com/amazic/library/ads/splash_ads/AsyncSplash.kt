@@ -298,7 +298,7 @@ class AsyncSplash {
         }
     }
 
-    fun checkShowSplashWhenFail(activity: Activity, isAlwaysOnNextAction : Boolean = false) {
+    fun checkShowSplashWhenFail(activity: Activity, isAlwaysOnNextAction: Boolean) {
         // Call on resume of splash screen (reshow splash ads when show fails)
         val adUnitId = IDRemoteConfigHelper.getID(activity, config.keyAdsInterSplash)
         if (adUnitId == null) {

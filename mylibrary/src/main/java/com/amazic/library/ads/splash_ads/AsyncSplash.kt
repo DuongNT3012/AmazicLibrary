@@ -192,7 +192,7 @@ class AsyncSplash {
         logEventStep("StartWaitAdmobInit")
         val totalTimeWaitInit = waitingInitAdmob()
         logEventStep("DoneWaitAdmobInit", Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
-        loadInterSplash(activity, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+        loadAndShowInterSplash(activity, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
     }
 
     private fun CoroutineScope.runTimeOutSplash(): Job = launch {
@@ -207,7 +207,8 @@ class AsyncSplash {
         if (isStartingLoadSplash)
             config.interCallback.onNextAction()
         else
-            loadAndShowInterSplash(mActivity!!, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+            loadInterSplash(mActivity!!, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+        mActivity = null
         config.isTimeout = true
     }
 
@@ -254,7 +255,14 @@ class AsyncSplash {
         isStartingLoadSplash = true
         logEventStep("StartLoadOnly", Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
         AdsSplash.getInstance()
-            .loadAd(activity, adUnitId, config.keyAdsInterSplash, config.numberPreloadingSplash, config.interCallback, isUseAdPreloading)
+            .loadAd(
+                activity.applicationContext,
+                adUnitId,
+                config.keyAdsInterSplash,
+                config.numberPreloadingSplash,
+                config.interCallback,
+                isUseAdPreloading
+            )
     }
 
     private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCancellableCoroutine { continuation ->

@@ -29,6 +29,7 @@ import com.google.android.gms.ads.preload.PreloadCallbackV2;
 import com.google.android.gms.ads.preload.PreloadConfiguration;
 
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AdsSplash {
 
@@ -37,9 +38,13 @@ public class AdsSplash {
     private static volatile AdsSplash instance;
 
     private InterstitialAd mInterstitialAd;
-    private boolean isLoading = false;
+    private final AtomicBoolean isLoading = new AtomicBoolean(false);
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private interface ILoadingAdSplashListener {
+        void onLoading();
+    }
 
     public static AdsSplash getInstance() {
         if (instance == null) {
@@ -100,6 +105,7 @@ public class AdsSplash {
                 @Override
                 public void onAdShowedFullScreenContent() {
                     super.onAdShowedFullScreenContent();
+                    mInterstitialAd = null;
                     AsyncSplash.Companion.getInstance().logEventStep(TAG, EventNameSplash.EVENT_INTER_SPLASH_SHOW);
                     mainHandler.post(interCallback::onAdShowedFullScreenContent);
                 }
@@ -131,9 +137,11 @@ public class AdsSplash {
     private void loadInterSplashLegacy(@NonNull Context context,
                                        @NonNull String adUnitId,
                                        @NonNull String remoteKey,
-                                       @NonNull InterCallback interCallback
+                                       @NonNull InterCallback interCallback,
+                                       @Nullable ILoadingAdSplashListener loadingListener
     ) {
-        if (isLoading) {
+        if (isLoading.get()) {
+            if (loadingListener != null) loadingListener.onLoading();
             Log.d(TAG, "loadInterSplashLegacy: already loading");
             return;
         }
@@ -149,7 +157,7 @@ public class AdsSplash {
             return;
         }
 
-        isLoading = true;
+        isLoading.set(true);
         AsyncSplash.Companion.getInstance().logEventStep(TAG, EventNameSplash.EVENT_START_LOAD_SPLASH_LEGACY);
         AdRequest adRequest = new AdRequest.Builder().build();
         InterstitialAdLoadCallback callback = new InterstitialAdLoadCallback() {
@@ -157,7 +165,7 @@ public class AdsSplash {
             public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                 super.onAdLoaded(interstitialAd);
                 AsyncSplash.Companion.getInstance().logEventStep(TAG, EventNameSplash.EVENT_LOADED_SPLASH_LEGACY);
-                isLoading = false;
+                isLoading.set(false);
                 interCallback.onAdLoaded(interstitialAd);
             }
 
@@ -172,7 +180,7 @@ public class AdsSplash {
                 bundle.putString(KeyParameterEventSplash.KEY_FAILED_MESSAGE, messageFailed);
                 AsyncSplash.Companion.getInstance().logEventStep(TAG, EventNameSplash.EVENT_LOAD_FAILED_SPLASH_LEGACY, bundle);
                 Log.e(TAG, "loadInterSplashLegacy: onAdFailedToLoad " + loadAdError.getMessage());
-                isLoading = false;
+                isLoading.set(false);
                 interCallback.onAdFailedToLoad();
             }
         };
@@ -183,8 +191,15 @@ public class AdsSplash {
                                         @NonNull String adUnitId,
                                         @NonNull String remoteKey,
                                         int numberPreload,
-                                        @NonNull InterCallback interCallback
+                                        @NonNull InterCallback interCallback,
+                                        @Nullable ILoadingAdSplashListener loadingListener
     ) {
+        if (isLoading.get()) {
+            if (loadingListener != null) loadingListener.onLoading();
+            Log.d(TAG, "loadInterSplashLegacy: already loading");
+            return;
+        }
+
         if (checkNotAllowCondition(context, remoteKey, EventNameSplash.EVENT_LOAD_FAILED_SPLASH_CONDITION)) {
             interCallback.onAdFailedToLoad();
             return;
@@ -230,11 +245,52 @@ public class AdsSplash {
                 mainHandler.post(interCallback::onAdFailedToLoad);
             }
         };
-        InterstitialAdPreloader.start(adUnitId, configuration, callback);
+        isLoading.set(InterstitialAdPreloader.start(adUnitId, configuration, callback));
+    }
+
+    private void pushAdToCache(InterstitialAd interstitialAd, String adUnitId) {
+        interstitialAd.setOnPaidEventListener(adValue -> {
+            //Adjust
+            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, adUnitId, "inter_splash");
+        });
+        mInterstitialAd = interstitialAd;
+    }
+
+    private static boolean checkNotAllowCondition(
+            @NonNull Context context,
+            @NonNull String remoteKey,
+            @NonNull String nameLogEventFirebase
+    ) {
+        if (!NetworkUtil.isNetworkActive(context)
+                || !AdsConsentManager.getConsentResult(context)
+                || !RemoteConfigHelper.getInstance().get_config(context, remoteKey)
+                || !Admob.getInstance().getShowAllAds()
+        ) {
+            String condition = NetworkUtil.isNetworkActive(context) + "_" +
+                    AdsConsentManager.getConsentResult(context) + "_" +
+                    RemoteConfigHelper.getInstance().get_config(context, remoteKey) + "_" +
+                    Admob.getInstance().getShowAllAds();
+            Log.e(TAG, "loadInterSplash: condition failed " + condition);
+            Bundle bundle = new Bundle();
+            bundle.putString(KeyParameterEventSplash.KEY_FAILED_MESSAGE, "condition_" + condition);
+            AsyncSplash.Companion.getInstance().logEventStep(TAG, nameLogEventFirebase, bundle);
+            return true;
+        }
+        return false;
+    }
+
+    public void loadAd(Context context, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback,
+                      boolean isUseAdPreloading) {
+        if (isUseAdPreloading) {
+            loadInterSplashPreload(context, adUnitId, remoteKey, numberPreload, interCallback, null);
+        } else {
+            loadInterSplashLegacy(context, adUnitId, remoteKey, interCallback, null);
+        }
     }
 
     public void cancelPreload(String adUnitId) {
         InterstitialAdPreloader.destroy(adUnitId);
+        isLoading.set(false);
     }
 
     public void loadAndShowLegacy(Activity activity, String adUnitId, String remoteKey, InterCallback interCallback) {
@@ -256,26 +312,21 @@ public class AdsSplash {
             @Override
             public void onAdFailedToLoad() {
                 interCallback.onAdFailedToLoad();
-                if (!isLoading) interCallback.onNextAction();
+                if (!isLoading.get()) interCallback.onNextAction();
+            }
+        }, () -> {
+            if (mInterstitialAd != null){
+                if (AdmobAdsConfig.getInstance().isTimeout()) {
+                    Bundle bundle = new Bundle();
+                    String messageFailed = "time_out_splash_screen";
+                    bundle.putString(KeyParameterEventSplash.KEY_FAILED_MESSAGE, messageFailed);
+                    AsyncSplash.Companion.getInstance().logEventStep(TAG, EventNameSplash.EVENT_SHOW_FAILED_SPLASH_TIMEOUT, bundle);
+                    return;
+                }
+
+                showInterSplash(activity, adUnitId, remoteKey, interCallback);
             }
         });
-    }
-
-    private void pushAdToCache(InterstitialAd interstitialAd, String adUnitId) {
-        interstitialAd.setOnPaidEventListener(adValue -> {
-            //Adjust
-            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, adUnitId, "inter_splash");
-        });
-        mInterstitialAd = interstitialAd;
-    }
-
-    public void loadAd(Activity activity, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback,
-                      boolean isUseAdPreloading) {
-        if (isUseAdPreloading) {
-            loadInterSplashPreload(activity, adUnitId, remoteKey, numberPreload, interCallback);
-        } else {
-            loadInterSplashLegacy(activity, adUnitId, remoteKey, interCallback);
-        }
     }
 
     public void loadAndShow(Activity activity, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback, boolean isUseAdPreloading) {
@@ -312,6 +363,19 @@ public class AdsSplash {
             public void onAdFailedToLoad() {
                 interCallback.onAdFailedToLoad();
             }
+        },()->{
+            if (InterstitialAdPreloader.getNumAdsAvailable(adUnitId) >= numberPreload) {
+                pushAdToCache(Objects.requireNonNull(InterstitialAdPreloader.pollAd(adUnitId)), adUnitId);
+
+                if (AdmobAdsConfig.getInstance().isTimeout()) {
+                    Bundle bundle = new Bundle();
+                    String messageFailed = "time_out_splash_screen";
+                    bundle.putString(KeyParameterEventSplash.KEY_FAILED_MESSAGE, messageFailed);
+                    AsyncSplash.Companion.getInstance().logEventStep(TAG, EventNameSplash.EVENT_SHOW_FAILED_SPLASH_TIMEOUT, bundle);
+                    return;
+                }
+                showInterSplash(activity, adUnitId, remoteKey, interCallback);
+            }
         });
     }
 
@@ -324,26 +388,8 @@ public class AdsSplash {
         showInterSplash(activity, adUnitId, remoteKey, interCallback);
     }
 
-    private static boolean checkNotAllowCondition(
-            @NonNull Context context,
-            @NonNull String remoteKey,
-            @NonNull String nameLogEventFirebase
-    ) {
-        if (!NetworkUtil.isNetworkActive(context)
-                || !AdsConsentManager.getConsentResult(context)
-                || !RemoteConfigHelper.getInstance().get_config(context, remoteKey)
-                || !Admob.getInstance().getShowAllAds()
-        ) {
-            String condition = NetworkUtil.isNetworkActive(context) + "_" +
-                    AdsConsentManager.getConsentResult(context) + "_" +
-                    RemoteConfigHelper.getInstance().get_config(context, remoteKey) + "_" +
-                    Admob.getInstance().getShowAllAds();
-            Log.e(TAG, "loadInterSplash: condition failed " + condition);
-            Bundle bundle = new Bundle();
-            bundle.putString(KeyParameterEventSplash.KEY_FAILED_MESSAGE, "condition_" + condition);
-            AsyncSplash.Companion.getInstance().logEventStep(TAG, nameLogEventFirebase, bundle);
-            return true;
-        }
-        return false;
-    }
+     public void clear(){
+         mInterstitialAd = null;
+         isLoading.set(false);
+     }
 }

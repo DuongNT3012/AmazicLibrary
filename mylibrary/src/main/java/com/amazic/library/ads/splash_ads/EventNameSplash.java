@@ -12,7 +12,8 @@ public class EventNameSplash {
     public static final String EVENT_LOAD_EXHAUSTED_SPLASH_PRELOAD = "load_exhaust_splash_preload";
 
     public static final String EVENT_LOAD_FAILED_SPLASH_CONDITION = "load_failed_splash_condition";
-    
+    public static final String EVENT_LOAD_FAILED_SPLASH_ID_NULL = "load_failed_splash_id_null";
+
     public static final String EVENT_START_SHOW_SPLASH = "start_show_splash";
 
     public static final String EVENT_SHOW_FAILED_SPLASH_AD_NULL = "show_failed_splash_ad_null";

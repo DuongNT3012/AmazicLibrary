@@ -1,6 +1,7 @@
 package com.amazic.library.ads.splash_ads;
 
 import android.content.Context;
+import android.util.Log;
 
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.callback.InterCallback;
@@ -41,7 +42,6 @@ public class AdmobAdsConfig {
     private boolean isShowBannerSplash = false;
     private List<String> listIdBannerSplash =
             new ArrayList<>(Arrays.asList("ca-app-pub-3940256099942544/6300978111"));
-    private String adsKey = "";
     private List<String> listTurnOffRemoteKeys = new ArrayList<>();
     private InterCallback interCallback = null;
     private boolean isDebug = false;
@@ -128,7 +128,6 @@ public class AdmobAdsConfig {
     private String keyIntervalInterstitialFromStart = "interval_interstitial_from_start";
     private long timeStep1 = System.currentTimeMillis();
     private long timeLastStep = System.currentTimeMillis();
-//    private Function0<Unit> onInitAdmobDone = null;
 
     /**
      * Reset toàn bộ cấu hình về giá trị mặc định ban đầu (tương đương resetVarToDefault()
@@ -147,7 +146,6 @@ public class AdmobAdsConfig {
         welcomeBackClass = null;
         isShowBannerSplash = false;
         listIdBannerSplash = new ArrayList<>(Arrays.asList("ca-app-pub-3940256099942544/6300978111"));
-        adsKey = "";
         listTurnOffRemoteKeys = new ArrayList<>();
         interCallback = null;
         isDebug = false;
@@ -307,14 +305,6 @@ public class AdmobAdsConfig {
 
     public void setListIdBannerSplash(List<String> listIdBannerSplash) {
         this.listIdBannerSplash = listIdBannerSplash;
-    }
-
-    public String getAdsKey() {
-        return adsKey;
-    }
-
-    public void setAdsKey(String adsKey) {
-        this.adsKey = adsKey;
     }
 
     public List<String> getListTurnOffRemoteKeys() {
@@ -685,7 +675,6 @@ public class AdmobAdsConfig {
     public void setTimeLastStep(long timeLastStep) {
         this.timeLastStep = timeLastStep;
     }
-
 
     public void turnOffSomeRemoteKeys(Context activity) {
         listTurnOffRemoteKeys.forEach(remote -> {

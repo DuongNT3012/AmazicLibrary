@@ -4,8 +4,14 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.amazic.mylibrary.R;
+import com.google.firebase.remoteconfig.ConfigUpdate;
+import com.google.firebase.remoteconfig.ConfigUpdateListener;
+import com.google.firebase.remoteconfig.ConfigUpdateListenerRegistration;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
+import com.google.firebase.remoteconfig.FirebaseRemoteConfigException;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue;
 
@@ -36,6 +42,7 @@ public class RemoteConfigHelper {
     private final ArrayList<String> listRemoteStringName = new ArrayList<>();
     private final ArrayList<String> listRemoteBooleanName = new ArrayList<>();
     private final ArrayList<String> listRemoteLongName = new ArrayList<>();
+    private ConfigUpdateListenerRegistration configUpdateListenerRegistration;
 
     public static RemoteConfigHelper getInstance() {
         if (INSTANCE == null) {
@@ -111,6 +118,9 @@ public class RemoteConfigHelper {
                     }
                 }
                 isSuccess = true;
+                if (configUpdateListenerRegistration == null) {
+                    listenForConfigUpdates(context, null);
+                }
             } else {
                 Log.d(TAG, "Failed to fetch Remote Config values.");
             }
@@ -118,6 +128,62 @@ public class RemoteConfigHelper {
         });
     }
 
+    public void listenForConfigUpdates(Context context, IOnFetchDone iOnFetchDone) {
+        FirebaseRemoteConfig firebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
+        if (configUpdateListenerRegistration != null) {
+            configUpdateListenerRegistration.remove();
+        }
+        configUpdateListenerRegistration = firebaseRemoteConfig.addOnConfigUpdateListener(new ConfigUpdateListener() {
+            @Override
+            public void onUpdate(@NonNull ConfigUpdate configUpdate) {
+                Log.d(TAG, "Updated keys: " + configUpdate.getUpdatedKeys());
+
+                firebaseRemoteConfig.activate().addOnCompleteListener(task -> {
+                    boolean isSuccess = task.isSuccessful();
+                    if (isSuccess) {
+                        for (String key : configUpdate.getUpdatedKeys()) {
+                            String value = firebaseRemoteConfig.getValue(key).asString();
+                            String valueType = determineValueType(value);
+                            switch (valueType) {
+                                case "String":
+                                    set_config_string(context, key, firebaseRemoteConfig.getString(key));
+                                    break;
+                                case "Boolean":
+                                    set_config(context, key, firebaseRemoteConfig.getBoolean(key));
+                                    break;
+                                case "Long":
+                                    set_config_long(context, key, firebaseRemoteConfig.getLong(key));
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    if (iOnFetchDone != null) {
+                        iOnFetchDone.onFetchDone(isSuccess);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(@NonNull FirebaseRemoteConfigException error) {
+                Log.e(TAG, "Config update error", error);
+                if (iOnFetchDone != null) {
+                    iOnFetchDone.onFetchDone(false);
+                }
+            }
+        });
+    }
+
+    /**
+     * Gọi khi không cần lắng nghe nữa (VD: onDestroy) để tránh leak listener.
+     */
+    public void removeConfigUpdateListener() {
+        if (configUpdateListenerRegistration != null) {
+            configUpdateListenerRegistration.remove();
+            configUpdateListenerRegistration = null;
+        }
+    }
     private boolean getRemoteConfigBoolean(String adUnitId) {
         FirebaseRemoteConfig mFirebaseRemoteConfig = FirebaseRemoteConfig.getInstance();
         return mFirebaseRemoteConfig.getBoolean(adUnitId);

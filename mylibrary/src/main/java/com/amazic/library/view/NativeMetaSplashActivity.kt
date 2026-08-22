@@ -21,6 +21,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import com.amazic.library.ads.callback.InterCallback
 import com.amazic.library.ads.native_ads.MetaNativeManager
 import com.amazic.library.ads.native_ads.NativeAfterInterManager
+import com.amazic.library.ads.splash_ads.AdmobAdsConfig
 import com.amazic.library.ads.splash_ads.AsyncSplash
 import com.amazic.mylibrary.R
 
@@ -63,18 +64,18 @@ class NativeMetaSplashActivity : AppCompatActivity() {
                     ", mapListSize=${MetaNativeManager.mapMetaNativeSplash[adsKey]?.size}"
         )
         if (adList.isNullOrEmpty()) {
-            if (AsyncSplash.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
-                val fallBackList = MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
-                    .getKeyNativeFullAdmobSplash()]
+            if (AdmobAdsConfig.getInstance().isUseNativeFullSplashAdmobWhenMetaFail) {
+                val fallBackList = MetaNativeManager.mapAdmobNativeSplash[AdmobAdsConfig.getInstance()
+                    .keyNativeFullAdmobSplash]
                 Log.d(
                     "Admob",
                     "MetaSplashActivity: fallBackList Admob, adsKey = ${
-                        AsyncSplash.getInstance().getKeyNativeFullAdmobSplash()
+                        AdmobAdsConfig.getInstance().keyNativeFullAdmobSplash
                     } " +
                             ", mapKeys = ${MetaNativeManager.mapAdmobNativeSplash.keys}" +
                             ", mappListSize = ${
-                                MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
-                                    .getKeyNativeFullAdmobSplash()]?.size
+                                MetaNativeManager.mapAdmobNativeSplash[AdmobAdsConfig.getInstance()
+                                    .keyNativeFullAdmobSplash]?.size
                             }"
                 )
 
@@ -107,9 +108,9 @@ class NativeMetaSplashActivity : AppCompatActivity() {
         val nativeAd = adList?.getOrNull(index)
 
         if (nativeAd == null) {
-            if (AsyncSplash.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
-                val admobList = MetaNativeManager.mapAdmobNativeSplash[AsyncSplash.getInstance()
-                    .getKeyNativeFullAdmobSplash()]
+            if (AdmobAdsConfig.getInstance().isUseNativeFullSplashAdmobWhenMetaFail()) {
+                val admobList = MetaNativeManager.mapAdmobNativeSplash[AdmobAdsConfig.getInstance()
+                    .keyNativeFullAdmobSplash]
                 Log.d(
                     "Admob", "MetaSplashActivity: admobList = ${admobList?.size}"
                 )
@@ -212,7 +213,7 @@ class NativeMetaSplashActivity : AppCompatActivity() {
 
         val nextIndex = currentAdIndex + 1
 //        val adList = MetaNativeManager.mapMetaNativeSplash[adsKey]
-        val targetCount = AsyncSplash.getInstance().getNumberNativeFullShowSplash()
+        val targetCount = AdmobAdsConfig.getInstance().numberNativeFullShowSplash
 
         if (nextIndex < targetCount) {
             Log.d("Admob", "MetaSplashActivity: move to ad ${nextIndex + 1}")

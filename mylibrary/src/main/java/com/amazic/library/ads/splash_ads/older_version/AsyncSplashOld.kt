@@ -48,6 +48,8 @@ class AsyncSplashOld {
     private var mActivity: AppCompatActivity? = null
     private var frAdsBannerSplash: FrameLayout? = null
     var onPrepareLoadInterOpenSplashAds: (() -> Unit)? = null
+    private var adsKeyBanner: String = ""
+    private var numberPreloadingSplash= 1
 
     // Timing captured for the "AsyncSplash_doneInit" analytics event.
     private var timeInitRemoteConfig = 0L
@@ -175,10 +177,6 @@ class AsyncSplashOld {
 
     fun getTimeSplashCheck(): Long = config.timeSplashCheck
 
-    fun setOnPrepareLoadInterOpenSplashAds(onPrepareLoadInterOpenSplashAds: () -> Unit) {
-        this.onPrepareLoadInterOpenSplashAds = onPrepareLoadInterOpenSplashAds
-    }
-
     fun setUseAppUpdateManager() {
         config.isUseAppUpdateManager = true
     }
@@ -242,12 +240,6 @@ class AsyncSplashOld {
     }
 
     fun getNumberPreloading(): Int = config.numberPreloading
-
-    fun setNumberPreloadingSplash(number: Int) {
-        config.numberPreloadingSplash = number
-    }
-
-    fun getNumberPreloadingSplash(): Int = config.numberPreloadingSplash
 
     fun setUseAdPreloading(isUsePreLoading: Boolean) {
         config.isUseAdPreloading = isUsePreLoading
@@ -347,7 +339,7 @@ class AsyncSplashOld {
         this.frAdsBannerSplash = frAdsBannerSplash
         config.listIdBannerSplash.clear()
         config.listIdBannerSplash.addAll(listIdBannerSplash)
-        config.adsKey = adsKey
+        adsKeyBanner = adsKey
     }
 
     fun setListTurnOffRemoteKeys(listTurnOffRemoteKeys: MutableList<String>) {
@@ -491,7 +483,7 @@ class AsyncSplashOld {
                 lifecycleOwner,
                 frAdsBannerSplash,
                 config.listIdBannerSplash,
-                config.adsKey
+                adsKeyBanner
             )
 
             logEventStep("DoneAsyncInit")

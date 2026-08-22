@@ -5,13 +5,14 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import com.amazic.library.ads.splash_ads.AdmobAdsConfig
 import com.amazic.library.ads.splash_ads.AsyncSplash
 import java.net.NetworkInterface
 
 class DetectionUtil {
     @SuppressLint("ServiceCast")
     fun isVpnActive(context: Context): Boolean {
-        if (AsyncSplash.getInstance().getUseDetectionVPNOrEmulator()) {
+        if (AdmobAdsConfig.getInstance().isUseDetectionVPNOrEmulator) {
             val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
             return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 cm.allNetworks.any { network ->
@@ -37,7 +38,7 @@ class DetectionUtil {
     }
 
     fun isEmulator(): Boolean {
-        if (AsyncSplash.getInstance().getUseDetectionVPNOrEmulator()) {
+        if (AdmobAdsConfig.getInstance().isUseDetectionVPNOrEmulator) {
             val isEmulatorBuild =
                 Build.FINGERPRINT.startsWith("generic") ||
                         Build.FINGERPRINT.startsWith("unknown") ||

@@ -12,6 +12,7 @@ import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
 import com.amazic.library.Utils.EventTrackingHelper;
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
@@ -39,6 +40,7 @@ public abstract class AdsApplication extends Application implements Application.
 
             // Initialize the Google Mobile Ads SDK on a background thread.
             MobileAds.initialize(this, initializationStatus -> {
+                Admob.getInstance().setIsInitAdmobDone(true);
                 float timeToInit = (System.currentTimeMillis() - startTime) / 1000.0f;
                 Log.d("AdmobInit", "initAdmob:timeToInit: " + timeToInit + " application - " + initializationStatus.getAdapterStatusMap());
                 EventTrackingHelper.logEventWithAParam(this,
@@ -46,7 +48,6 @@ public abstract class AdsApplication extends Application implements Application.
                         "time_between_step",
                         String.format(Locale.US, "%.1f", timeToInit)
                 );
-                Admob.getInstance().setIsInitAdmobDone(true);
             });
         }).start();
     }

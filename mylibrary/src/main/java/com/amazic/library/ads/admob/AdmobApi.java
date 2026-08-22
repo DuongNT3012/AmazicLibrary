@@ -129,8 +129,7 @@ public class AdmobApi {
         if (listAds.get(nameAds.trim()) != null)
             list.addAll(Objects.requireNonNull(listAds.get(nameAds.trim())));
         else {
-            String remoteAdsKey = nameAds.startsWith("id_") ? nameAds.trim() : "id_" + nameAds.trim();
-            String adsId = IDRemoteConfigHelper.getID(context, remoteAdsKey);
+            String adsId = IDRemoteConfigHelper.getID(context, nameAds);
             if (adsId != null) list.add(adsId);
         }
         return list;

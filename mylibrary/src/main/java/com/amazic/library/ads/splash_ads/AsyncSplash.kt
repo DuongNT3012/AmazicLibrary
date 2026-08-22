@@ -1,5 +1,6 @@
 package com.amazic.library.ads.splash_ads
 
+import android.app.Activity
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -9,17 +10,24 @@ import androidx.lifecycle.LifecycleCoroutineScope
 import androidx.lifecycle.LifecycleOwner
 import com.amazic.library.Utils.EventTrackingHelper
 import com.amazic.library.Utils.IDRemoteConfigHelper
+import com.amazic.library.Utils.NetworkUtil
 import com.amazic.library.Utils.RemoteConfigHelper
+import com.amazic.library.ads.admob.Admob
 import com.amazic.library.ads.admob.AdmobApi
 import com.amazic.library.ads.app_open_ads.AppOpenManager
 import com.amazic.library.ads.banner_ads.BannerBuilder
 import com.amazic.library.ads.banner_ads.BannerManager
 import com.amazic.library.ads.callback.BannerCallback
 import com.amazic.library.ads.callback.InterCallback
-import com.amazic.library.ads.splash_ads.older_version.AdsSplashOld
 import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
 import com.google.android.gms.ads.interstitial.InterstitialAd
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
 import kotlin.coroutines.resume
@@ -27,10 +35,13 @@ import kotlin.coroutines.resume
 class AsyncSplash {
 
     private val TAG = "AsyncSplash"
-    val config = AdmobAdsConfig()
+    val config = AdmobAdsConfig.getInstance()
     private var mActivity: AppCompatActivity? = null
     private var frAdsBannerSplash: FrameLayout? = null
     var onPrepareLoadInterOpenSplashAds: (() -> Unit)? = null
+    private var remoteKeyBanner: String = ""
+    private var timeoutSplashJob: Job? = null
+    private var isFailToShow = false
 
     companion object {
         private const val MAX_EVENT_NAME_LENGTH = 40
@@ -56,18 +67,20 @@ class AsyncSplash {
         appId: String,
         jsonIdAdsDefault: String
     ) {
+        EventTrackingHelper.getInstance(activity).logEvent("${TAG}_INIT")
         config.clear()
+        remoteKeyBanner = ""
         frAdsBannerSplash = null
         onPrepareLoadInterOpenSplashAds = null
+        AdmobApi.getInstance().init(activity.applicationContext)
+        IDRemoteConfigHelper.setUpDefaultValue(activity.applicationContext, jsonIdAdsDefault)
         mActivity = activity
-        EventTrackingHelper.getInstance(activity).logEvent("${TAG}_INIT")
         config.timeStep1 = System.currentTimeMillis()
         config.timeLastStep = System.currentTimeMillis()
         config.adjustKey = adjustKey
         config.jsonIdAdsDefault = jsonIdAdsDefault
         config.appId = appId
         config.interCallback = callbackInternSplash(interCallback)
-        IDRemoteConfigHelper.setUpDefaultValue(activity.applicationContext, config.jsonIdAdsDefault)
     }
 
     private fun callbackInternSplash(interCallback: InterCallback): InterCallback {
@@ -94,6 +107,7 @@ class AsyncSplash {
 
             override fun onAdFailedToShowFullScreenContent() {
                 super.onAdFailedToShowFullScreenContent()
+                isFailToShow = true
                 interCallback.onAdFailedToShowFullScreenContent()
             }
 
@@ -109,19 +123,107 @@ class AsyncSplash {
 
             override fun onAdShowedFullScreenContent() {
                 super.onAdShowedFullScreenContent()
+                isFailToShow = false
+                timeoutSplashJob?.cancel()
                 interCallback.onAdShowedFullScreenContent()
             }
 
         }
     }
+
     fun handleAsync(
         lifecycleOwner: LifecycleOwner,
         lifecycleCoroutineScope: LifecycleCoroutineScope,
         onNoInternetAction: () -> Unit,
         onAsyncSplashDone: () -> Unit
     ) {
+        isFailToShow = false
+        Admob.getInstance().timeStart = System.currentTimeMillis()
+        config.timeStartSplash = System.currentTimeMillis()
         logEventStep("handleAsync")
+        if (mActivity == null) {
+            throw Exception("Activity is null")
+        }
+        if (!NetworkUtil.isNetworkActive(mActivity)) {
+            logEventStep("NoInternet")
+            onNoInternetAction.invoke()
+            return
+        }
+        lifecycleCoroutineScope.launch {
+            runAsyncInitAndShowAds(mActivity!!) {
+                initWelcomeBack(mActivity)
+                loadBannerSplash(
+                    mActivity,
+                    lifecycleOwner,
+                    frAdsBannerSplash,
+                    config.listIdBannerSplash,
+                    remoteKeyBanner
+                )
+                onAsyncSplashDone()
+            }
+        }
+    }
 
+    private suspend fun runAsyncInitAndShowAds(
+        activity: AppCompatActivity,
+        onAsyncDoneRemoteConsent: () -> Unit
+    ) = coroutineScope {
+        logEventStep("StartAsyncInit")
+        val remoteConfigJob = async { runCatching { initRemoteConfig(activity) } }
+        val consentJob = async { runCatching { initAdsConsentManager(activity) } }
+        launch {
+            awaitAll(remoteConfigJob, consentJob)
+            onAsyncDoneRemoteConsent()
+        }
+
+        consentJob.await()
+        timeoutSplashJob?.cancel()
+        timeoutSplashJob = launch {
+            config.isTimeout = false
+            delay(config.timeOutSplash)
+            if (mActivity == null) {
+                logEventStep("TimeoutActivityNull")
+                return@launch
+            }
+            config.isTimeout = true
+            logEventStep("Timeout")
+            loadAndShowInterSplash(mActivity!!, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+        }
+        logEventStep("DoneAsyncInit")
+        logEventStep("StartWaitAdmobInit")
+        val totalTimeWaitInit = waitingInitAdmob()
+        logEventStep("DoneWaitAdmobInit", Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
+        loadAndShowInterSplash(activity, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+    }
+
+    private suspend fun waitingInitAdmob(): Int {
+        var totalTimeWaitInit1 = 0
+        while (!Admob.getInstance().isInitAdmobDone && totalTimeWaitInit1 < config.timeOutInitAdmob) {
+            delay(200)
+            totalTimeWaitInit1 += 200
+        }
+        return totalTimeWaitInit1
+    }
+
+    private fun loadAndShowInterSplash(activity: AppCompatActivity, isUseAdPreloading: Boolean) {
+        val adUnitId = IDRemoteConfigHelper.getID(activity, config.keyAdsInterSplash)
+        if (adUnitId== null){
+            logEventStep(EventNameSplash.EVENT_LOAD_FAILED_SPLASH_ID_NULL)
+            return
+        }
+        val numberPreloadSplash = RemoteConfigHelper.getInstance().get_config_long(activity, "number_ad_preload_splash")
+        config.numberPreloadingSplash = numberPreloadSplash.toInt()
+        if (config.isTimeout) {
+            logEventStep(EventNameSplash.EVENT_SHOW_FAILED_SPLASH_TIMEOUT)
+            return
+        }
+        logEventStep("StartLoadAndShowInter", Bundle().apply { putBoolean("isUseAdPreloading",isUseAdPreloading) })
+        if (isUseAdPreloading) {
+            AdsSplash.getInstance()
+                .loadAndShowPreload(activity, adUnitId, config.keyAdsInterSplash, config.numberPreloadingSplash, config.interCallback)
+        } else {
+            AdsSplash.getInstance().loadAndShowLegacy(activity, adUnitId, config.keyAdsInterSplash, config.interCallback)
+        }
     }
 
     private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCancellableCoroutine { continuation ->
@@ -131,14 +233,36 @@ class AsyncSplash {
         }
         val adsConsentManager = AdsConsentManager(activity)
 
-        adsConsentManager.requestUMP { canInitAds ->
+        val startTime = System.currentTimeMillis()
+        adsConsentManager.requestUMP { _ ->
             config.initAdsConsentManager = true
+            EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
+                normalizeFirebaseEventName("DoneInitConsent"),
+                Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
+            )
             continuation.resume(Unit)
         }
     }
 
-    fun checkShowSplashWhenFail() { // Call on resume of splash screen (reshow splash ads when show fails)
-        AdsSplashOld.getInstance().onCheckShowSplashWhenFail(mActivity, config.interCallback)
+    private suspend fun initRemoteConfig(activity: AppCompatActivity?) = suspendCancellableCoroutine { continuation ->
+        val startTime = System.currentTimeMillis()
+        RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
+            config.initRemoteConfig = true
+            EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
+                normalizeFirebaseEventName("DoneInitRemoteConfig"),
+                Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
+            )
+            continuation.resume(Unit)
+        }
+    }
+
+    fun checkShowSplashWhenFail(activity: Activity) { // Call on resume of splash screen (reshow splash ads when show fails)
+        val adUnitId = IDRemoteConfigHelper.getID(activity, config.keyAdsInterSplash)
+        if (adUnitId== null){
+            logEventStep(EventNameSplash.EVENT_LOAD_FAILED_SPLASH_ID_NULL)
+            return
+        }
+        if (isFailToShow) AdsSplash.getInstance().showCacheInterSplash(mActivity, adUnitId, config.keyAdsInterSplash, config.interCallback)
     }
 
     // endregion
@@ -156,7 +280,7 @@ class AsyncSplash {
         this.frAdsBannerSplash = frAdsBannerSplash
         config.listIdBannerSplash.clear()
         config.listIdBannerSplash.addAll(listIdBannerSplash)
-        config.adsKey = adsKey
+        remoteKeyBanner = adsKey
     }
 
     fun setListTurnOffRemoteKeys(listTurnOffRemoteKeys: MutableList<String>) {
@@ -224,7 +348,7 @@ class AsyncSplash {
         lifecycleOwner: LifecycleOwner,
         frAdsBanner: FrameLayout?,
         listIdBannerSplash: MutableList<String>,
-        adsKey: String
+        remoteKey: String
     ) {
         if (!config.isShowBannerSplash) {
             frAdsBanner?.visibility = View.GONE
@@ -257,7 +381,7 @@ class AsyncSplash {
                 }
             }
         }
-        activity?.let { BannerManager(it, lifecycleOwner, bannerBuilder, adsKey) }
+        activity?.let { BannerManager(it, lifecycleOwner, bannerBuilder, remoteKey) }
     }
 
     // endregion

@@ -216,7 +216,7 @@ public class MetaNativeManager {
             Log.d(TAG, "MetaNativeFullSplash: Meta done total=" + list.size() + " pendingAdmob=" + pendingAdmobCount[0]);
             // Chờ AdMob pending xong mới quyết định onAllFailed
 
-            if (AdmobAdsConfig.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+            if (AdmobAdsConfig.getInstance().isUseNativeFullSplashAdmobWhenMetaFail()) {
                 if (list.isEmpty() && pendingAdmobCount[0] == 0
                         && !hasNotifiedFirst[0] && !hasNotifiedFail[0]) {
                     hasNotifiedFail[0] = true;
@@ -241,7 +241,7 @@ public class MetaNativeManager {
                                 Log.d(TAG, "MetaNativeFullSplash: fail slot=" + loadedCount
                                         + " idMeta=" + placementId + " err=" + adError.getErrorMessage());
 
-                                if (AdmobAdsConfig.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
+                                if (AdmobAdsConfig.getInstance().isUseNativeFullSplashAdmobWhenMetaFail()) {
                                     String admobKey = AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash();
                                     List<String> admobIds = AdmobApi.getInstance().getListIDByName(admobKey);
 

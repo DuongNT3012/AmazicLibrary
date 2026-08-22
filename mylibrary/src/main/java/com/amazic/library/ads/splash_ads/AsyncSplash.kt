@@ -149,12 +149,12 @@ class AsyncSplash {
         isFailToShowInterSplash = false
         Admob.getInstance().timeStart = System.currentTimeMillis()
         config.timeStartSplash = System.currentTimeMillis()
-        logEventStep("handleAsync")
+        logEventStep(EventNameSplash.EVENT_HANDLE_ASYNC)
         if (mActivity == null) {
             throw Exception("Activity is null")
         }
         if (!NetworkUtil.isNetworkActive(mActivity)) {
-            logEventStep("NoInternet")
+            logEventStep(EventNameSplash.EVENT_NO_INTERNET)
             onNoInternetAction.invoke()
             return
         }
@@ -177,7 +177,7 @@ class AsyncSplash {
         activity: AppCompatActivity,
         onAsyncDoneRemoteConsent: () -> Unit
     ) = coroutineScope {
-        logEventStep("StartAsyncInit")
+        logEventStep(EventNameSplash.EVENT_START_ASYNC_INIT)
         val remoteConfigJob = async { runCatching { initRemoteConfig(activity) } }
         val consentJob = async { runCatching { initAdsConsentManager(activity) } }
         launch {
@@ -188,10 +188,10 @@ class AsyncSplash {
         consentJob.await()
         timeoutSplashJob?.cancel()
         timeoutSplashJob = runTimeOutSplash()
-        logEventStep("DoneAsyncInit")
-        logEventStep("StartWaitAdmobInit")
+        logEventStep(EventNameSplash.EVENT_DONE_ASYNC_INIT)
+        logEventStep(EventNameSplash.EVENT_START_WAIT_ADMOB_INIT)
         val totalTimeWaitInit = waitingInitAdmob()
-        logEventStep("DoneWaitAdmobInit", Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
+        logEventStep(EventNameSplash.EVENT_DONE_WAIT_ADMOB_INIT, Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
         loadAndShowInterSplash(activity, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
     }
 
@@ -199,10 +199,10 @@ class AsyncSplash {
         config.isTimeout = false
         delay(config.timeOutSplash)
         if (mActivity == null) {
-            logEventStep("TimeoutActivityNull")
+            logEventStep(EventNameSplash.EVENT_TIMEOUT_ACTIVITY_NULL)
             return@launch
         }
-        logEventStep("Timeout")
+        logEventStep(EventNameSplash.EVENT_TIMEOUT_SPLASH)
         isFailToShowInterSplash = true
         if (isStartingLoadSplash)
             config.interCallback.onNextAction()
@@ -234,7 +234,7 @@ class AsyncSplash {
             return
         }
         isStartingLoadSplash = true
-        logEventStep("StartLoadAndShowInter", Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
+        logEventStep(EventNameSplash.EVENT_START_LOAD_AND_SHOW_INTER, Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
         AdsSplash.getInstance()
             .loadAndShow(activity, adUnitId, config.keyAdsInterSplash, config.numberPreloadingSplash, config.interCallback, isUseAdPreloading)
     }
@@ -253,7 +253,7 @@ class AsyncSplash {
             return
         }
         isStartingLoadSplash = true
-        logEventStep("StartLoadOnly", Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
+        logEventStep(EventNameSplash.EVENT_START_LOAD_ONLY, Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
         AdsSplash.getInstance()
             .loadAd(
                 activity.applicationContext,
@@ -276,7 +276,7 @@ class AsyncSplash {
         adsConsentManager.requestUMP { _ ->
             config.initAdsConsentManager = true
             EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
-                normalizeFirebaseEventName("DoneInitConsent"),
+                normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_CONSENT),
                 Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
             )
             continuation.resume(Unit)
@@ -288,7 +288,7 @@ class AsyncSplash {
         RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
             config.initRemoteConfig = true
             EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
-                normalizeFirebaseEventName("DoneInitRemoteConfig"),
+                normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_REMOTE_CONFIG),
                 Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
             )
             continuation.resume(Unit)

@@ -344,9 +344,9 @@ public class AdsSplash {
             public void onAdLoaded(InterstitialAd interstitialAd) {
                 Log.d(TAG, "onAdLoaded: " + InterstitialAdPreloader.getNumAdsAvailable(adUnitId));
                 if (InterstitialAdPreloader.getNumAdsAvailable(adUnitId) >= numberPreload) {
+                    pushAdToCache(Objects.requireNonNull(InterstitialAdPreloader.pollAd(adUnitId)), adUnitId);
                     cancelPreload(adUnitId);
                     EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
-                    pushAdToCache(Objects.requireNonNull(InterstitialAdPreloader.pollAd(adUnitId)), adUnitId);
 
                     if (AdmobAdsConfig.getInstance().isTimeout()) {
                         Bundle bundle = new Bundle();
@@ -381,8 +381,8 @@ public class AdsSplash {
 
     public void showCacheInterSplash(Activity activity, String adUnitId, String remoteKey, InterCallback interCallback) {
         if (mInterstitialAd == null) {
-            cancelPreload(adUnitId);
             mInterstitialAd = InterstitialAdPreloader.pollAd(adUnitId);
+            cancelPreload(adUnitId);
             EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
         }
         showInterSplash(activity, adUnitId, remoteKey, interCallback);

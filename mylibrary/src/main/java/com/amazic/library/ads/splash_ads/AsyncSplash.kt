@@ -298,13 +298,15 @@ class AsyncSplash {
         }
     }
 
-    fun checkShowSplashWhenFail(activity: Activity) { // Call on resume of splash screen (reshow splash ads when show fails)
+    fun checkShowSplashWhenFail(activity: Activity, isAlwaysOnNextAction : Boolean = false) {
+        // Call on resume of splash screen (reshow splash ads when show fails)
         val adUnitId = IDRemoteConfigHelper.getID(activity, config.keyAdsInterSplash)
         if (adUnitId == null) {
             logEventStep(EventNameSplash.EVENT_LOAD_FAILED_SPLASH_ID_NULL)
             return
         }
         if (isFailToShowInterSplash) AdsSplash.getInstance().showCacheInterSplash(mActivity, adUnitId, config.keyAdsInterSplash, config.interCallback)
+        else if (isAlwaysOnNextAction) config.interCallback.onNextAction()
     }
 
     // endregion

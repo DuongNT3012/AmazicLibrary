@@ -294,7 +294,7 @@ public class AdsSplash {
     }
 
     public void loadAndShowLegacy(Activity activity, String adUnitId, String remoteKey, InterCallback interCallback) {
-        loadInterSplashLegacy(activity, adUnitId, remoteKey, new InterCallback() {
+        loadInterSplashLegacy(activity.getApplicationContext(), adUnitId, remoteKey, new InterCallback() {
             @Override
             public void onAdLoaded(InterstitialAd interstitialAd) {
                 if (AdmobAdsConfig.getInstance().isTimeout()) {
@@ -339,15 +339,15 @@ public class AdsSplash {
     }
 
     public void loadAndShowPreload(Activity activity, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback) {
-        loadInterSplashPreload(activity, adUnitId, remoteKey, numberPreload, new InterCallback() {
+        loadInterSplashPreload(activity.getApplicationContext(), adUnitId, remoteKey, numberPreload, new InterCallback() {
             @Override
             public void onAdLoaded(InterstitialAd interstitialAd) {
                 Log.d(TAG, "onAdLoaded: " + InterstitialAdPreloader.getNumAdsAvailable(adUnitId));
                 if (InterstitialAdPreloader.getNumAdsAvailable(adUnitId) >= numberPreload) {
+                    cancelPreload(adUnitId);
+                    EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
                     pushAdToCache(Objects.requireNonNull(InterstitialAdPreloader.pollAd(adUnitId)), adUnitId);
 
-                    EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
-                    cancelPreload(adUnitId);
                     if (AdmobAdsConfig.getInstance().isTimeout()) {
                         Bundle bundle = new Bundle();
                         String messageFailed = "time_out_splash_screen";
@@ -381,8 +381,8 @@ public class AdsSplash {
 
     public void showCacheInterSplash(Activity activity, String adUnitId, String remoteKey, InterCallback interCallback) {
         if (mInterstitialAd == null) {
-            mInterstitialAd = InterstitialAdPreloader.pollAd(adUnitId);
             cancelPreload(adUnitId);
+            mInterstitialAd = InterstitialAdPreloader.pollAd(adUnitId);
             EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
         }
         showInterSplash(activity, adUnitId, remoteKey, interCallback);

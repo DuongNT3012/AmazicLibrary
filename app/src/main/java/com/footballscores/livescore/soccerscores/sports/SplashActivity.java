@@ -46,7 +46,7 @@ public class SplashActivity extends AppCompatActivity {
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        MetaNativeManager.getInstance().loadNativeAd(this, "1439001763964762_1710436723487930","native_all");
+//        MetaNativeManager.getInstance().loadNativeAd(this, "1439001763964762_1710436723487930","native_all");
 
 
         interCallback = new InterCallback() {
@@ -141,7 +141,7 @@ public class SplashActivity extends AppCompatActivity {
             AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
             AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
-//            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
+            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
 //            AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);
             AsyncSplash.Companion.getInstance().setTimeOutCallApi(12000);
@@ -188,7 +188,7 @@ public class SplashActivity extends AppCompatActivity {
 //            AsyncSplash.Companion.getInstance().setUseNativeFullSplashAdmobWhenMetaFail(true);
             ///end
 
-//            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
+            AsyncSplash.Companion.getInstance().setUseAdPreloading(true);
             /// show native after inter count
 //            AsyncSplash.Companion.getInstance().setNumberNativeAfterInterSplash(3);
 //            AsyncSplash.Companion.getInstance().setShowNativeAfterInter(true);

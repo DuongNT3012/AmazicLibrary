@@ -667,19 +667,21 @@ class AsyncSplash {
                 logEventStep("StartAsyncInit")
                 val asyncAdmobApi = async { initAdmobApi(activity) }
                 val asyncRemoteConfig = async { initRemoteConfig(activity) }
-                val asyncUMP = async { initAdsConsentManager(activity) }
+//                val asyncUMP = async { initAdsConsentManager(activity) }
                 val asyncBilling = async { initBilling() }
                 val asyncTechManager = async { initTechManager(activity) }
                 try {
                     //wait to load banner splash (banner splash fix id, don't use api to reduce time load splash)
                     if (!isAsyncSplashAds) {
-                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
+//                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
+                        awaitAll(asyncRemoteConfig, asyncBilling, asyncTechManager)
                         if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
                             turnOffSomeRemoteKeys(activity)
                         }
-                    } else {
-                        awaitAll(asyncUMP)
                     }
+//                    else {
+//                        awaitAll(asyncUMP)
+//                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 } finally {
@@ -1009,6 +1011,30 @@ class AsyncSplash {
                 }
             }
         }
+
+    fun initUMP(activity: AppCompatActivity?){
+        timeInitAdsConsentManager = 0L
+        val startTimeInitAdsConsentManager = System.currentTimeMillis()
+        val adsConsentManager = AdsConsentManager(activity)
+        var isResumed = false
+        adsConsentManager.requestUMP {
+            if (!isResumed) {
+                isResumed = true
+                if (it) {
+                    Admob.getInstance().initAdmob(activity) {
+//                            onInitAdmobDone?.invoke()
+                    }
+                    activity?.let { it1 ->
+                        AppOpenManager.getInstance().disableAppResumeWithActivity(it1.javaClass)
+                    }
+                }
+                timeInitAdsConsentManager =
+                    System.currentTimeMillis() - startTimeInitAdsConsentManager
+                initAdsConsentManager = true
+                Log.d(TAG, "initAdsConsentManager.")
+            }
+        }
+    }
 
     private var timeInitTechManager = 0L
     private suspend fun initTechManager(activity: AppCompatActivity?) =

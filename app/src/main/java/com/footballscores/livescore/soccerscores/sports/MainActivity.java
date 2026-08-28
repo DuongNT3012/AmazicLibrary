@@ -25,6 +25,7 @@ import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
 import com.amazic.library.ads.reward_ads.RewardManager;
 import com.amazic.library.ads.reward_inter_ads.RewardInterManager;
+import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.footballscores.livescore.soccerscores.sports.databinding.ActivityMainBinding;
 
 import java.util.List;
@@ -73,6 +74,9 @@ public class MainActivity extends AppCompatActivity {
 
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        //init UMP
+        AsyncSplash.Companion.getInstance().initUMP(this);
 
         NativeBuilder nativeBuilder = new NativeBuilder(
                 this, binding.frAdsNative,

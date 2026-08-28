@@ -134,7 +134,7 @@ public class Admob {
     private boolean isTimerDelayFinished = false;
     private boolean isAdLoadAdsSplashFinished = false;
     private long startTime;
-//    private int timeDelayAdsSplash = 7000;
+    //    private int timeDelayAdsSplash = 7000;
     private boolean isInitAdmobDone = false;
     //end
 
@@ -1183,7 +1183,7 @@ public class Admob {
 
         String adsKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeFullMetaSplash();
         String remoteKeyNative = AsyncSplash.Companion.getInstance().getKeyNativeFullMetaSplash();
-        Log.d(TAG, "AdsSplash META Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash... adsKeyNative = " + adsKeyNative + ", useNativeFullAdmobWhenMetaFail = " +AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail());
+        Log.d(TAG, "AdsSplash META Native Full Splash: Bắt đầu tiến trình Load And Show Native Full Splash... adsKeyNative = " + adsKeyNative + ", useNativeFullAdmobWhenMetaFail = " + AsyncSplash.Companion.getInstance().getUseNativeFullSplashAdmobWhenMetaFail());
 
         List<String> listIdNative = AdmobApi.getInstance().getListIDByName(adsKeyNative);
         // Check basic conditions
@@ -1310,7 +1310,7 @@ public class Admob {
 //            };
 //        } else {
 //            Log.d(TAG, "AdsSplash Inter preload: không dùng chờ 7 giây đếm ngược.");
-            isTimerDelayFinished = true;
+        isTimerDelayFinished = true;
 //        }
 //        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end
@@ -1406,7 +1406,8 @@ public class Admob {
         }
         if (isTimerDelayFinished && isAdLoadAdsSplashFinished) {
             String timeFormatted = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - startTime) / 1000.0);
-            Log.d(TAG, "AdsSplash Inter preload: ===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây , isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
+            String timeFormatted2 = String.format(Locale.US, "%.2f", (System.currentTimeMillis() - timeStart) / 1000.0);
+            Log.d(TAG, "AdsSplash Inter preload: ===> TỔNG THỜI GIAN CHỜ: " + timeFormatted + " giây, time_Screen_Splash = " + timeFormatted2 + ", isEmptyListNativeAfterInter = " + isEmptyListNativeAfterInter);
             EventTrackingHelper.logEventWithAParam(activity, "Splash_time_wait", "time_to_step", timeFormatted);
             showInterAdPreloadingSplashDelay(activity, listIdInter, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
             removeHandlerDelayAdsSplash();
@@ -2448,7 +2449,7 @@ public class Admob {
 //            };
 //        } else {
 //            Log.d(TAG, "Không dùng chờ 7 giây đếm ngược.");
-            isTimerDelayFinished = true;
+        isTimerDelayFinished = true;
 //        }
 //        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end

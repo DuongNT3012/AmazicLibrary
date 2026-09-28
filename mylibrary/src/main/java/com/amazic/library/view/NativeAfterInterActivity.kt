@@ -132,7 +132,7 @@ class NativeAfterInterActivity : AppCompatActivity() {
 
         Log.d(
             "Admob",
-            "NativeAfterInter Splash: show ad ${index + 1}/${adList?.size} | responseId=${nativeAd.responseInfo?.responseId}"
+            "NativeAfterInter Splash: show ad ${index + 1}/${adList?.size} | responseId=${nativeAd.getResponseInfo().responseId}"
         )
         currentAdIndex = index
         ivClose.visibility = View.GONE

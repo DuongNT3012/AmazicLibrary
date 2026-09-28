@@ -7,7 +7,7 @@ import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.RewardedCallback;
-import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd;
 
 import java.util.HashMap;
 import java.util.Map;

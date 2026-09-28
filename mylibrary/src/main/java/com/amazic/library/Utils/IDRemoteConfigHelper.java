@@ -10,7 +10,7 @@ import com.google.gson.Gson;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 public class IDRemoteConfigHelper {
     private static final String TAG = "IDRemoteConfigHelper";

@@ -1,6 +1,6 @@
 package com.amazic.library.ads.callback;
 
-import com.google.android.gms.ads.rewarded.RewardedAd;
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd;
 
 public class RewardedCallback {
     public void onAdFailedToLoad() {

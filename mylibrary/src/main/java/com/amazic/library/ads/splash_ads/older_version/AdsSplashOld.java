@@ -37,20 +37,22 @@ import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
 import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.library.view.NativeMetaSplashActivity;
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.ResponseInfo;
-import com.google.android.gms.ads.interstitial.InterstitialAd;
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback;
-import com.google.android.gms.ads.interstitial.InterstitialAdPreloader;
-import com.google.android.gms.ads.preload.PreloadCallbackV2;
-import com.google.android.gms.ads.preload.PreloadConfiguration;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo;
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd;
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdPreloader;
+import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback;
+import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import com.amazic.library.ads.admob.NextGenAds;
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback;
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue;
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError;
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback;
 
 /**
  * AdsSplash centralizes every interstitial / native-full ad flow shown on the app's Splash
@@ -354,9 +356,7 @@ public class AdsSplashOld {
             logEventSplash(activity, "splash_preload_end_failed", bundle);
             return;
         }
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0))
-                .setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloadingSplash())
-                .build();
+        PreloadConfiguration configuration = new PreloadConfiguration(new AdRequest.Builder(listIdInterTemp.get(0)).build(), AdmobAdsConfig.getInstance().getNumberPreloadingSplash());
 
         boolean isConfigShowNativeAfterInter = RemoteConfigHelper.getInstance().get_config(activity, remoteKeyNative);
 
@@ -364,13 +364,12 @@ public class AdsSplashOld {
 
         Log.d(TAG, "loadAndShowInterAdPreloadingSplash: " + listIdInterTemp.get(0));
         EventTrackingHelper.getInstance(activity).logEvent("splash_preload_start_call");
-        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+        PreloadCallback callback = new PreloadCallback() {
             @Override
-            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
-                super.onAdFailedToPreload(s, adError);
+            public void onAdFailedToPreload(@NonNull String s, @NonNull LoadAdError adError) {
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad " + s + " failed to load with error: " + adError.getMessage());
                 Bundle bundle = new Bundle();
-                bundle.putString("failed_message", "load_" + adError.getCode() + "_" + adError.getMessage());
+                bundle.putString("failed_message", "load_" + adError.getCode().getValue() + "_" + adError.getMessage());
                 bundle.putString("time_to_step", String.format(Locale.US, "%.1f", (System.currentTimeMillis() - timeStartCalInterSplash) / 1000.0));
                 EventTrackingHelper.getInstance(activity).logEventWithMultipleParams("splash_preload_failed", bundle);
                 interCallback.onAdFailedToLoad();
@@ -381,8 +380,7 @@ public class AdsSplashOld {
             }
 
             @Override
-            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
-                super.onAdPreloaded(s, responseInfo);
+            public void onAdPreloaded(@NonNull String s, @NonNull ResponseInfo responseInfo) {
                 Bundle bundle = new Bundle();
                 if (isFirstLoadedInterSplash) {
                     timeLastCalInterSplash = System.currentTimeMillis();
@@ -399,22 +397,20 @@ public class AdsSplashOld {
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is available.");
                 interCallback.onAdLoaded(null);
 
-                Log.d(TAG, "onAdPreloaded have ad data: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+                Log.d(TAG, "onAdPreloaded have ad data: " + NextGenAds.isInterstitialPreloaded(listIdInter.get(0)));
                 //get data ad inter
-                mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+                mInterstitialAdSplash = NextGenAds.pollInterstitial(listIdInter.get(0));
                 Log.d(TAG, "onAdPreloaded done: ad = " + mInterstitialAdSplash);
 
                 //destroy preload ads
-                InterstitialAdPreloader.destroy(listIdInter.get(0));
+                NextGenAds.destroyInterstitialPreload(listIdInter.get(0));
                 /// show ads
                 checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
                 removeHandlerSplashAds();
             }
 
-
             @Override
             public void onAdsExhausted(@NonNull String s) {
-                super.onAdsExhausted(s);
                 if (!isFirstLoadedInterSplash) {
                     logEventSplash(activity, "splash_preload_failed_exhausted");
                 }
@@ -422,7 +418,7 @@ public class AdsSplashOld {
             }
         };
 
-        InterstitialAdPreloader.start(listIdInterTemp.get(0), configuration, callback);
+        NextGenAds.runWhenSdkReady(activity, () -> InterstitialAdPreloader.start(listIdInterTemp.get(0), configuration, NextGenAds.onMain(callback)));
     }
 
     public void loadAndShowInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
@@ -476,11 +472,11 @@ public class AdsSplashOld {
 //
 //                    //get data ad inter
 //                    if (mInterstitialAdSplash == null) {
-//                        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
-//                        Log.d(TAG, "Get data ad Timeout 7s: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)) + ", ad = " + mInterstitialAdSplash);
+//                        mInterstitialAdSplash = NextGenAds.pollInterstitial(listIdInter.get(0));
+//                        Log.d(TAG, "Get data ad Timeout 7s: " + NextGenAds.isInterstitialPreloaded(listIdInter.get(0)) + ", ad = " + mInterstitialAdSplash);
 //
 //                        //destroy preload ads
-//                        InterstitialAdPreloader.destroy(listIdInter.get(0));
+//                        NextGenAds.destroyInterstitialPreload(listIdInter.get(0));
 //                    }
 //
 //                    checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
@@ -527,15 +523,14 @@ public class AdsSplashOld {
 
         Log.d(TAG, "AdsSplash Inter preload: number ad preloading = " + AdmobAdsConfig.getInstance().getNumberPreloadingSplash());
 
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdInterTemp.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloadingSplash()).build();
+        PreloadConfiguration configuration = new PreloadConfiguration(new AdRequest.Builder(listIdInterTemp.get(0)).build(), AdmobAdsConfig.getInstance().getNumberPreloadingSplash());
 
-        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+        PreloadCallback callback = new PreloadCallback() {
             @Override
-            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
-                super.onAdFailedToPreload(s, adError);
+            public void onAdFailedToPreload(@NonNull String s, @NonNull LoadAdError adError) {
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad " + s + " failed to load with error: " + adError.getMessage());
                 Bundle bundle = new Bundle();
-                bundle.putString("failed_message", "load_" + adError.getCode() + "_" + adError.getMessage());
+                bundle.putString("failed_message", "load_" + adError.getCode().getValue() + "_" + adError.getMessage());
                 EventTrackingHelper.getInstance(activity).logEventWithMultipleParams("splash_delay_failed", bundle);
                 interCallback.onAdFailedToLoad();
                 if (listIdInterTemp.size() > 1) {
@@ -545,30 +540,27 @@ public class AdsSplashOld {
             }
 
             @Override
-            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
-                super.onAdPreloaded(s, responseInfo);
+            public void onAdPreloaded(@NonNull String s, @NonNull ResponseInfo responseInfo) {
                 Log.i(TAG, "AdsSplash Inter preload: Ad loaded inter splash.");
                 EventTrackingHelper.getInstance(activity).logEvent("splash_delay_true");
                 isAdLoadAdsSplashFinished = true;
                 Log.d(TAG, "AdsSplash Inter preload: Preload ad for " + s + " is available.");
                 interCallback.onAdLoaded(null);
 
-                Log.d(TAG, "onAdPreloaded have ad data: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+                Log.d(TAG, "onAdPreloaded have ad data: " + NextGenAds.isInterstitialPreloaded(listIdInter.get(0)));
                 //get data ad inter
-                mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+                mInterstitialAdSplash = NextGenAds.pollInterstitial(listIdInter.get(0));
                 Log.d(TAG, "onAdPreloaded done: ad = " + mInterstitialAdSplash);
 
                 //destroy preload ads
-                InterstitialAdPreloader.destroy(listIdInter.get(0));
+                NextGenAds.destroyInterstitialPreload(listIdInter.get(0));
                 /// show ads
                 checkConditionAdPreloadingSplash(activity, listIdInterTemp, interCallback, isConfigShowNativeAfterInter, isEmptyListNativeAfterInter, adsKeyNative);
                 removeHandlerSplashAds();
             }
 
-
             @Override
             public void onAdsExhausted(@NonNull String s) {
-                super.onAdsExhausted(s);
                 if (!isFirstLoadedInterSplash) {
                     logEventSplash(activity, "splash_preload_failed_exhausted");
                 }
@@ -576,7 +568,7 @@ public class AdsSplashOld {
             }
         };
 
-        InterstitialAdPreloader.start(listIdInterTemp.get(0), configuration, callback);
+        NextGenAds.runWhenSdkReady(activity, () -> InterstitialAdPreloader.start(listIdInterTemp.get(0), configuration, NextGenAds.onMain(callback)));
     }
 
     private void checkConditionAdPreloadingSplash(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
@@ -649,13 +641,13 @@ public class AdsSplashOld {
                 Log.d(TAG, "AdsSplash Inter preload: onSplashResume: " + false);
             }
         });
-//        Log.d(TAG, "1.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+//        Log.d(TAG, "1.Ads Inter destroy: " + NextGenAds.isInterstitialPreloaded(listIdInter.get(0)));
 
-//        mInterstitialAdSplash = InterstitialAdPreloader.pollAd(listIdInter.get(0));
+//        mInterstitialAdSplash = NextGenAds.pollInterstitial(listIdInter.get(0));
 //
 //        //destroy preload ads
-//        InterstitialAdPreloader.destroy(listIdInter.get(0));
-//        Log.d(TAG, "2.Ads Inter destroy: " + InterstitialAdPreloader.isAdAvailable(listIdInter.get(0)));
+//        NextGenAds.destroyInterstitialPreload(listIdInter.get(0));
+//        Log.d(TAG, "2.Ads Inter destroy: " + NextGenAds.isInterstitialPreloaded(listIdInter.get(0)));
 
         if (mInterstitialAdSplash == null) {
             logEventSplash(activity, "splash_preload_failed_inter");
@@ -684,13 +676,15 @@ public class AdsSplashOld {
         if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 logEventSplash(activity, "splash_preload_start_show_inter");
-                mInterstitialAdSplash.setOnPaidEventListener(
-                        adValue -> {
-                            AdjustUtil.trackRevenue(mInterstitialAdSplash.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), "inter_splash_preloading");
-                        }
-                );
 
-                mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
+                final InterstitialAd adForRevenue = mInterstitialAdSplash;
+                mInterstitialAdSplash.setAdEventCallback(NextGenAds.onMain(new InterstitialAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(adForRevenue.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, adForRevenue.getAdUnitId(), "inter_splash_preloading");
+                }
+
                     @Override
                     public void onAdClicked() {
                         AppOpenManager.isLastActionClickAd = true;
@@ -740,7 +734,7 @@ public class AdsSplashOld {
                     }
 
                     @Override
-                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                         //increase splash open
                         logEventSplash(activity, "step_inter_splash_show_failded");
                         SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
@@ -808,7 +802,7 @@ public class AdsSplashOld {
                         isFailToShowAdSplash = false;
                         removeHandlerSplashAds();
                     }
-                });
+                }));
                 boolean isResumeState = activity.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
                 Log.d(TAG, "AdsSplash Inter preload: ResumeState: " + isResumeState);
                 if (isResumeState) {
@@ -893,7 +887,14 @@ public class AdsSplashOld {
         }
         if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
+                final InterstitialAd adForRevenue = mInterstitialAdSplash;
+                mInterstitialAdSplash.setAdEventCallback(NextGenAds.onMain(new InterstitialAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(adForRevenue.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, adForRevenue.getAdUnitId(), "inter_splash");
+                }
+
                     @Override
                     public void onAdClicked() {
                         AppOpenManager.isLastActionClickAd = true;
@@ -935,7 +936,7 @@ public class AdsSplashOld {
                     }
 
                     @Override
-                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                         logEventSplash(activity, "step_inter_splash_show_failded");
                         //increase splash open
                         SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
@@ -1002,7 +1003,7 @@ public class AdsSplashOld {
                         isFailToShowAdSplash = false;
                         removeHandlerSplashAds();
                     }
-                });
+                }));
                 boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
                 Log.d(TAG, "SPLASH: ResumeState: " + isResumeState);
                 if (isResumeState) {
@@ -1079,7 +1080,14 @@ public class AdsSplashOld {
         }
         if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                mInterstitialAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
+                final InterstitialAd adForRevenue = mInterstitialAdSplash;
+                mInterstitialAdSplash.setAdEventCallback(NextGenAds.onMain(new InterstitialAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(adForRevenue.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, adForRevenue.getAdUnitId(), "inter_splash");
+                }
+
                     @Override
                     public void onAdClicked() {
                         AppOpenManager.isLastActionClickAd = true;
@@ -1109,7 +1117,7 @@ public class AdsSplashOld {
                     }
 
                     @Override
-                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                         logEventSplash(activity, "step_inter_splash_show_failded");
                         //increase splash open
                         SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
@@ -1161,7 +1169,7 @@ public class AdsSplashOld {
                         isFailToShowAdSplash = false;
                         removeHandlerSplashAds();
                     }
-                });
+                }));
                 boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
                 Log.d(TAG, "SPLASH: ResumeState: " + isResumeState);
                 if (isResumeState) {
@@ -1219,7 +1227,13 @@ public class AdsSplashOld {
         }
         if (!isLoadInterSplashIdTimeout && !activity.isFinishing() && !activity.isDestroyed()) {
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                interSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
+                interSplash.setAdEventCallback(NextGenAds.onMain(new InterstitialAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(interSplash.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, interSplash.getAdUnitId(), "inter_splash");
+                }
+
                     @Override
                     public void onAdClicked() {
                         AppOpenManager.isLastActionClickAd = true;
@@ -1248,7 +1262,7 @@ public class AdsSplashOld {
                     }
 
                     @Override
-                    public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                    public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                         //increase splash open
                         SharePreferenceHelper.setInt(activity, EventTrackingHelper.splash_open, SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1);
                         //end increase splash open
@@ -1298,7 +1312,7 @@ public class AdsSplashOld {
                         isFailToShowAdSplash = false;
                         removeHandlerSplashAds();
                     }
-                });
+                }));
                 boolean isResumeState = ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED);
                 Log.d(TAG, "SPLASH: ResumeState: " + isResumeState);
                 if (isResumeState) {
@@ -1389,19 +1403,13 @@ public class AdsSplashOld {
         //time start load splash ads
         timeSplashLoadingAdShow = System.currentTimeMillis();
 
-        AdRequest adRequest = new AdRequest.Builder().build();
         for (int i = 0; i < listIdInterTemp.size(); i++) {
             int index = i;
             Log.d(TAG, "SPLASH ID ASYNC: Start load inter splash. " + listIdInterTemp.get(index));
-            InterstitialAd.load(activity, listIdInterTemp.get(index), adRequest,
-                    new InterstitialAdLoadCallback() {
+            NextGenAds.loadInterstitial(activity, listIdInterTemp.get(index),
+                new AdLoadCallback<InterstitialAd>() {
                         @Override
                         public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                            //Tracking revenue
-                            interstitialAd.setOnPaidEventListener(adValue -> {
-                                //Adjust
-                                AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), "inter_splash");
-                            });
                             Log.i(TAG, "SPLASH ID ASYNC: Ad was loaded inter splash. " + listIdInterTemp.get(index));
                             interCallback.onAdLoaded(interstitialAd);
                             if (index == 0) {
@@ -1492,16 +1500,10 @@ public class AdsSplashOld {
         //time start load splash ads
         timeSplashLoadingAdShow = System.currentTimeMillis();
 
-        AdRequest adRequest = new AdRequest.Builder().build();
-        InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,
-                new InterstitialAdLoadCallback() {
+        NextGenAds.loadInterstitial(activity, listIdInterTemp.get(0),
+                new AdLoadCallback<InterstitialAd>() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
-                        //Tracking revenue
-                        interstitialAd.setOnPaidEventListener(adValue -> {
-                            //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), "inter_splash");
-                        });
                         // The mInterstitialAd reference will be null until
                         // an ad is loaded.
                         Log.i(TAG, "SPLASH: Ad was loaded inter splash.");
@@ -1617,17 +1619,11 @@ public class AdsSplashOld {
         //time start load splash ads
         timeSplashLoadingAdShow = System.currentTimeMillis();
 
-        AdRequest adRequest = new AdRequest.Builder().build();
-        InterstitialAd.load(activity, listIdInterTemp.get(0), adRequest,
-                new InterstitialAdLoadCallback() {
+        NextGenAds.loadInterstitial(activity, listIdInterTemp.get(0),
+                new AdLoadCallback<InterstitialAd>() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                         logEventSplash(activity, "splash_delay_loaded");
-                        //Tracking revenue
-                        interstitialAd.setOnPaidEventListener(adValue -> {
-                            //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInterTemp.get(0), "inter_splash");
-                        });
                         // The mInterstitialAd reference will be null until
                         // an ad is loaded.
                         Log.i(TAG, "SPLASH: Ad was loaded inter splash.");
@@ -1759,18 +1755,12 @@ public class AdsSplashOld {
         //time start load splash ads
         timeSplashLoadingAdShow = System.currentTimeMillis();
 
-        AdRequest adRequest = new AdRequest.Builder().build();
         logEventSplash(activity, "splash_loop_start_call");
-        InterstitialAd.load(activity, idInterSplash, adRequest,
-                new InterstitialAdLoadCallback() {
+        NextGenAds.loadInterstitial(activity, idInterSplash,
+                new AdLoadCallback<InterstitialAd>() {
                     @Override
                     public void onAdLoaded(@NonNull InterstitialAd interstitialAd) {
                         logEventSplash(activity, "splash_loop_loaded");
-                        //Tracking revenue
-                        interstitialAd.setOnPaidEventListener(adValue -> {
-                            //Adjust
-                            AdjustUtil.trackRevenue(interstitialAd.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdInter.get(0), "inter_splash");
-                        });
                         // The mInterstitialAd reference will be null until
                         // an ad is loaded.
                         Log.i(TAG, "SPLASH: Ad was loaded inter splash loop. " + idInterSplash);

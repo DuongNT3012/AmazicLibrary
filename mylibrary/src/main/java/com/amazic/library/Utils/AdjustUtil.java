@@ -8,14 +8,14 @@ import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustAdRevenue;
 import com.adjust.sdk.AdjustEvent;
 import com.amazic.library.ads.admob.Admob;
-import com.google.android.gms.ads.AdValue;
-import com.google.android.gms.ads.AdapterResponseInfo;
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue;
+import com.google.android.libraries.ads.mobile.sdk.common.AdSourceResponseInfo;
 
 public class AdjustUtil {
-    public static void trackRevenue(@Nullable AdapterResponseInfo loadedAdapterResponseInfo, AdValue adValue, String adUnitId, String adFormat) {
+    public static void trackRevenue(@Nullable AdSourceResponseInfo loadedAdSourceResponseInfo, AdValue adValue, String adUnitId, String adFormat) {
         String adName = "";
-        if (loadedAdapterResponseInfo != null)
-            adName = loadedAdapterResponseInfo.getAdSourceName();
+        if (loadedAdSourceResponseInfo != null)
+            adName = loadedAdSourceResponseInfo.getName();
         double valueMicros = adValue.getValueMicros() / 1000000d;
         Log.d("AdjustRevenue", "adName: " + adName + " - valueMicros: " + valueMicros);
         // send ad revenue info to Adjust

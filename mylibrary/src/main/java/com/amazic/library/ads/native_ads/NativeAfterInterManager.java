@@ -16,9 +16,9 @@ import com.amazic.library.ads.splash_ads.AdmobAdsConfig;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.view.NativeAfterInterActivity;
 import com.amazic.mylibrary.R;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.nativead.NativeAd;
-import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView;
 
 import java.util.ArrayList;
 import java.util.HashMap;

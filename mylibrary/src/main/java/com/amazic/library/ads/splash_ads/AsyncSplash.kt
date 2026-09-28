@@ -21,7 +21,7 @@ import com.amazic.library.ads.callback.BannerCallback
 import com.amazic.library.ads.callback.InterCallback
 import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
-import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async

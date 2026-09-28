@@ -23,7 +23,7 @@ import com.facebook.ads.MediaView;
 import com.facebook.ads.NativeAd;
 import com.facebook.ads.NativeAdLayout;
 import com.facebook.ads.NativeAdListener;
-import com.google.android.gms.ads.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,7 +34,7 @@ public class MetaNativeManager {
     public static final Map<String, NativeAd> mapMetaNativeAfterInter = new HashMap<>();
     public static final Map<String, List<NativeAd>> mapMetaNativeSplash = new HashMap<>();
     // Thêm map lưu AdMob fallback song song với Meta (TH Meta load fail)
-    public static final Map<String, List<com.google.android.gms.ads.nativead.NativeAd>>
+    public static final Map<String, List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd>>
             mapAdmobNativeSplash = new HashMap<>();
     private static final String TAG = "Admob";
 
@@ -174,11 +174,11 @@ public class MetaNativeManager {
 
         // Clean & init AdMob fallback list
         String admobKey = AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash();
-        List<com.google.android.gms.ads.nativead.NativeAd> fallbackList = new ArrayList<>();
+        List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> fallbackList = new ArrayList<>();
         if (AdmobAdsConfig.getInstance().isUseNativeFullSplashAdmobWhenMetaFail()) {
-            List<com.google.android.gms.ads.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
+            List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
             if (oldFallback != null) {
-                for (com.google.android.gms.ads.nativead.NativeAd ad : oldFallback) ad.destroy();
+                for (com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd ad : oldFallback) ad.destroy();
                 oldFallback.clear();
             }
             mapAdmobNativeSplash.put(admobKey, fallbackList);
@@ -205,7 +205,7 @@ public class MetaNativeManager {
     private static void loadMetaNativeFullSplashSequentially(Activity activity, String placementId,
                                                              String adsKey, int targetCount,
                                                              List<NativeAd> list,
-                                                             List<com.google.android.gms.ads.nativead.NativeAd> fallbackList,
+                                                             List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> fallbackList,
                                                              int loadedCount,
                                                              boolean[] hasNotifiedFirst,
                                                              boolean[] hasNotifiedFail,
@@ -252,7 +252,7 @@ public class MetaNativeManager {
                                                 admobIds,
                                                 new NativeCallback() {
                                                     @Override
-                                                    public void onNativeAdLoaded(com.google.android.gms.ads.nativead.NativeAd admobAd) {
+                                                    public void onNativeAdLoaded(com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd admobAd) {
                                                         super.onNativeAdLoaded(admobAd);
                                                         fallbackList.add(admobAd);
                                                         pendingAdmobCount[0]--;
@@ -339,11 +339,11 @@ public class MetaNativeManager {
 //
 //        //create Admob list
 //        String admobKey = AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash();
-//        List<com.google.android.gms.ads.nativead.NativeAd> fallbackList = new ArrayList<>();
+//        List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> fallbackList = new ArrayList<>();
 //        if (AdmobAdsConfig.getInstance().getUseNativeFullSplashAdmobWhenMetaFail()) {
-//            List<com.google.android.gms.ads.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
+//            List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> oldFallback = mapAdmobNativeSplash.get(admobKey);
 //            if (oldFallback != null) {
-//                for (com.google.android.gms.ads.nativead.NativeAd ad : oldFallback) ad.destroy();
+//                for (com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd ad : oldFallback) ad.destroy();
 //                oldFallback.clear();
 //            }
 //            mapAdmobNativeSplash.put(admobKey, fallbackList);
@@ -363,7 +363,7 @@ public class MetaNativeManager {
 //    private static void loadMetaNativeFullSplashSequentially(Activity activity, String placementId,
 //                                                             String adsKey, int targetCount,
 //                                                             List<NativeAd> list,
-//                                                             List<com.google.android.gms.ads.nativead.NativeAd> fallbackList,
+//                                                             List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> fallbackList,
 //                                                             int loadedCount,
 //                                                             boolean[] hasNotifiedFirst,
 //                                                             boolean[] hasNotifiedFail,
@@ -392,7 +392,7 @@ public class MetaNativeManager {
 //                                        AdmobApi.getInstance().getListIDByName(AdmobAdsConfig.getInstance().getKeyNativeFullAdmobSplash()),
 //                                        new NativeCallback() {
 //                                            @Override
-//                                            public void onNativeAdLoaded(com.google.android.gms.ads.nativead.NativeAd nativeAd) {
+//                                            public void onNativeAdLoaded(com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd nativeAd) {
 //                                                super.onNativeAdLoaded(nativeAd);
 //                                                fallbackList.add(nativeAd);
 //                                                Log.d(TAG, "MetaNativeFullSplash: admob fallback loaded, total=" + fallbackList.size());
@@ -514,12 +514,12 @@ public class MetaNativeManager {
     }
 
     public static boolean hasAdmobFallback(String adsKey) {
-        List<com.google.android.gms.ads.nativead.NativeAd> list = mapAdmobNativeSplash.get(adsKey);
+        List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> list = mapAdmobNativeSplash.get(adsKey);
         return list != null && !list.isEmpty();
     }
 
-    public static com.google.android.gms.ads.nativead.NativeAd pollAdmobFallback(String adsKey) {
-        List<com.google.android.gms.ads.nativead.NativeAd> list = mapAdmobNativeSplash.get(adsKey);
+    public static com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd pollAdmobFallback(String adsKey) {
+        List<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd> list = mapAdmobNativeSplash.get(adsKey);
         if (list != null && !list.isEmpty()) return list.remove(0);
         return null;
     }

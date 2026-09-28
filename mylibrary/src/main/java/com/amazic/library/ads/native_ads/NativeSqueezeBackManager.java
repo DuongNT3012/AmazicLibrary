@@ -1,12 +1,6 @@
 package com.amazic.library.ads.native_ads;
 
-import static com.amazic.library.ads.admob.Admob.limitString;
-
 import android.app.Activity;
-import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -14,376 +8,73 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleEventObserver;
 import androidx.lifecycle.LifecycleOwner;
 
-import com.amazic.library.Utils.AdjustUtil;
-import com.amazic.library.Utils.EventTrackingHelper;
-import com.amazic.library.Utils.NetworkUtil;
-import com.amazic.library.Utils.RemoteConfigHelper;
-import com.amazic.library.ads.admob.Admob;
-import com.amazic.library.ump.AdsConsentManager;
-import com.google.ads.noninterruptive.squeezebackad.SqueezeBackAd;
-import com.google.ads.noninterruptive.squeezebackad.SqueezeBackAdEventCallback;
-import com.google.ads.noninterruptive.squeezebackad.SqueezeBackAdLoadCallback;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdValue;
-import com.google.android.gms.ads.LoadAdError;
-
 import java.util.List;
 
+/**
+ * Native "Squeeze Back" ads.
+ * <p>
+ * NOT SUPPORTED with the GMA Next-Gen SDK: the Squeeze Back format came from the
+ * {@code noninterruptive-sdk} AAR, which is built on top of the legacy Mobile Ads SDK
+ * ({@code com.google.android.gms.ads}) and cannot run next to the GMA Next-Gen SDK. The Next-Gen
+ * SDK has no Squeeze Back format (only Picture-in-Picture, see
+ * {@link com.amazic.library.ads.banner_ads.BannerPictureInPictureManager}).
+ * <p>
+ * The public API is kept so apps still compile, but every call is a no-op (no ad is requested).
+ */
+@Deprecated
 public class NativeSqueezeBackManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";
     private final LifecycleOwner lifecycleOwner;
-    //    private SqueezeBackAd backAd;
-    private final Activity currentActivity;
     private final String remoteKey;
-    private final List<String> listId;
-    private CountDownTimer countDownTimer;
-    private boolean isReloadAds = false;
-    private boolean isAlwaysReloadOnResume = false;
-    private long intervalReloadNative = 0;
-    private boolean isPause = false;
-    private boolean isUsePreload = false;
-    private SqueezeBackAd currentSqueezeBack; // Ad đang hiển thị trên màn hình
-    private SqueezeBackAd preloadedSqueezeBack;     // Ad đã load xong, nằm chờ đến lượt
-    private boolean isShowAdsPreload = false; //check first show preload
-    private boolean isLoading = false; // Flag check state load
-
 
     public NativeSqueezeBackManager(@NonNull Activity activity, LifecycleOwner lifecycleOwner, List<String> listId, String remoteKey) {
-        this.currentActivity = activity;
-        this.listId = listId;
-        this.remoteKey = remoteKey;
-        this.lifecycleOwner = lifecycleOwner;
-        this.lifecycleOwner.getLifecycle().addObserver(this);
+        this(activity, lifecycleOwner, listId, remoteKey, false);
     }
 
     public NativeSqueezeBackManager(@NonNull Activity activity, LifecycleOwner lifecycleOwner, List<String> listId, String remoteKey, boolean isUsePreload) {
-        this.currentActivity = activity;
-        this.listId = listId;
         this.remoteKey = remoteKey;
-        this.isUsePreload = isUsePreload;
         this.lifecycleOwner = lifecycleOwner;
         this.lifecycleOwner.getLifecycle().addObserver(this);
+        logNotSupported();
     }
 
+    private void logNotSupported() {
+        Log.w(TAG, "Native Squeeze Back is not supported by the GMA Next-Gen SDK, no ad is loaded. remoteKey=" + remoteKey);
+    }
 
     @Override
     public void onStateChanged(@NonNull LifecycleOwner lifecycleOwner, @NonNull Lifecycle.Event event) {
-        switch (event) {
-            case ON_CREATE:
-                Log.d(TAG, "onStateChanged: ON_CREATE");
-                if (this.isUsePreload) {
-                    loadAds();
-                } else {
-                    loadAndShow();
-                }
-                break;
-            case ON_RESUME:
-                String valueLog = isPause + " && " + (isReloadAds || isAlwaysReloadOnResume) + "_isUsePreload_" + isUsePreload + "_isShowAdsPreload_" + isShowAdsPreload;
-                Log.d(TAG, "onStateChanged: ON_RESUME\n" + valueLog);
-                if (isPause && (isReloadAds || isAlwaysReloadOnResume)) {
-                    isReloadAds = false;
-                    if (isUsePreload) {
-                        if (isShowAdsPreload) { // if show ads => load and show resume
-                            loadAndShow();
-                        }
-                    } else {
-                        loadAndShow();
-                    }
-                }
-                isPause = false;
-                break;
-            case ON_PAUSE:
-                Log.d(TAG, "onStateChanged: ON_PAUSE");
-                isPause = true;
-                cancelAutoReloadNative();
-
-                if (currentActivity.isFinishing()) {
-                    if (currentSqueezeBack != null) {
-                        currentSqueezeBack.destroy();
-                        currentSqueezeBack = null;
-                    }
-                    preloadedSqueezeBack = null;
-                }
-                break;
-            case ON_DESTROY:
-                Log.d(TAG, "onStateChanged: ON_DESTROY");
-                currentSqueezeBack = null;
-                preloadedSqueezeBack = null;
-                this.lifecycleOwner.getLifecycle().removeObserver(this);
-                break;
+        if (event == Lifecycle.Event.ON_DESTROY) {
+            this.lifecycleOwner.getLifecycle().removeObserver(this);
         }
     }
 
     public void setIntervalReloadNative(long intervalReloadNative) {
-        if (intervalReloadNative > 0) {
-            this.intervalReloadNative = intervalReloadNative;
-            countDownTimer = new CountDownTimer(this.intervalReloadNative, 1000) {
-                @Override
-                public void onTick(long l) {
-
-                }
-
-                @Override
-                public void onFinish() {
-                    if (isUsePreload) {
-                        showAds();
-                    } else {
-                        loadAndShow();
-                    }
-                }
-            };
-        }
     }
 
     public void startReloadNative() {
-        Log.d(TAG, "startReloadNative: " + (countDownTimer != null)
-                + " && " + (this.lifecycleOwner.getLifecycle().getCurrentState()));
-        if (countDownTimer != null && this.lifecycleOwner.getLifecycle().getCurrentState() == Lifecycle.State.RESUMED) {
-            countDownTimer.cancel();
-            countDownTimer.start();
-        }
     }
 
     public void cancelAutoReloadNative() {
-        if (countDownTimer != null) {
-            countDownTimer.cancel();
-        }
     }
 
     public void setReloadAds() {
-        isReloadAds = true;
     }
 
     public void setAlwaysReloadOnResume(boolean isAlwaysReloadOnResume) {
-        this.isAlwaysReloadOnResume = isAlwaysReloadOnResume;
     }
 
     public void loadAds() {
-        if (isLoading) {
-            Log.d(TAG, "Native Squeeze Back: Ad is already loading, ignore this request ");
-            return;
-        }
-        if (!NetworkUtil.isNetworkActive(currentActivity) || listId.isEmpty() || !AdsConsentManager.getConsentResult(currentActivity) || !Admob.getInstance().getShowAllAds() || !RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey)) {
-            Log.d(TAG, "Native Squeeze Back: load Ads Check Condition. Network: " + NetworkUtil.isNetworkActive(currentActivity) + "_IsEmpty: " + listId.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(currentActivity) + "_showAll:" + Admob.getInstance().getShowAllAds() + "_remoteKey:" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
-            Bundle bundle = new Bundle();
-            bundle.putString("failed_message", "network_" + NetworkUtil.isNetworkActive(currentActivity) + "_isId_" + listId.isEmpty() + "_ump_" + listId.isEmpty() + "_isshowads_" + Admob.getInstance().getShowAllAds() + "_remote_" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
-
-            EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_fail", bundle);
-            return;
-        }
-        isLoading = true;
-        Log.d(TAG, "Native Squeeze Back: start load request true");
-        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_true");
-        SqueezeBackAd.load(
-                this.currentActivity,
-                listId.get(0),
-                new AdRequest.Builder().build(),
-                null,
-                new SqueezeBackAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull SqueezeBackAd squeezeBackAd) {
-                        Log.d(TAG, "Native Squeeze Back: Ad loaded.");
-                        isLoading = false;
-                        preloadedSqueezeBack = squeezeBackAd;
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        Log.d(TAG, "Native Squeeze Back: failed to load.");
-                        isLoading = false;
-                        preloadedSqueezeBack = null;
-
-                        Bundle bundle = new Bundle();
-                        bundle.putString("failed_message", loadAdError.getMessage());
-                        EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_loadfail", bundle);
-                        startReloadNative();
-                    }
-                },
-                new SqueezeBackAdEventCallback() {
-                    @Override
-                    public void onAdShown() {
-                        Log.d(TAG, "Native Squeeze Back: Ad Shown.");
-                    }
-
-                    @Override
-                    public void onAdHidden() {
-                        Log.d(TAG, "Native Squeeze Back: Ad Hidden.");
-                    }
-
-                    @Override
-                    public void onAdDestroyed() {
-                        Log.d(TAG, "Native Squeeze Back: Ad Destroyed.");
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        Log.d(TAG, "Native Squeeze Back: Ad Click.");
-                    }
-
-                    @Override
-                    public void onAdImpression() {
-                        Log.d(TAG, "Native Squeeze Back: Ad Impression.");
-                        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_view");
-                        startReloadNative();
-                    }
-
-                    @Override
-                    public void onAdPaid(AdValue adValue) {
-                        Log.d(TAG, "Native Squeeze Back: Ad Paid.");
-                        //Adjust
-                        AdjustUtil.trackRevenue(null, adValue, listId.get(0), remoteKey);
-                    }
-                }
-        );
+        logNotSupported();
     }
 
     public void showAds() {
-        Log.d(TAG, "Native Squeeze Back: Call ShowAds.");
-        isShowAdsPreload = true;
-
-        if (this.isUsePreload) {
-            Log.d(TAG, "Native Squeeze Back: preloadedSqueezeBack = " + preloadedSqueezeBack);
-            if (preloadedSqueezeBack != null) {
-                if (currentSqueezeBack != null) {
-                    currentSqueezeBack.destroy();
-                    currentSqueezeBack = null;
-                }
-
-                new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //check Nếu activity đã chết trong 800ms qua thì THOÁT NGAY
-                        if (currentActivity == null || currentActivity.isFinishing() || currentActivity.isDestroyed()) {
-                            Log.d(TAG, "Activity đã chết, hủy bỏ lệnh Show Ad.");
-                            return;
-                        }
-                        if (preloadedSqueezeBack == null) return;
-
-                        currentSqueezeBack = preloadedSqueezeBack;
-                        preloadedSqueezeBack = null;
-                        if (lifecycleOwner.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-                            currentSqueezeBack.show();
-                            Log.d(TAG, "Native Squeeze Back: Đã tráo đổi và hiển thị Ad mới.");
-                        }
-                        loadAds();
-                    }
-                }, 800);
-            } else {
-                isLoading = false;
-                loadAds();
-                startReloadNative();
-            }
-        }
+        logNotSupported();
     }
 
     public void hideAds() {
-        Log.d(TAG, "Native Squeeze Back: Call HideAds.");
-        if (currentSqueezeBack != null) {
-            currentSqueezeBack.hide();
-            cancelAutoReloadNative();
-        }
     }
 
     public void destroyAds() {
-        Log.d(TAG, "Native Squeeze Back: Call DestroyAds.");
-        if (currentSqueezeBack != null) {
-            currentSqueezeBack.destroy();
-            cancelAutoReloadNative();
-        }
-    }
-
-    private void loadAndShow() {
-        Log.d(TAG, "Native Squeeze Back: USE loadAndShow.");
-        if (isLoading) {
-            Log.d(TAG, "Native Squeeze Back: loadAndShow - Ad is already loading, ignore this request ");
-            return;
-        }
-        if (currentSqueezeBack != null) {
-            currentSqueezeBack.destroy();
-        }
-        if (!NetworkUtil.isNetworkActive(currentActivity) || listId.isEmpty() || !AdsConsentManager.getConsentResult(currentActivity) || !Admob.getInstance().getShowAllAds() || !RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey)) {
-            Log.d(TAG, "Native Squeeze Back: loadAndShow Check Condition. Network: " + NetworkUtil.isNetworkActive(currentActivity) + "_IsEmpty: " + listId.isEmpty() + "_UMP:" + AdsConsentManager.getConsentResult(currentActivity) + "_showAll:" + Admob.getInstance().getShowAllAds() + "_remoteKey:" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
-
-            Bundle bundle = new Bundle();
-            bundle.putString("failed_message", "internet_" + NetworkUtil.isNetworkActive(currentActivity) + "_IsEmpty_" + listId.isEmpty() + "_UMP_" + AdsConsentManager.getConsentResult(currentActivity) + "_showAll_" + Admob.getInstance().getShowAllAds() + "_remoteKey_" + RemoteConfigHelper.getInstance().get_config(currentActivity, remoteKey));
-
-            EventTrackingHelper.logEventWithMultipleParams(
-                    currentActivity,
-                    remoteKey + "_config_failed",
-                    bundle
-            );
-            return;
-        }
-        isLoading = true;
-        Log.d(TAG, "Native Squeeze Back: loadAndShow - start load request true");
-        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_true");
-        SqueezeBackAd.load(
-                this.currentActivity,
-                listId.get(0),
-                new AdRequest.Builder().build(),
-                null,
-                new SqueezeBackAdLoadCallback() {
-                    @Override
-                    public void onAdLoaded(@NonNull SqueezeBackAd squeezeBackAd) {
-                        isLoading = false;
-                        Log.d(TAG, "Native Squeeze Back: onAdLoaded. " + remoteKey);
-                        currentSqueezeBack = squeezeBackAd;
-                        if (lifecycleOwner.getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
-                            currentSqueezeBack.show();
-                        }
-                    }
-
-                    @Override
-                    public void onAdFailedToLoad(@NonNull LoadAdError loadAdError) {
-                        isLoading = false;
-                        Log.e(TAG, "Native Squeeze Back: onAdFailedToLoad. " + loadAdError + ". " + remoteKey);
-                        Bundle bundle = new Bundle();
-                        bundle.putString("failed_message", limitString(loadAdError.getMessage(), 99));
-                        if (loadAdError.getResponseInfo() != null && loadAdError.getResponseInfo().getLoadedAdapterResponseInfo() != null && loadAdError.getMessage().toLowerCase().contains("no fill")) {
-                            bundle.putString("no_fill_source", limitString(loadAdError.getResponseInfo().getLoadedAdapterResponseInfo().getAdSourceName(), 99));
-                        }
-                        EventTrackingHelper.logEventWithMultipleParams(currentActivity, remoteKey + "_failed", bundle);
-                        //
-                        startReloadNative();
-                    }
-                },
-                new SqueezeBackAdEventCallback() {
-                    @Override
-                    public void onAdShown() {
-                        Log.d(TAG, "Native Squeeze Back: onAdShown. " + remoteKey);
-                        //
-                        startReloadNative();
-                    }
-
-                    @Override
-                    public void onAdHidden() {
-                        Log.d(TAG, "Native Squeeze Back: onAdHidden. " + remoteKey);
-                        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_hidden");
-                    }
-
-                    @Override
-                    public void onAdDestroyed() {
-                        Log.d(TAG, "Native Squeeze Back: onAdDestroyed. " + remoteKey);
-                    }
-
-                    @Override
-                    public void onAdClicked() {
-                        Log.d(TAG, "Native Squeeze Back: onAdClicked. " + remoteKey);
-                        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_click");
-                    }
-
-                    @Override
-                    public void onAdImpression() {
-                        Log.d(TAG, "Native Squeeze Back: onAdImpression. " + remoteKey);
-                        EventTrackingHelper.logEvent(currentActivity, remoteKey + "_view");
-                    }
-
-                    @Override
-                    public void onAdPaid(AdValue adValue) {
-                        //Adjust
-                        AdjustUtil.trackRevenue(null, adValue, listId.get(0), remoteKey);
-                    }
-                }
-        );
     }
 }

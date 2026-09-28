@@ -11,7 +11,7 @@
         android:background="@drawable/bg_native_ads"
         android:orientation="vertical">
 
-        <com.google.android.gms.ads.nativead.MediaView
+        <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
             android:id="@+id/ad_media"
             android:layout_width="match_parent"
             android:layout_height="120dp"

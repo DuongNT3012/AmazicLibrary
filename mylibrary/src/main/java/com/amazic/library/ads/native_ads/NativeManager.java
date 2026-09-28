@@ -15,8 +15,8 @@ import androidx.lifecycle.LifecycleOwner;
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.callback.NativeCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.nativead.NativeAd;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd;
 
 public class NativeManager implements LifecycleEventObserver {
     private static final String TAG = "NativeManager";

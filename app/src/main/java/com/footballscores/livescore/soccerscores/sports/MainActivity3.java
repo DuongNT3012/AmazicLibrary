@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.banner_ads.BannerPictureInPictureManager;
 import com.footballscores.livescore.soccerscores.sports.databinding.ActivityMain3Binding;
-import com.google.ads.noninterruptive.pictureinpicturead.PictureInPictureAd;
+import com.google.android.libraries.ads.mobile.sdk.pip.PictureInPictureAdPosition;
 
 public class MainActivity3 extends AppCompatActivity {
 
@@ -28,6 +28,6 @@ public class MainActivity3 extends AppCompatActivity {
         BannerPictureInPictureManager banner = new BannerPictureInPictureManager(this, this, AdmobApi.getInstance().getListIDByName("banner_all"), "native_all");
         banner.setIntervalReloadBanner(7000);
         banner.setAlwaysReloadOnResume(true);
-        banner.setPosition(PictureInPictureAd.AdPosition.TOP_RIGHT);
+        banner.setPosition(PictureInPictureAdPosition.TOP_RIGHT);
     }
 }

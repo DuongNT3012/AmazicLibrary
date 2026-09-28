@@ -29,20 +29,23 @@ import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.dialog.LoadingAdsResumeDialog;
 import com.amazic.library.organic.TechManager;
 import com.amazic.library.ump.AdsConsentManager;
-import com.google.android.gms.ads.AdActivity;
-import com.google.android.gms.ads.AdError;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.FullScreenContentCallback;
-import com.google.android.gms.ads.LoadAdError;
-import com.google.android.gms.ads.ResponseInfo;
-import com.google.android.gms.ads.appopen.AppOpenAd;
-import com.google.android.gms.ads.appopen.AppOpenAdPreloader;
-import com.google.android.gms.ads.preload.PreloadCallbackV2;
-import com.google.android.gms.ads.preload.PreloadConfiguration;
+import com.google.android.libraries.ads.mobile.sdk.common.AdActivity;
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest;
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError;
+import com.google.android.libraries.ads.mobile.sdk.common.ResponseInfo;
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAd;
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAdPreloader;
+import com.google.android.libraries.ads.mobile.sdk.common.PreloadCallback;
+import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration;
 
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import com.amazic.library.ads.admob.NextGenAds;
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAdEventCallback;
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback;
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue;
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError;
 
 public class AppOpenManager implements Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
     private static final String TAG = "AppOpenManager";
@@ -212,16 +215,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             loadingAdsResumeDialog.show();
         }
 
-        AdRequest request = new AdRequest.Builder().build();
-        AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
+        NextGenAds.loadAppOpen(activity, listIdOpenResumeTemp.get(0),
+                new AdLoadCallback<AppOpenAd>() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                //Tracking revenue
-                ad.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
-                });
                 Log.i(TAG, "onAdLoaded. " + remoteKey);
                 appOpenAd = ad;
                 isLoadingAd = false;
@@ -297,7 +294,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
 
         if (appOpenAd != null) {
-            appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+            final AppOpenAd adForRevenue = appOpenAd;
+            appOpenAd.setAdEventCallback(NextGenAds.onMain(new AppOpenAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(adForRevenue.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, adForRevenue.getAdUnitId(), remoteKey);
+                }
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
@@ -311,7 +314,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 }
 
                 @Override
-                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                     Log.e(TAG, "WELCOME BACK: onAdFailedToShowFullScreenContent. " + adError + ". " + remoteKey);
                     appOpenAd = null;
                     isShowingAd = false;
@@ -337,7 +340,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdClicked() {
-                    super.onAdClicked();
                     AppOpenManager.isLastActionClickAd = true;
                     Log.d(TAG, "WELCOME BACK: onAdClicked. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "_click");
@@ -348,14 +350,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdImpression() {
-                    super.onAdImpression();
                     Log.d(TAG, "WELCOME BACK: onAdImpression. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "_view");
                     if (appOpenCallback != null) {
                         appOpenCallback.onAdImpression();
                     }
                 }
-            });
+            }));
             isShowingAd = true;
             appOpenAd.show(activity);
         }
@@ -387,16 +388,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         //end log event can request ads
 
-        AdRequest request = new AdRequest.Builder().build();
-        AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
+        NextGenAds.loadAppOpen(activity, listIdOpenResumeTemp.get(0),
+                new AdLoadCallback<AppOpenAd>() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                //Tracking revenue
-                ad.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
-                });
                 Log.i(TAG, "onAdLoaded. " + remoteKey);
                 appOpenAd = ad;
                 isLoadingAd = false;
@@ -430,16 +425,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             return;
         }
         isLoadingAd = true;
-        AdRequest request = new AdRequest.Builder().build();
-        AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
+        NextGenAds.loadAppOpen(activity, listIdOpenResumeTemp.get(0),
+                new AdLoadCallback<AppOpenAd>() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                //Tracking revenue
-                ad.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
-                });
                 Log.i(TAG, "onAdLoaded. " + remoteKey);
                 appOpenAd = ad;
                 isLoadingAd = false;
@@ -476,16 +465,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         EventTrackingHelper.logEvent(activity, remoteKey + "_true");
         //end log event can request ads
 
-        AdRequest request = new AdRequest.Builder().build();
-        AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
+        NextGenAds.loadAppOpen(activity, listIdOpenResumeTemp.get(0),
+                new AdLoadCallback<AppOpenAd>() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                //Tracking revenue
-                ad.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
-                });
                 Log.i(TAG, "onAdLoaded. " + remoteKey);
                 appOpenAd = ad;
                 isLoadingAd = false;
@@ -566,7 +549,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+            final AppOpenAd adForRevenue = appOpenAd;
+            appOpenAd.setAdEventCallback(NextGenAds.onMain(new AppOpenAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(adForRevenue.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, adForRevenue.getAdUnitId(), remoteKey);
+                }
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
@@ -580,7 +569,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 }
 
                 @Override
-                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                     Log.d(TAG, "Ad Failed To Show FullScreen Content. " + adError + ". " + remoteKey);
                     appOpenAd = null;
                     isShowingAd = false;
@@ -607,7 +596,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdClicked() {
-                    super.onAdClicked();
                     AppOpenManager.isLastActionClickAd = true;
                     Log.d(TAG, "onAdClicked. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "_click");
@@ -618,14 +606,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdImpression() {
-                    super.onAdImpression();
                     Log.d(TAG, "onAdImpression. " + remoteKey);
                     EventTrackingHelper.logEvent(activity, remoteKey + "_view");
                     if (appOpenCallback != null) {
                         appOpenCallback.onAdImpression();
                     }
                 }
-            });
+            }));
             isShowingAd = true;
             appOpenAd.show(activity);
         }, 250);
@@ -644,17 +631,17 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         //end log event can request ads
 
         Log.d(TAG, "APP Open Preload: number ad preloading = " + AdmobAdsConfig.getInstance().getNumberPreloading());
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResume.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloading()).build();
+        PreloadConfiguration configuration = new PreloadConfiguration(new AdRequest.Builder(listIdOpenResume.get(0)).build(), AdmobAdsConfig.getInstance().getNumberPreloading());
 
-        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+        PreloadCallback callback = new PreloadCallback() {
             @Override
-            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+            public void onAdFailedToPreload(@NonNull String s, @NonNull LoadAdError adError) {
                 isLoadingAd = false;
                 Log.d(TAG, "APP Open Preload: Preload ad " + s + " had an error : " + adError.getMessage() + ".");
             }
 
             @Override
-            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+            public void onAdPreloaded(@NonNull String s, @NonNull ResponseInfo responseInfo) {
                 isLoadingAd = false;
                 Log.d(TAG, "APP Open Preload: Preload ad for " + s + " is available.");
             }
@@ -665,7 +652,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
         };
 
-        AppOpenAdPreloader.start(listIdOpenResume.get(0), configuration, callback);
+        NextGenAds.runWhenSdkReady(activity, () -> AppOpenAdPreloader.start(listIdOpenResume.get(0), configuration, NextGenAds.onMain(callback)));
     }
 
     public void showAdPreload(@NonNull final Activity activity, List<String> listIdOpenResume, AppOpenCallback appOpenCallback, String remoteKey) {
@@ -723,17 +710,17 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             loadingAdsResumeDialog.show();
         }
 
-        AppOpenAd ad = AppOpenAdPreloader.pollAd(listIdOpenResume.get(0));
+        AppOpenAd ad = NextGenAds.pollAppOpen(listIdOpenResume.get(0));
 
         if (ad != null) {
-            ad.setOnPaidEventListener(
-                    adValue -> {
-                        ad.getResponseInfo();
-                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResume.get(0), remoteKey);
-                    }
-            );
 
-            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+            ad.setAdEventCallback(NextGenAds.onMain(new AppOpenAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, ad.getAdUnitId(), remoteKey);
+                }
+
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     Log.d(TAG, "APP Open Preload: Ad dismissed fullscreen content. " + remoteKey);
@@ -745,7 +732,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 }
 
                 @Override
-                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                     Log.d(TAG, "APP Open Preload: Ad Failed To Show FullScreen Content. " + adError + ". " + remoteKey);
                     appOpenAd = null;
                     isShowingAd = false;
@@ -786,7 +773,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                         appOpenCallback.onAdImpression();
                     }
                 }
-            });
+            }));
             isShowingAd = true;
             ad.show(activity);
         }
@@ -859,11 +846,11 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
         Log.d(TAG, "App Open Preload SPLASH: number ad preloading = " + AdmobAdsConfig.getInstance().getNumberPreloadingSplash());
 
-        PreloadConfiguration configuration = new PreloadConfiguration.Builder(listIdOpenResumeTemp.get(0)).setBufferSize(AdmobAdsConfig.getInstance().getNumberPreloadingSplash()).build();
+        PreloadConfiguration configuration = new PreloadConfiguration(new AdRequest.Builder(listIdOpenResumeTemp.get(0)).build(), AdmobAdsConfig.getInstance().getNumberPreloadingSplash());
 
-        PreloadCallbackV2 callback = new PreloadCallbackV2() {
+        PreloadCallback callback = new PreloadCallback() {
             @Override
-            public void onAdFailedToPreload(@NonNull String s, @NonNull AdError adError) {
+            public void onAdFailedToPreload(@NonNull String s, @NonNull LoadAdError adError) {
                 Log.d(TAG, "App Open Preload SPLASH: Preload ad " + s + " had an error : " + adError.getMessage() + ".");
 
                 isLoadingAdSplash = false;
@@ -875,7 +862,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
 
             @Override
-            public void onAdPreloaded(@NonNull String s, @Nullable ResponseInfo responseInfo) {
+            public void onAdPreloaded(@NonNull String s, @NonNull ResponseInfo responseInfo) {
                 Log.d(TAG, "App Open Preload SPLASH: Preload ad for " + s + " is available.");
                 isLoadingAdSplash = false;
                 appOpenCallback.onAdLoaded(null);
@@ -895,7 +882,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
         };
 
-        AppOpenAdPreloader.start(listIdOpenResumeTemp.get(0), configuration, callback);
+        NextGenAds.runWhenSdkReady(activity, () -> AppOpenAdPreloader.start(listIdOpenResumeTemp.get(0), configuration, NextGenAds.onMain(callback)));
 
     }
 
@@ -932,16 +919,16 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             loadingAdsResumeDialog.show();
         }
 
-        AppOpenAd ad = AppOpenAdPreloader.pollAd(listIdOpenResume.get(0));
+        AppOpenAd ad = NextGenAds.pollAppOpen(listIdOpenResume.get(0));
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            ad.setOnPaidEventListener(
-                    adValue -> {
-                        ad.getResponseInfo();
-                        AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResume.get(0), remoteKey);
-                    }
-            );
 
-            ad.setFullScreenContentCallback(new FullScreenContentCallback() {
+            ad.setAdEventCallback(NextGenAds.onMain(new AppOpenAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, ad.getAdUnitId(), remoteKey);
+                }
+
                 @Override
                 public void onAdDismissedFullScreenContent() {
                     //increase splash open
@@ -956,7 +943,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 }
 
                 @Override
-                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                     Log.d(TAG, "App Open Preload SPLASH: ad failed to show");
                     isShowingAd = false;
 
@@ -1018,7 +1005,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     }
                     //end log event
                 }
-            });
+            }));
             if (ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
                 isShowingAd = true;
                 ad.show(activity);
@@ -1080,7 +1067,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             loadingAdsResumeDialog.show();
         }
 
-        appOpenAd.setFullScreenContentCallback(new FullScreenContentCallback() {
+        final AppOpenAd adForRevenue = appOpenAd;
+        appOpenAd.setAdEventCallback(NextGenAds.onMain(new AppOpenAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(adForRevenue.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, adForRevenue.getAdUnitId(), remoteKey);
+                }
 
             @Override
             public void onAdDismissedFullScreenContent() {
@@ -1094,7 +1087,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
             }
 
             @Override
-            public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+            public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                 Log.e(TAG, "WELCOME BACK: onAdFailedToShowFullScreenContent. " + adError + ". " + remoteKey);
                 appOpenAd = null;
                 isShowingAd = false;
@@ -1120,7 +1113,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
             @Override
             public void onAdClicked() {
-                super.onAdClicked();
                 AppOpenManager.isLastActionClickAd = true;
                 Log.d(TAG, "WELCOME BACK: onAdClicked. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_click");
@@ -1131,14 +1123,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
             @Override
             public void onAdImpression() {
-                super.onAdImpression();
                 Log.d(TAG, "WELCOME BACK: onAdImpression. " + remoteKey);
                 EventTrackingHelper.logEvent(activity, remoteKey + "_view");
                 if (appOpenCallback != null) {
                     appOpenCallback.onAdImpression();
                 }
             }
-        });
+        }));
         isShowingAd = true;
         appOpenAd.show(activity);
     }
@@ -1185,7 +1176,13 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         }
 
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            appOpenAdSplash.setFullScreenContentCallback(new FullScreenContentCallback() {
+            final AppOpenAd adForRevenue = appOpenAdSplash;
+            appOpenAdSplash.setAdEventCallback(NextGenAds.onMain(new AppOpenAdEventCallback() {
+                @Override
+                public void onAdPaid(@NonNull AdValue adValue) {
+                    //Tracking revenue (Adjust)
+                    AdjustUtil.trackRevenue(adForRevenue.getResponseInfo().getLoadedAdSourceResponseInfo(), adValue, adForRevenue.getAdUnitId(), remoteKey);
+                }
 
                 @Override
                 public void onAdDismissedFullScreenContent() {
@@ -1202,7 +1199,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                 }
 
                 @Override
-                public void onAdFailedToShowFullScreenContent(@NonNull AdError adError) {
+                public void onAdFailedToShowFullScreenContent(@NonNull FullScreenContentError adError) {
                     Log.e(TAG, "SPLASH: Ad Failed To Show FullScreen Content. " + adError);
                     //appOpenAdSplash = null;
                     isShowingAd = false;
@@ -1242,7 +1239,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdClicked() {
-                    super.onAdClicked();
                     AppOpenManager.isLastActionClickAd = true;
                     Log.d(TAG, "SPLASH: onAdClicked.");
                     countClickInterSplashAds++;
@@ -1255,7 +1251,6 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
 
                 @Override
                 public void onAdImpression() {
-                    super.onAdImpression();
                     Log.d(TAG, "SPLASH: onAdImpression.");
                     appOpenCallback.onAdImpression();
                     //log event
@@ -1266,7 +1261,7 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
                     }
                     //end log event
                 }
-            });
+            }));
             if (ProcessLifecycleOwner.get().getLifecycle().getCurrentState().isAtLeast(Lifecycle.State.RESUMED)) {
                 isShowingAd = true;
                 appOpenAdSplash.show(activity);
@@ -1338,16 +1333,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         //end log event can request
 
         isLoadingAdSplash = true;
-        AdRequest request = new AdRequest.Builder().build();
-        AppOpenAd.load(activity, listIdOpenResumeTemp.get(0), request, new AppOpenAd.AppOpenAdLoadCallback() {
+        NextGenAds.loadAppOpen(activity, listIdOpenResumeTemp.get(0),
+                new AdLoadCallback<AppOpenAd>() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                //Tracking revenue
-                ad.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResumeTemp.get(0), remoteKey);
-                });
                 // Called when an app open ad has loaded.
                 Log.i(TAG, "SPLASH: Ad was loaded.");
                 appOpenAdSplash = ad;
@@ -1457,16 +1446,10 @@ public class AppOpenManager implements Application.ActivityLifecycleCallbacks, D
         //end log event can request
 
         isLoadingAdSplash = true;
-        AdRequest request = new AdRequest.Builder().build();
-        AppOpenAd.load(activity, idOpenResume, request, new AppOpenAd.AppOpenAdLoadCallback() {
+        NextGenAds.loadAppOpen(activity, idOpenResume,
+                new AdLoadCallback<AppOpenAd>() {
             @Override
             public void onAdLoaded(@NonNull AppOpenAd ad) {
-                //Tracking revenue
-                ad.setOnPaidEventListener(adValue -> {
-                    //Adjust
-                    ad.getResponseInfo();
-                    AdjustUtil.trackRevenue(ad.getResponseInfo().getLoadedAdapterResponseInfo(), adValue, listIdOpenResume.get(0), remoteKey);
-                });
                 // Called when an app open ad has loaded.
                 Log.i(TAG, "SPLASH: Ad was loaded open splash loop. " + idOpenResume);
                 appOpenAdSplash = ad;

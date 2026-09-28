@@ -12,7 +12,7 @@ import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.NativeCallback;
 import com.amazic.mylibrary.R;
 import com.facebook.shimmer.ShimmerFrameLayout;
-import com.google.android.gms.ads.nativead.NativeAdView;
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -14,9 +14,9 @@ import com.adjust.sdk.LogLevel;
 import com.amazic.library.Utils.EventTrackingHelper;
 import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.ads.admob.NextGenAds;
 import com.facebook.ads.AdSettings;
 import com.facebook.ads.AudienceNetworkAds;
-import com.google.android.gms.ads.MobileAds;
 
 import java.util.Locale;
 
@@ -35,21 +35,19 @@ public abstract class AdsApplication extends Application implements Application.
     }
 
     private void initAdmob() {
-        new Thread(() -> {
-            long startTime = System.currentTimeMillis();
-
-            // Initialize the Google Mobile Ads SDK on a background thread.
-            MobileAds.initialize(this, initializationStatus -> {
-                Admob.getInstance().setIsInitAdmobDone(true);
-                float timeToInit = (System.currentTimeMillis() - startTime) / 1000.0f;
-                Log.d("AdmobInit", "initAdmob:timeToInit: " + timeToInit + " application - " + initializationStatus.getAdapterStatusMap());
-                EventTrackingHelper.logEventWithAParam(this,
-                        "done_init_admob",
-                        "time_between_step",
-                        String.format(Locale.US, "%.1f", timeToInit)
-                );
-            });
-        }).start();
+        long startTime = System.currentTimeMillis();
+        // GMA Next-Gen SDK: must be initialized (with the AdMob app id) before loading any ad.
+        // The app id is read from the manifest meta-data com.google.android.gms.ads.APPLICATION_ID
+        // (or from Admob.getInstance().setAppID(...) if set before super.onCreate()).
+        NextGenAds.initialize(this, () -> {
+            float timeToInit = (System.currentTimeMillis() - startTime) / 1000.0f;
+            Log.d("AdmobInit", "initAdmob:timeToInit: " + timeToInit);
+            EventTrackingHelper.logEventWithAParam(this,
+                    "done_init_admob",
+                    "time_between_step",
+                    String.format(Locale.US, "%.1f", timeToInit)
+            );
+        });
     }
 
     private void initMeta() {

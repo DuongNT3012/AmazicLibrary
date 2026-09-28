@@ -7,7 +7,7 @@ import android.widget.FrameLayout;
 
 import com.amazic.library.ads.callback.BannerCallback;
 import com.amazic.mylibrary.R;
-import com.google.android.gms.ads.AdView;
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView;
 
 import java.util.ArrayList;
 import java.util.List;

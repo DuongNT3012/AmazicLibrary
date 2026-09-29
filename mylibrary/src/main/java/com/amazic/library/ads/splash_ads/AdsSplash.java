@@ -28,6 +28,7 @@ import com.google.android.libraries.ads.mobile.sdk.common.PreloadConfiguration;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback;
 import com.google.android.libraries.ads.mobile.sdk.common.AdValue;
 import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError;
@@ -280,7 +281,7 @@ public class AdsSplash {
     }
 
     public void loadAd(Context context, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback,
-                      boolean isUseAdPreloading) {
+                       boolean isUseAdPreloading) {
         if (isUseAdPreloading) {
             loadInterSplashPreload(context, adUnitId, remoteKey, numberPreload, interCallback, null);
         } else {
@@ -316,7 +317,7 @@ public class AdsSplash {
                 if (!isLoading.get()) interCallback.onNextAction();
             }
         }, () -> {
-            if (mInterstitialAd != null){
+            if (mInterstitialAd != null) {
                 if (AdmobAdsConfig.getInstance().isTimeout()) {
                     Bundle bundle = new Bundle();
                     String messageFailed = "time_out_splash_screen";
@@ -347,7 +348,7 @@ public class AdsSplash {
                 if (NextGenAds.getInterstitialPreloadCount(adUnitId) >= numberPreload) {
                     pushAdToCache(Objects.requireNonNull(NextGenAds.pollInterstitial(adUnitId)), adUnitId);
                     cancelPreload(adUnitId);
-                    EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
+                    EventTrackingHelper.getInstance(activity).logEvent(TAG + "_cancel_preload");
 
                     if (AdmobAdsConfig.getInstance().isTimeout()) {
                         Bundle bundle = new Bundle();
@@ -364,7 +365,7 @@ public class AdsSplash {
             public void onAdFailedToLoad() {
                 interCallback.onAdFailedToLoad();
             }
-        },()->{
+        }, () -> {
             if (NextGenAds.getInterstitialPreloadCount(adUnitId) >= numberPreload) {
                 pushAdToCache(Objects.requireNonNull(NextGenAds.pollInterstitial(adUnitId)), adUnitId);
 
@@ -386,13 +387,13 @@ public class AdsSplash {
             Log.d(TAG, "showCacheInterSplash: " + NextGenAds.getInterstitialPreloadCount(adUnitId));
             mInterstitialAd = NextGenAds.pollInterstitial(adUnitId);
             cancelPreload(adUnitId);
-            EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
+            EventTrackingHelper.getInstance(activity).logEvent(TAG + "_cancel_preload");
         }
         showInterSplash(activity, adUnitId, remoteKey, interCallback);
     }
 
-     public void clear(){
-         mInterstitialAd = null;
-         isLoading.set(false);
-     }
+    public void clear() {
+        mInterstitialAd = null;
+        isLoading.set(false);
+    }
 }

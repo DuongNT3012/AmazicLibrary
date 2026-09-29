@@ -15,8 +15,8 @@ public class AdmobAdsConfig {
     public static final String WELCOME_BACK_NORMAL = "Normal";
     public static final String WELCOME_BACK_BELOW = "Below";
     public static final String WELCOME_BACK_ABOVE = "Above";
-    public static final String  DETECT_TEST_AD = "DetectTestAd";
-    public static final String  TECH_MANAGER = "TechManager";
+    public static final String DETECT_TEST_AD = "DetectTestAd";
+    public static final String TECH_MANAGER = "TechManager";
 
     private static AdmobAdsConfig INSTANCE = null;
 
@@ -26,7 +26,7 @@ public class AdmobAdsConfig {
         }
         return INSTANCE;
     }
-    
+
     private boolean isTech = false;
     private String jsonIdAdsDefault = "";
     private int timeOutCallApi = 4000;
@@ -65,6 +65,7 @@ public class AdmobAdsConfig {
 
     //ad preloading
     private boolean isUseAdPreloading = false;
+    private boolean isUseAdSplashPreloading = false;
     private int numberPreloading = 3;
     private int numberPreloadingSplash = 1;
     private boolean isShowNativeAfterInter = false;
@@ -228,6 +229,7 @@ public class AdmobAdsConfig {
     public void setAppPkg(String appId) {
         this.appPkg = appId;
     }
+
     public String getAppId() {
         return appId;
     }
@@ -280,6 +282,7 @@ public class AdmobAdsConfig {
         this.welcomeBackClass = welcomeBackClass;
         isPreloadResumeAds = false;
     }
+
     public Class<?> getWelcomeBackClass() {
         return welcomeBackClass;
     }
@@ -335,6 +338,7 @@ public class AdmobAdsConfig {
     public void setTimeOutSplash(long timeOutSplash) {
         this.timeOutSplash = timeOutSplash;
     }
+
     public long getTimeOutInitAdmob() {
         return timeOutInitAdmob;
     }
@@ -358,6 +362,7 @@ public class AdmobAdsConfig {
     public void setUseDetectTestAd() {
         useTechManagerOrDetectTestAd = DETECT_TEST_AD;
     }
+
     public void setUseTechManagerOrDetectTestAd(String useTechManagerOrDetectTestAd) {
         this.useTechManagerOrDetectTestAd = useTechManagerOrDetectTestAd;
     }
@@ -437,6 +442,14 @@ public class AdmobAdsConfig {
         isUseAdPreloading = useAdPreloading;
     }
 
+    public boolean isUseAdSplashPreloading() {
+        return isUseAdSplashPreloading;
+    }
+
+    public void setUseAdSplashPreloading(boolean useAdSplashPreloading) {
+        isUseAdSplashPreloading = useAdSplashPreloading;
+    }
+
     public int getNumberPreloading() {
         return numberPreloading;
     }
@@ -451,7 +464,7 @@ public class AdmobAdsConfig {
 
     public void setNumberPreloadingSplash(int numberPreloadingSplash) {
         if (numberPreloadingSplash > 0)
-        this.numberPreloadingSplash = numberPreloadingSplash;
+            this.numberPreloadingSplash = numberPreloadingSplash;
         else this.numberPreloadingSplash = 3;
     }
 

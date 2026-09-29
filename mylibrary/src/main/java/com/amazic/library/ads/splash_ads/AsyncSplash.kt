@@ -32,6 +32,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import java.util.Locale
 import kotlin.coroutines.resume
+import kotlin.time.Duration.Companion.milliseconds
 
 class AsyncSplash {
 
@@ -205,7 +206,7 @@ class AsyncSplash {
 
     private fun CoroutineScope.runTimeOutSplash(): Job = launch {
         config.isTimeout = false
-        delay(config.timeOutSplash)
+        delay(config.timeOutSplash.milliseconds)
         if (mActivity == null) {
             logEventStep(EventNameSplash.EVENT_TIMEOUT_ACTIVITY_NULL)
             return@launch
@@ -214,10 +215,13 @@ class AsyncSplash {
         isFailToShowInterSplash = true
         mainJob?.cancel()
         mainJob = null
-        if (isStartingLoadSplash)
-            interSplashCallback?.onNextAction()
-        else
+        if (isStartingLoadSplash) {
+            val adUnitId = IDRemoteConfigHelper.getID(mActivity, config.keyAdsInterSplash)
+            AdsSplash.getInstance().showCacheInterSplash(mActivity, adUnitId, config.keyAdsInterSplash, interSplashCallback)
+        } else {
             loadInterSplash(mActivity!!, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+            interSplashCallback?.onNextAction()
+        }
         mActivity = null
         config.isTimeout = true
     }
@@ -225,8 +229,8 @@ class AsyncSplash {
     private suspend fun waitingInitAdmob(): Int {
         var totalTimeWaitInit1 = 0
         while (!Admob.getInstance().isInitAdmobDone && totalTimeWaitInit1 < config.timeOutInitAdmob) {
-            delay(200)
-            totalTimeWaitInit1 += 200
+            delay(100.milliseconds)
+            totalTimeWaitInit1 += 100
         }
         return totalTimeWaitInit1
     }

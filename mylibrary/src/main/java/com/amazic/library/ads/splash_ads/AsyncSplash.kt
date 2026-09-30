@@ -199,8 +199,13 @@ class AsyncSplash {
         logEventStep(EventNameSplash.EVENT_DONE_ASYNC_INIT)
         logEventStep(EventNameSplash.EVENT_START_WAIT_ADMOB_INIT)
         val totalTimeWaitInit = waitingInitAdmob()
-        logEventStep(EventNameSplash.EVENT_DONE_WAIT_ADMOB_INIT, Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
-        loadAndShowInterSplash(activity, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+        logEventStep(
+            EventNameSplash.EVENT_DONE_WAIT_ADMOB_INIT,
+            Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
+        loadAndShowInterSplash(
+            activity,
+            config.isUseAdPreloadingSplash && Admob.getInstance().isInitAdmobDone
+        )
     }
 
     private fun CoroutineScope.runTimeOutSplash(): Job = launch {
@@ -214,10 +219,12 @@ class AsyncSplash {
         isFailToShowInterSplash = true
         mainJob?.cancel()
         mainJob = null
-        if (isStartingLoadSplash)
-            interSplashCallback?.onNextAction()
-        else
-            loadInterSplash(mActivity!!, config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone)
+        if (!isStartingLoadSplash)
+            loadInterSplash(
+                mActivity!!,
+                config.isUseAdPreloading && Admob.getInstance().isInitAdmobDone
+            )
+        interSplashCallback?.onNextAction()
         mActivity = null
         config.isTimeout = true
     }
@@ -237,16 +244,26 @@ class AsyncSplash {
             logEventStep(EventNameSplash.EVENT_LOAD_FAILED_SPLASH_ID_NULL)
             return
         }
-        val numberPreloadSplash = RemoteConfigHelper.getInstance().get_config_long(activity, "number_ad_preload_splash")
+        val numberPreloadSplash =
+            RemoteConfigHelper.getInstance().get_config_long(activity, "number_ad_preload_splash")
         config.numberPreloadingSplash = numberPreloadSplash.toInt()
         if (config.isTimeout) {
             logEventStep(EventNameSplash.EVENT_SHOW_FAILED_SPLASH_TIMEOUT)
             return
         }
         isStartingLoadSplash = true
-        logEventStep(EventNameSplash.EVENT_START_LOAD_AND_SHOW_INTER, Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
+        logEventStep(
+            EventNameSplash.EVENT_START_LOAD_AND_SHOW_INTER,
+            Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
         AdsSplash.getInstance()
-            .loadAndShow(activity, adUnitId, config.keyAdsInterSplash, config.numberPreloadingSplash, interSplashCallback, isUseAdPreloading)
+            .loadAndShow(
+                activity,
+                adUnitId,
+                config.keyAdsInterSplash,
+                config.numberPreloadingSplash,
+                interSplashCallback,
+                isUseAdPreloading
+            )
     }
 
 
@@ -256,14 +273,17 @@ class AsyncSplash {
             logEventStep(EventNameSplash.EVENT_LOAD_FAILED_SPLASH_ID_NULL)
             return
         }
-        val numberPreloadSplash = RemoteConfigHelper.getInstance().get_config_long(activity, "number_ad_preload_splash")
+        val numberPreloadSplash =
+            RemoteConfigHelper.getInstance().get_config_long(activity, "number_ad_preload_splash")
         config.numberPreloadingSplash = numberPreloadSplash.toInt()
         if (config.isTimeout) {
             logEventStep(EventNameSplash.EVENT_SHOW_FAILED_SPLASH_TIMEOUT)
             return
         }
         isStartingLoadSplash = true
-        logEventStep(EventNameSplash.EVENT_START_LOAD_ONLY, Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
+        logEventStep(
+            EventNameSplash.EVENT_START_LOAD_ONLY,
+            Bundle().apply { putBoolean("isUseAdPreloading", isUseAdPreloading) })
         AdsSplash.getInstance()
             .loadAd(
                 activity.applicationContext,
@@ -275,35 +295,47 @@ class AsyncSplash {
             )
     }
 
-    private suspend fun initAdsConsentManager(activity: AppCompatActivity?) = suspendCancellableCoroutine { continuation ->
-        if (config.initAdsConsentManager) {
-            if (continuation.isActive) continuation.resume(Unit)
-            return@suspendCancellableCoroutine
-        }
-        val adsConsentManager = AdsConsentManager(activity)
+    private suspend fun initAdsConsentManager(activity: AppCompatActivity?) =
+        suspendCancellableCoroutine { continuation ->
+            if (config.initAdsConsentManager) {
+                if (continuation.isActive) continuation.resume(Unit)
+                return@suspendCancellableCoroutine
+            }
+            val adsConsentManager = AdsConsentManager(activity)
 
-        val startTime = System.currentTimeMillis()
-        adsConsentManager.requestUMP { _ ->
-            config.initAdsConsentManager = true
-            EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
-                normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_CONSENT),
-                Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
-            )
-            if (continuation.isActive) continuation.resume(Unit)
+            val startTime = System.currentTimeMillis()
+            adsConsentManager.requestUMP { _ ->
+                config.initAdsConsentManager = true
+                EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
+                    normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_CONSENT),
+                    Bundle().apply {
+                        putString(
+                            "time_between_step",
+                            formatStepTime(System.currentTimeMillis() - startTime)
+                        )
+                    }
+                )
+                if (continuation.isActive) continuation.resume(Unit)
+            }
         }
-    }
 
-    private suspend fun initRemoteConfig(activity: AppCompatActivity?) = suspendCancellableCoroutine { continuation ->
-        val startTime = System.currentTimeMillis()
-        RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
-            config.initRemoteConfig = true
-            EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
-                normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_REMOTE_CONFIG),
-                Bundle().apply { putString("time_between_step", formatStepTime(System.currentTimeMillis() - startTime)) }
-            )
-            if (continuation.isActive) continuation.resume(Unit)
+    private suspend fun initRemoteConfig(activity: AppCompatActivity?) =
+        suspendCancellableCoroutine { continuation ->
+            val startTime = System.currentTimeMillis()
+            RemoteConfigHelper.getInstance().fetchAllKeysAndTypes(activity) {
+                config.initRemoteConfig = true
+                EventTrackingHelper.getInstance(mActivity).logEventWithMultipleParams(
+                    normalizeFirebaseEventName(EventNameSplash.EVENT_DONE_INIT_REMOTE_CONFIG),
+                    Bundle().apply {
+                        putString(
+                            "time_between_step",
+                            formatStepTime(System.currentTimeMillis() - startTime)
+                        )
+                    }
+                )
+                if (continuation.isActive) continuation.resume(Unit)
+            }
         }
-    }
 
     fun checkShowSplashWhenFail(activity: Activity, isAlwaysOnNextAction: Boolean) {
         // Call on resume of splash screen (reshow splash ads when show fails)
@@ -314,7 +346,8 @@ class AsyncSplash {
             return
         }
 
-        if (isFailToShowInterSplash) AdsSplash.getInstance().showCacheInterSplash(activity, adUnitId, config.keyAdsInterSplash, interSplashCallback)
+        if (isFailToShowInterSplash) AdsSplash.getInstance()
+            .showCacheInterSplash(activity, adUnitId, config.keyAdsInterSplash, interSplashCallback)
         else if (isAlwaysOnNextAction) interSplashCallback?.onNextAction()
     }
 
@@ -362,7 +395,10 @@ class AsyncSplash {
 
     fun logEventStep(tag: String, step: String, bundle: Bundle) {
         bundle.apply {
-            putString("time_between_step", formatStepTime(System.currentTimeMillis() - config.timeLastStep))
+            putString(
+                "time_between_step",
+                formatStepTime(System.currentTimeMillis() - config.timeLastStep)
+            )
             putString("time_to_step", formatStepTime(System.currentTimeMillis() - config.timeStep1))
             putString("isTimeout", config.isTimeout.toString())
         }
@@ -453,22 +489,30 @@ class AsyncSplash {
             AdmobAdsConfig.WELCOME_BACK_BELOW -> initWelcomeBackWith(
                 activity, logTag = "below",
                 defaultKeyName = "resume_wb",
-                defaultIds = { AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb) }
+                defaultIds = {
+                    AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb)
+                }
             ) { listIdResume ->
                 config.welcomeBackClass?.let {
-                    AppOpenManager.getInstance().initWelcomeBackBelowAdsResume(activity, listIdResume, it)
-                    AppOpenManager.getInstance().disableAppResumeWithActivity(it) // disable resume welcome back
+                    AppOpenManager.getInstance()
+                        .initWelcomeBackBelowAdsResume(activity, listIdResume, it)
+                    AppOpenManager.getInstance()
+                        .disableAppResumeWithActivity(it) // disable resume welcome back
                 }
             }
 
             AdmobAdsConfig.WELCOME_BACK_ABOVE -> initWelcomeBackWith(
                 activity, logTag = "above",
                 defaultKeyName = "resume_wb",
-                defaultIds = { AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb) }
+                defaultIds = {
+                    AdmobApi.getInstance().getListIDByName(RemoteConfigHelper.resume_wb)
+                }
             ) { listIdResume ->
                 config.welcomeBackClass?.let {
-                    AppOpenManager.getInstance().initWelcomeBackAboveAdsResume(activity, listIdResume, it)
-                    AppOpenManager.getInstance().disableAppResumeWithActivity(it) // disable resume welcome back
+                    AppOpenManager.getInstance()
+                        .initWelcomeBackAboveAdsResume(activity, listIdResume, it)
+                    AppOpenManager.getInstance()
+                        .disableAppResumeWithActivity(it) // disable resume welcome back
                 }
             }
 
@@ -507,7 +551,8 @@ class AsyncSplash {
                         "isPreloadResumeAds=${config.isPreloadResumeAds}"
             )
             if (config.isPreloadResumeAds) {
-                AppOpenManager.getInstance().loadAdNotCheckRemote(activity, listIdResume, config.keyAdsOpenResume)
+                AppOpenManager.getInstance()
+                    .loadAdNotCheckRemote(activity, listIdResume, config.keyAdsOpenResume)
             }
         }
 
@@ -531,7 +576,8 @@ class AsyncSplash {
 
         if (listIdResume.isNotEmpty()) {
             Log.d(TAG, "APP Open Preload: start loadAdPreloadNotCheckRemote")
-            AppOpenManager.getInstance().loadAdPreloadNotCheckRemote(mActivity, listIdResume, config.keyAdsOpenResume)
+            AppOpenManager.getInstance()
+                .loadAdPreloadNotCheckRemote(mActivity, listIdResume, config.keyAdsOpenResume)
         }
     }
 

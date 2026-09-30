@@ -65,6 +65,7 @@ public class AdmobAdsConfig {
 
     //ad preloading
     private boolean isUseAdPreloading = false;
+    private boolean isUseAdPreloadingSplash = false;
     private int numberPreloading = 3;
     private int numberPreloadingSplash = 1;
     private boolean isShowNativeAfterInter = false;
@@ -159,6 +160,7 @@ public class AdmobAdsConfig {
         isPreloadResumeAds = true;
         isAsyncSplashAds = false;
         isUseAdPreloading = false;
+        isUseAdPreloadingSplash = false;
         numberPreloading = 3;
         numberPreloadingSplash = 1;
         isShowNativeAfterInter = false;
@@ -435,6 +437,13 @@ public class AdmobAdsConfig {
 
     public void setUseAdPreloading(boolean useAdPreloading) {
         isUseAdPreloading = useAdPreloading;
+    }
+
+    public boolean isUseAdPreloadingSplash(){
+        return isUseAdPreloadingSplash;
+    }
+    public void setUseAdPreloadingSplash(boolean useAdPreloading){
+        isUseAdPreloadingSplash = useAdPreloading;
     }
 
     public int getNumberPreloading() {

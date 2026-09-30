@@ -280,7 +280,7 @@ public class AdsSplash {
     }
 
     public void loadAd(Context context, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback,
-                      boolean isUseAdPreloading) {
+                       boolean isUseAdPreloading) {
         if (isUseAdPreloading) {
             loadInterSplashPreload(context, adUnitId, remoteKey, numberPreload, interCallback, null);
         } else {
@@ -316,7 +316,7 @@ public class AdsSplash {
                 if (!isLoading.get()) interCallback.onNextAction();
             }
         }, () -> {
-            if (mInterstitialAd != null){
+            if (mInterstitialAd != null) {
                 if (AdmobAdsConfig.getInstance().isTimeout()) {
                     Bundle bundle = new Bundle();
                     String messageFailed = "time_out_splash_screen";
@@ -331,6 +331,7 @@ public class AdsSplash {
     }
 
     public void loadAndShow(Activity activity, String adUnitId, String remoteKey, int numberPreload, InterCallback interCallback, boolean isUseAdPreloading) {
+        Log.d("Admob", "use loadAndShow Splash isUseAdPreloading = " + isUseAdPreloading);
         if (isUseAdPreloading) {
             AdsSplash.getInstance()
                     .loadAndShowPreload(activity, adUnitId, remoteKey, numberPreload, interCallback);
@@ -347,7 +348,7 @@ public class AdsSplash {
                 if (InterstitialAdPreloader.getNumAdsAvailable(adUnitId) >= numberPreload) {
                     pushAdToCache(Objects.requireNonNull(InterstitialAdPreloader.pollAd(adUnitId)), adUnitId);
                     cancelPreload(adUnitId);
-                    EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
+                    EventTrackingHelper.getInstance(activity).logEvent(TAG + "_cancel_preload");
 
                     if (AdmobAdsConfig.getInstance().isTimeout()) {
                         Bundle bundle = new Bundle();
@@ -364,7 +365,7 @@ public class AdsSplash {
             public void onAdFailedToLoad() {
                 interCallback.onAdFailedToLoad();
             }
-        },()->{
+        }, () -> {
             if (InterstitialAdPreloader.getNumAdsAvailable(adUnitId) >= numberPreload) {
                 pushAdToCache(Objects.requireNonNull(InterstitialAdPreloader.pollAd(adUnitId)), adUnitId);
 
@@ -381,18 +382,18 @@ public class AdsSplash {
     }
 
     public void showCacheInterSplash(Activity activity, String adUnitId, String remoteKey, InterCallback interCallback) {
-        Log.d(TAG, "showCacheInterSplash: " + (mInterstitialAd == null)+ " poll: "+InterstitialAdPreloader.pollAd(adUnitId));
+        Log.d(TAG, "showCacheInterSplash: " + (mInterstitialAd == null) + " poll: " + InterstitialAdPreloader.pollAd(adUnitId));
         if (mInterstitialAd == null) {
             Log.d(TAG, "showCacheInterSplash: " + InterstitialAdPreloader.getNumAdsAvailable(adUnitId));
             mInterstitialAd = InterstitialAdPreloader.pollAd(adUnitId);
             cancelPreload(adUnitId);
-            EventTrackingHelper.getInstance(activity).logEvent(TAG+"_cancel_preload");
+            EventTrackingHelper.getInstance(activity).logEvent(TAG + "_cancel_preload");
         }
         showInterSplash(activity, adUnitId, remoteKey, interCallback);
     }
 
-     public void clear(){
-         mInterstitialAd = null;
-         isLoading.set(false);
-     }
+    public void clear() {
+        mInterstitialAd = null;
+        isLoading.set(false);
+    }
 }

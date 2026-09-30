@@ -160,6 +160,7 @@ public class SplashActivity extends AppCompatActivity {
             AdmobAdsConfig.getInstance().setAppPkg(getPackageName());
             AdmobAdsConfig.getInstance().setTimeOutInitAdmob(20_000);
             AdmobAdsConfig.getInstance().setNumberPreloadingSplash(5);
+            AdmobAdsConfig.getInstance().setUseAdPreloadingSplash(false);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
             //AsyncSplash.Companion.getInstance().setLoopAdsSplash(true);
 //            AsyncSplash.Companion.getInstance().setTimeOutSplash(12000);

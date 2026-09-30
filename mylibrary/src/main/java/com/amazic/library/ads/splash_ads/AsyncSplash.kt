@@ -198,10 +198,16 @@ class AsyncSplash {
         timeoutSplashJob = runTimeOutSplash()
         logEventStep(EventNameSplash.EVENT_DONE_ASYNC_INIT)
         logEventStep(EventNameSplash.EVENT_START_WAIT_ADMOB_INIT)
-        val totalTimeWaitInit = waitingInitAdmob()
-        logEventStep(
-            EventNameSplash.EVENT_DONE_WAIT_ADMOB_INIT,
-            Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
+        Log.d(
+            "Admob",
+            "use waitingInitAdmob Splash isUseAdPreloading = ${config.isUseAdPreloadingSplash}"
+        )
+        if (config.isUseAdPreloadingSplash) {
+            val totalTimeWaitInit = waitingInitAdmob()
+            logEventStep(
+                EventNameSplash.EVENT_DONE_WAIT_ADMOB_INIT,
+                Bundle().apply { putString("checkInit", totalTimeWaitInit.toString()) })
+        }
         loadAndShowInterSplash(
             activity,
             config.isUseAdPreloadingSplash && Admob.getInstance().isInitAdmobDone

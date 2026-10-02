@@ -373,8 +373,4 @@ public class AdmobApi {
     public void loadAndShowNativeFullSplash(AppCompatActivity activity, String adsKeyNative, InterCallback interCallback, String remoteKeyNative) {
         Admob.getInstance().loadAndShowNativeFullSplashCount(activity, AdmobApi.getInstance().getListIDByName(adsKeyNative), interCallback, adsKeyNative, remoteKeyNative);
     }
-
-    public void loadAndShowMetaNativeFullSplash(AppCompatActivity activity, InterCallback interCallback) {
-        Admob.getInstance().loadAndShowMetaNativeFullSplashCount(activity, interCallback);
-    }
 }

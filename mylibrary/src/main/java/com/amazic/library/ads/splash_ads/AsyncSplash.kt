@@ -87,12 +87,12 @@ class AsyncSplash {
     private var isAsyncSplashAds = false
 
     //ad preloading
+    private var isUsePreloadingSplash = false
     private var isUseAdPreloading = false
     private var numberPreloading = 3
     private var numberPreloadingSplash = 1
     private var isShowNativeAfterInter = false
 //    private var isUseNativeSplash = false
-    private var isUseNativeFullSplash = false
     private var isUseCacheDataCallSplash = false
     private var isUseDetectionVPNOrEmulator = false
 
@@ -115,17 +115,8 @@ class AsyncSplash {
     //
     private var numberNativeFullShowSplash = 1
 
-    //id set test native meta
-    private var idNativeMetaSplash = ""
-    private var keyNativeFullMetaSplash = "native_meta_splash"
-    //end
-
     //native full splash admob when meta fail
     private var keyNativeFullAdmobSplash  = ""
-    //end
-
-    //native meta splash
-    private var isUseNativeSplashMeta: Boolean = false
     //end
 
     private var isUseAppUpdateManager = false
@@ -253,6 +244,7 @@ class AsyncSplash {
         this.numberPreloading = 3
         this.numberPreloadingSplash = 1
         this.isUseAdPreloading = false
+        this.isUsePreloadingSplash = false
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
         this.keyAdsOpenSplash = "open_splash"
@@ -265,13 +257,8 @@ class AsyncSplash {
         this.keyNativeAfterInterSplash = "native_after_inter"
         this.numberNativeFullShowSplash = 1
         this.isShowNativeAfterInter = false
-//        this.isUseNativeSplash = false
-        this.isUseNativeFullSplash = false
         this.isUseCacheDataCallSplash = false
         this.isUseDetectionVPNOrEmulator = false
-        this.idNativeMetaSplash = ""
-        this.isUseNativeSplashMeta = false
-        this.keyNativeFullMetaSplash = "native_meta_splash"
         this.keyNativeFullAdmobSplash = "native_full_splash"
         this.isUseNativeFullSplashAdmobWhenMetaFail = false
     }
@@ -340,28 +327,12 @@ class AsyncSplash {
         this.keyNativeAfterInterSplash = key
     }
 
-    fun setKeyNativeFullMetaSplash(key: String) {
-        this.keyNativeFullMetaSplash = key
-    }
-
-    fun getKeyNativeFullMetaSplash(): String {
-        return this.keyNativeFullMetaSplash
-    }
-
     fun setKeyNativeFullAdmobSplash(key: String){
         this.keyNativeFullAdmobSplash = key
     }
 
     fun getKeyNativeFullAdmobSplash() : String{
         return this.keyNativeFullAdmobSplash
-    }
-
-    fun setIdNativeMetaSplash(id: String) {
-        this.idNativeMetaSplash = id
-    }
-
-    fun getIdNativeMetaSplash(): String {
-        return this.idNativeMetaSplash
     }
 
     fun setNumberNativeFullShowSplash(count: Int) {
@@ -410,36 +381,20 @@ class AsyncSplash {
         return this.isUseAdPreloading
     }
 
+    fun setUseAdPreloadingSplash(isUse: Boolean){
+        this.isUsePreloadingSplash = isUse
+    }
+
+    fun getUseAdPreloadingSplash(): Boolean{
+        return this.isUsePreloadingSplash
+    }
+
     fun setShowNativeAfterInter(isShowNativeAfterInter: Boolean) {
         this.isShowNativeAfterInter = isShowNativeAfterInter
     }
 
     fun getShowNativeAfterInter(): Boolean {
         return this.isShowNativeAfterInter
-    }
-
-//    fun setUseNativeSplash(isUse: Boolean) {
-//        this.isUseNativeSplash = isUse
-//    }
-//
-//    fun getUseNativeSplash(): Boolean {
-//        return this.isUseNativeSplash
-//    }
-
-    fun setUseNativeSplashMeta(isUse: Boolean) {
-        this.isUseNativeSplashMeta = isUse
-    }
-
-    fun getIsUseNativeSplashMeta(): Boolean {
-        return isUseNativeSplashMeta
-    }
-
-    fun setUseNativeFullSplash(isUse: Boolean) {
-        this.isUseNativeFullSplash = isUse
-    }
-
-    fun getUseNativeFullSplash(): Boolean {
-        return this.isUseNativeFullSplash
     }
 
     fun setUseCacheDataCallSplash(isUse: Boolean) {

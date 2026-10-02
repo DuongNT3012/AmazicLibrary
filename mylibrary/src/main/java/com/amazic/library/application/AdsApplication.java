@@ -12,9 +12,6 @@ import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
 import com.amazic.library.ads.admob.Admob;
-import com.amazic.library.ads.splash_ads.AsyncSplash;
-import com.facebook.ads.AdSettings;
-import com.facebook.ads.AudienceNetworkAds;
 import com.google.android.gms.ads.MobileAds;
 
 public abstract class AdsApplication extends Application implements Application.ActivityLifecycleCallbacks {
@@ -25,7 +22,6 @@ public abstract class AdsApplication extends Application implements Application.
         super.onCreate();
         Admob.getInstance().setTimeStart(System.currentTimeMillis());
         initAdmob();
-        initMeta();
         setUpAdjust();
         registerActivityLifecycleCallbacks(this);
     }
@@ -38,20 +34,6 @@ public abstract class AdsApplication extends Application implements Application.
                 Admob.getInstance().setIsInitAdmobDone(true);
             });
         }).start();
-    }
-
-    private void initMeta() {
-//        if (AsyncSplash.Companion.getInstance().getIsUseNativeSplashMeta()) {
-        /// chi dung khi debug test ads meta
-        Log.d("Admob", "initMeta - check buildDebug setTestMode = " + buildDebug());
-        AdSettings.setTestMode(buildDebug());
-
-        if (!AudienceNetworkAds.isInitialized(this)) {
-            AudienceNetworkAds.buildInitSettings(this)
-                    .withInitListener(result -> Log.d("Admob", "initMeta: " + result.getMessage()))
-                    .initialize();
-        }
-//        }
     }
 
     private void setUpAdjust() {

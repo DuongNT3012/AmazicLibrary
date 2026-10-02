@@ -20,7 +20,6 @@ import com.amazic.library.ads.callback.RewardedInterCallback;
 import com.amazic.library.ads.collapse_banner_ads.CollapseBannerBuilder;
 import com.amazic.library.ads.collapse_banner_ads.CollapseBannerManager;
 import com.amazic.library.ads.inter_ads.InterManager;
-import com.amazic.library.ads.native_ads.MetaNativeManager;
 import com.amazic.library.ads.native_ads.NativeBuilder;
 import com.amazic.library.ads.native_ads.NativeManager;
 import com.amazic.library.ads.reward_ads.RewardManager;
@@ -107,11 +106,6 @@ public class MainActivity extends AppCompatActivity {
         CollapseBannerManager collapseBannerManager = new CollapseBannerManager(this, binding.adViewContainer, this, collapseBannerBuilder, "collapse_banner");
         collapseBannerManager.setIntervalReloadBanner(4000);
         collapseBannerManager.setAlwaysReloadOnResume(true);
-
-        //start load native meta
-//        MetaNativeManager.getInstance().loadNativeAd(this, "1439001763964762_1710436723487930","native_all");
-
-        //end
 
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {

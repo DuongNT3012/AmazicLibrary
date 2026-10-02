@@ -3,7 +3,6 @@ package com.footballscores.livescore.soccerscores.sports;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -13,7 +12,6 @@ import com.amazic.library.ads.admob.Admob;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.callback.AppOpenCallback;
 import com.amazic.library.ads.callback.InterCallback;
-import com.amazic.library.ads.native_ads.MetaNativeManager;
 import com.amazic.library.ads.native_ads.NativeAfterInterManager;
 import com.amazic.library.ads.splash_ads.AsyncSplash;
 /*import com.amazic.library.iap.IAPManager;
@@ -45,8 +43,6 @@ public class SplashActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivitySplashBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
-        MetaNativeManager.getInstance().loadNativeAd(this, "1439001763964762_1710436723487930","native_all");
 
 
         interCallback = new InterCallback() {

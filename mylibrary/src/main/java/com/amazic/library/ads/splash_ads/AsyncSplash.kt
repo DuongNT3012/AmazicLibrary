@@ -65,7 +65,7 @@ class AsyncSplash {
     private var listTurnOffRemoteKeys: MutableList<String> = mutableListOf()
     private var activity: AppCompatActivity? = null
     private var interCallback: InterCallback? = null
-    private var appOpenCallback: AppOpenCallback? = null
+//    private var appOpenCallback: AppOpenCallback? = null
     private var isDebug = false
     private var isUseBilling = false
 
@@ -106,7 +106,7 @@ class AsyncSplash {
 
     //Use for inter and open splash 1, 2, 3...
     private var keyAdsInterSplash = "inter_splash"
-    private var keyAdsOpenSplash = "open_splash"
+//    private var keyAdsOpenSplash = "open_splash"
     private var keyAdsOpenResume = ""
 
     //key native after inter splash
@@ -194,7 +194,7 @@ class AsyncSplash {
 
     fun init(
         activity: AppCompatActivity,
-        appOpenCallback: AppOpenCallback,
+//        appOpenCallback: AppOpenCallback,
         interCallback: InterCallback,
         adjustKey: String,
         linkServer: String,
@@ -210,7 +210,7 @@ class AsyncSplash {
         this.jsonIdAdsDefault = jsonIdAdsDefault
         this.linkServer = linkServer
         this.appId = appId
-        this.appOpenCallback = appOpenCallback
+//        this.appOpenCallback = appOpenCallback
         this.interCallback = interCallback
     }
 
@@ -247,7 +247,7 @@ class AsyncSplash {
         this.isUsePreloadingSplash = false
         this.isAsyncSplashAds = false
         this.keyAdsInterSplash = "inter_splash"
-        this.keyAdsOpenSplash = "open_splash"
+//        this.keyAdsOpenSplash = "open_splash"
         this.keyAdsOpenResume = ""
         this.loadAndShowIdInterAdSplashAsync = false
         this.timeOutCallIdRemoteConfig = 4000L
@@ -311,9 +311,9 @@ class AsyncSplash {
         this.keyAdsInterSplash = keyAdsInterSplash
     }
 
-    fun setKeyAdsOpenSplash(keyAdsOpenSplash: String) {
-        this.keyAdsOpenSplash = keyAdsOpenSplash
-    }
+//    fun setKeyAdsOpenSplash(keyAdsOpenSplash: String) {
+//        this.keyAdsOpenSplash = keyAdsOpenSplash
+//    }
 
     fun setKeyAdsOpenResume(keyAdsOpenResume: String) {
         this.keyAdsOpenResume = keyAdsOpenResume
@@ -483,7 +483,10 @@ class AsyncSplash {
 
     fun checkShowSplashWhenFail() { //Call on resume of splash screen (Reshow splash ads when show fail)
         if (adsSplash != null) {
-            adsSplash?.onCheckShowSplashWhenFail(activity, appOpenCallback, interCallback)
+            adsSplash?.onCheckShowSplashWhenFail(
+                activity,
+//                appOpenCallback,
+                interCallback)
         }
     }
 
@@ -666,27 +669,29 @@ class AsyncSplash {
                         onPrepareLoadInterOpenSplashAds?.invoke()
 //                        lifecycleCoroutineScope.launch {
                         logEventStep("StartAdSplash")
-                        var rateAoaInterSplash: String =
-                            RemoteConfigHelper.getInstance().get_config_string(
-                                activity,
-                                RemoteConfigHelper.rate_aoa_inter_splash
-                            )
-                        if (rateAoaInterSplash.isEmpty()) {
-                            rateAoaInterSplash = "0_100"
-                        }
-                        val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance()
-                            .get_config(activity, keyAdsOpenSplash)
+//                        var rateAoaInterSplash: String =
+//                            RemoteConfigHelper.getInstance().get_config_string(
+//                                activity,
+//                                RemoteConfigHelper.rate_aoa_inter_splash
+//                            )
+//                        if (rateAoaInterSplash.isEmpty()) {
+//                            rateAoaInterSplash = "0_100"
+//                        }
+//                        val isShowOpenSplash: Boolean = RemoteConfigHelper.getInstance()
+//                            .get_config(activity, keyAdsOpenSplash)
                         val isShowInterSplash: Boolean = RemoteConfigHelper.getInstance()
                             .get_config(activity, keyAdsInterSplash)
                         adsSplash = AdsSplash.init(
-                            isShowOpenSplash,
+//                            isShowOpenSplash,
                             isShowInterSplash,
-                            rateAoaInterSplash
+//                            rateAoaInterSplash
                         )
                         adsSplash?.setKeyAdsInterSplash(keyAdsInterSplash)
-                        adsSplash?.setKeyAdsOpenSplash(keyAdsOpenSplash)
+//                        adsSplash?.setKeyAdsOpenSplash(keyAdsOpenSplash)
                         adsSplash?.setLoopAdsSplash(isLoopAdsSplash)
-                        showAdsSplash(activity, appOpenCallback, interCallback)
+                        showAdsSplash(activity,
+//                            appOpenCallback,
+                            interCallback)
 //                        }
                         if (isAsyncSplashAds) {
                             awaitAll(asyncRemoteConfig, asyncTechManager)
@@ -1298,7 +1303,7 @@ class AsyncSplash {
 
     private fun showAdsSplash(
         activity: AppCompatActivity?,
-        appOpenCallback: AppOpenCallback?,
+//        appOpenCallback: AppOpenCallback?,
         interCallback: InterCallback?
     ) {
         Log.d(TAG, "showAdsSplash check $isTimeout $isNoInternetAction")
@@ -1317,7 +1322,7 @@ class AsyncSplash {
             Log.d(TAG, "showAdsSplash: Time show Ads = $time")
             adsSplash?.showAdsSplashApi(
                 activity,
-                appOpenCallback,
+//                appOpenCallback,
                 interCallback,
                 keyNativeAfterInterSplash,
                 keyNativeAfterInterSplash

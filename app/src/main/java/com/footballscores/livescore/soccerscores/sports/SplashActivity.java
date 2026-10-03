@@ -130,7 +130,7 @@ public class SplashActivity extends AppCompatActivity {
 
     private void handleAsyncSplashJustOnce() {
         if (!isHandleAsyncSplash) {
-            AsyncSplash.Companion.getInstance().init(this, appOpenCallback, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
+            AsyncSplash.Companion.getInstance().init(this, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
             AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
@@ -155,7 +155,7 @@ public class SplashActivity extends AppCompatActivity {
             ArrayList<String> listIdBannerSplash = new ArrayList<>();
             listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");
-            AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
+//            AsyncSplash.Companion.getInstance().setKeyAdsOpenSplash("open_splash");
             AsyncSplash.Companion.getInstance().setKeyAdsOpenResume("open_splash");
             Admob.getInstance().setOpenActivityAfterShowInterAds(false);
             AsyncSplash.Companion.getInstance().setKeyIntervalBetweenInterstitial("interval_between_interstitial");

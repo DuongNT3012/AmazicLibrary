@@ -31,19 +31,23 @@ public class AdsSplash {
         this.keyAdsOpenSplash = keyAdsOpenSplash;
     }
 
-    public static AdsSplash init(boolean showOpen, boolean showInter, String rate) {
+    public static AdsSplash init(
+//            boolean showOpen,
+            boolean showInter
+//            String rate
+    ) {
         AdsSplash adsSplash = new AdsSplash();
         Log.d(TAG, "init: ");
-        if (showInter && showOpen) {
-            adsSplash.checkShowInterOpenSplash(rate);
-        } else if (showInter) {
+//        if (showInter && showOpen) {
+//            adsSplash.checkShowInterOpenSplash(rate);
+//        } else if (showInter) {
             adsSplash.setState(STATE.INTER);
-        } else if (showOpen) {
-            adsSplash.setState(STATE.OPEN);
-        } else {
-            /// TH sai set default Inter
-            adsSplash.setState(STATE.INTER);
-        }
+//        } else if (showOpen) {
+//            adsSplash.setState(STATE.OPEN);
+//        } else {
+//            /// TH sai set default Inter
+//            adsSplash.setState(STATE.INTER);
+//        }
         return adsSplash;
     }
 
@@ -81,7 +85,10 @@ public class AdsSplash {
         return state;
     }
 
-    public void showAdsSplashApi(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
+    public void showAdsSplashApi(
+            AppCompatActivity activity,
+//            AppOpenCallback appOpenCallback,
+            InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "state show: " + getState());
         if (AsyncSplash.Companion.getInstance().getUseAdPreloadingSplash()) {
             Log.d(TAG, "AdsSplash preload: USE Preload " + getState());
@@ -116,11 +123,14 @@ public class AdsSplash {
         }
     }
 
-    public void onCheckShowSplashWhenFail(AppCompatActivity activity, AppOpenCallback appOpenCallback, InterCallback interCallback) {
-        if (getState() == STATE.OPEN) {
-            AppOpenManager.getInstance().onCheckShowSplashWhenFail(activity, appOpenCallback);
-        } else if (getState() == STATE.INTER) {
+    public void onCheckShowSplashWhenFail(
+            AppCompatActivity activity,
+//            AppOpenCallback appOpenCallback,
+            InterCallback interCallback) {
+//        if (getState() == STATE.OPEN) {
+//            AppOpenManager.getInstance().onCheckShowSplashWhenFail(activity, appOpenCallback);
+//        } else if (getState() == STATE.INTER) {
             Admob.getInstance().onCheckShowSplashWhenFail(activity, interCallback);
-        }
+//        }
     }
 }

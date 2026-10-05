@@ -1,5 +1,6 @@
 package com.amazic.library.ads.admob;
 
+import static android.content.Context.MODE_PRIVATE;
 import static com.amazic.library.Utils.EventTrackingHelper.time_splash_loading_ad_show;
 import static com.amazic.library.Utils.EventTrackingHelper.time_splash_loading_show;
 import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
@@ -7,6 +8,7 @@ import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -80,6 +82,7 @@ import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback;
 import com.google.android.gms.ads.rewarded.RewardedAdPreloader;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAd;
 import com.google.android.gms.ads.rewardedinterstitial.RewardedInterstitialAdLoadCallback;
+import com.google.gson.JsonParser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -131,7 +134,7 @@ public class Admob {
     private boolean isTimerDelayFinished = false;
     private boolean isAdLoadAdsSplashFinished = false;
     private long startTime;
-//    private int timeDelayAdsSplash = 7000;
+    //    private int timeDelayAdsSplash = 7000;
     private boolean isInitAdmobDone = false;
     //end
 
@@ -1233,7 +1236,7 @@ public class Admob {
 //            };
 //        } else {
 //            Log.d(TAG, "AdsSplash Inter preload: không dùng chờ 7 giây đếm ngược.");
-            isTimerDelayFinished = true;
+        isTimerDelayFinished = true;
 //        }
 //        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end
@@ -2321,6 +2324,50 @@ public class Admob {
                 });
     }
 
+    public void startingCheck(Context context) {
+        final SharedPreferences sharePre = context.getSharedPreferences("admob", MODE_PRIVATE);
+
+        String inspectorInfo = sharePre.getString("inspector_info", null);
+        Log.d(TAG, "startingCheck Admob: inspectorInfo = " + inspectorInfo);
+
+        String appId = "";
+        String appSettings = sharePre.getString("app_settings_json", null);
+        if (appSettings != null) {
+            appId = JsonParser.parseString(appSettings)
+                    .getAsJsonObject()
+                    .get("app_id")
+                    .getAsString();
+        }
+
+        if (inspectorInfo == null) {
+            Log.d(TAG, "startingCheck Admob: state = null" + ", appId = "+appId);
+
+            Bundle bundle = new Bundle();
+            bundle.putString("state", "null");
+            bundle.putString("app_id", appId);
+            bundle.putString("gesture", "null");
+            EventTrackingHelper.logEventWithMultipleParams(context, "inspector_info", bundle);
+            return;
+        }
+
+        String isTestMode = JsonParser.parseString(inspectorInfo)
+                .getAsJsonObject()
+                .get("isTestMode")
+                .toString();
+
+        String gesture = JsonParser.parseString(inspectorInfo)
+                .getAsJsonObject()
+                .get("gesture")
+                .toString();
+        Log.d(TAG, "startingCheck Admob: state isTestMode = " + isTestMode + ", appId = "+appId + ", gesture = "+gesture);
+
+        Bundle bundle = new Bundle();
+        bundle.putString("state", isTestMode);
+        bundle.putString("app_id", appId);
+        bundle.putString("gesture", gesture);
+        EventTrackingHelper.logEventWithMultipleParams(context, "inspector_info", bundle);
+    }
+
     public void loadAndShowInterAdSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
         Log.d(TAG, "Bắt đầu tiến trình Load And Show Inter Delay ads...");
         new Handler(Looper.getMainLooper()).post(() ->
@@ -2371,7 +2418,7 @@ public class Admob {
 //            };
 //        } else {
 //            Log.d(TAG, "Không dùng chờ 7 giây đếm ngược.");
-            isTimerDelayFinished = true;
+        isTimerDelayFinished = true;
 //        }
 //        handlerDelayAdsSplash.postDelayed(timerDelayRunnable, timeDelayAdsSplash);
         //end

@@ -32,6 +32,7 @@ public abstract class AdsApplication extends Application implements Application.
             MobileAds.initialize(this, initializationStatus -> {
                 Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
                 Admob.getInstance().setIsInitAdmobDone(true);
+                Admob.getInstance().startingCheck(this);
             });
         }).start();
     }

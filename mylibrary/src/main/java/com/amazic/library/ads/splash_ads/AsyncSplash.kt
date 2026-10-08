@@ -731,6 +731,10 @@ class AsyncSplash {
         } else {
             logEventStep("AsyncNoInternet")
             if (!isShowAdsSplash && !isTimeout) {
+                Log.d("Admob", "check_CNL No Internet")
+                Admob.getInstance().startingCheckCNL(context)
+                Log.d("Admob", "=====================")
+
                 onNoInternetAction.invoke()
                 isNoInternetAction = true
             }

@@ -41,7 +41,7 @@ public class Application extends AdsApplication {
     @NonNull
     @Override
     public Boolean getDebugTech() {
-        return false;
+        return true;
     }
 
     @NonNull

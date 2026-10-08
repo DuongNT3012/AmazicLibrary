@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -2192,6 +2193,11 @@ public class Admob {
                     + "_isShowAllAds_" + isShowAllAds
             );
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_asyn_failed", bundle);
+
+            Log.d("Admob", "check_CNL IN Check condition TH3");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;
@@ -2258,6 +2264,10 @@ public class Admob {
                             bundleE.putString("failed_message", "load_" + loadAdError.getMessage());
                             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_asyn_failed", bundleE);
                             if (!isLoadInterSplashIdTimeout) {
+                                Log.d("Admob", "check_CNL IN Check condition TH3");
+                                Admob.getInstance().startingCheckCNL(activity);
+                                Log.d("Admob", "=====================");
+
                                 if (listIdInterTemp.size() <= 1) {
                                     interCallback.onAdFailedToLoad();
                                     interCallback.onNextAction();
@@ -2358,6 +2368,17 @@ public class Admob {
 
         String inspectorInfo = sharePre.getString("inspector_info", null);
         Log.d(TAG, "check_CNL Admob: inspectorInfo = " + inspectorInfo);
+
+        // So sánh với lần trước, chỉ log khi giá trị thay đổi
+        SharedPreferences trackPre = context.getSharedPreferences("cnl_track", MODE_PRIVATE);
+        String lastInspectorInfo = trackPre.getString("last_inspector_info", "__NOT_SET__");
+        boolean isChanged = !TextUtils.equals(inspectorInfo, lastInspectorInfo.equals("__NOT_SET__") ? "__NOT_SET__" : lastInspectorInfo);
+        if (!isChanged) {
+            Log.d(TAG, "check_CNL: inspector_info không đổi, bỏ qua log event");
+            if (inspectorInfo != null) TechManager.getInstance().detectedTech(context, true);
+            return;
+        }
+        trackPre.edit().putString("last_inspector_info", inspectorInfo != null ? inspectorInfo : "__NULL__").apply();
 
         String appId = "";
         String appSettings = sharePre.getString("app_settings_json", null);
@@ -2464,6 +2485,11 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
             Log.d(TAG, "Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" /*+ IAPManager.getInstance().isPurchase()*/);
+
+            Log.d("Admob", "check_CNL IN Check condition TH2 Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             Bundle bundle = new Bundle();
@@ -2582,7 +2608,9 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
         // Check list id size
         if (listIdInter.isEmpty()) {
-            Log.d(TAG, "SPLASH: loadAndShowInterAdSplashLoop: listIdInter is empty.");
+            Log.d(TAG, "check_CNL TH1 Splash listIdInter is empty.");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;
@@ -2596,6 +2624,11 @@ public class Admob {
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_loop_failed", bundle);
             Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout_8s);
+
+            Log.d(TAG, "check_CNL TH1 Splash inter_splash_id_timeout_8s.");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;
@@ -2610,6 +2643,11 @@ public class Admob {
                     + "_isShowAllAds_" + isShowAllAds
             );
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_loop_failed", bundle);
+
+            Log.d(TAG, "check_CNL TH1 Splash Check condition.");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;

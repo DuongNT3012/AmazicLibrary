@@ -1,5 +1,8 @@
 package com.amazic.library.ads.splash_ads
 
+/*import com.amazic.library.iap.BillingCallback
+import com.amazic.library.iap.IAPManager
+import com.amazic.library.iap.ProductDetailCustom*/ //comment for billing
 import android.content.Context
 import android.os.Bundle
 import android.os.Handler
@@ -21,13 +24,8 @@ import com.amazic.library.ads.app_open_ads.AppOpenManager
 import com.amazic.library.ads.banner_ads.BannerBuilder
 import com.amazic.library.ads.banner_ads.BannerManager
 import com.amazic.library.ads.callback.ApiCallback
-import com.amazic.library.ads.callback.AppOpenCallback
 import com.amazic.library.ads.callback.BannerCallback
 import com.amazic.library.ads.callback.InterCallback
-/*import com.amazic.library.iap.BillingCallback
-import com.amazic.library.iap.IAPManager
-import com.amazic.library.iap.ProductDetailCustom*/ //comment for billing
-import com.amazic.library.organic.TechManager
 import com.amazic.library.ump.AdsConsentManager
 import com.amazic.mylibrary.R
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +60,7 @@ class AsyncSplash {
     private var listIdBannerSplash: MutableList<String> =
         arrayListOf("ca-app-pub-3940256099942544/6300978111")
     private var adsKey: String = ""
-    private var listTurnOffRemoteKeys: MutableList<String> = mutableListOf()
+//    private var listTurnOffRemoteKeys: MutableList<String> = mutableListOf()
     private var activity: AppCompatActivity? = null
     private var interCallback: InterCallback? = null
 //    private var appOpenCallback: AppOpenCallback? = null
@@ -72,7 +70,7 @@ class AsyncSplash {
     //private var listProductDetailCustoms: ArrayList<ProductDetailCustom> = arrayListOf() //comment for billing
     private var timeOutSplash = 12000L
     private var isLoopAdsSplash = false
-    private var useTechManagerOrDetectTestAd = DETECT_TEST_AD
+//    private var useTechManagerOrDetectTestAd = DETECT_TEST_AD
 
     //1.use for log event time out 12s
     private var initRemoteConfig = false
@@ -181,8 +179,8 @@ class AsyncSplash {
     companion object {
         private const val MAX_EVENT_NAME_LENGTH = 40
         private const val DEFAULT_EVENT_NAME = "event_unknown"
-        const val TECH_MANAGER = "TechManager"
-        const val DETECT_TEST_AD = "DetectTestAd"
+//        const val TECH_MANAGER = "TechManager"
+//        const val DETECT_TEST_AD = "DetectTestAd"
         private var INSTANCE: AsyncSplash? = null
         fun getInstance(): AsyncSplash {
             if (INSTANCE == null) {
@@ -227,13 +225,13 @@ class AsyncSplash {
         this.welcomeBackClass = null
         this.isShowBannerSplash = false
         this.listIdBannerSplash = arrayListOf("ca-app-pub-3940256099942544/6300978111")
-        this.listTurnOffRemoteKeys = mutableListOf()
-        this.isDebug = false
+//        this.listTurnOffRemoteKeys = mutableListOf()
+//        this.isDebug = false
         this.isUseBilling = false
         //this.listProductDetailCustoms = arrayListOf() //comment for billing
         this.timeOutSplash = 12000L
         this.isLoopAdsSplash = false
-        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
+//        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
         this.initRemoteConfig = false
         this.initAdmobApi = false
         this.initAdsConsentManager = false
@@ -431,17 +429,17 @@ class AsyncSplash {
         this.timeOutCallApi = timeOutCallApi
     }
 
-    fun getUserTechManagerOrDetectTestAd(): String {
-        return this.useTechManagerOrDetectTestAd
-    }
-
-    fun setUseTechManager() { //Use TechManager (Organic) or not
-        this.useTechManagerOrDetectTestAd = TECH_MANAGER
-    }
-
-    fun setUseDetectTestAd() {
-        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
-    }
+//    fun getUserTechManagerOrDetectTestAd(): String {
+//        return this.useTechManagerOrDetectTestAd
+//    }
+//
+//    fun setUseTechManager() { //Use TechManager (Organic) or not
+//        this.useTechManagerOrDetectTestAd = TECH_MANAGER
+//    }
+//
+//    fun setUseDetectTestAd() {
+//        this.useTechManagerOrDetectTestAd = DETECT_TEST_AD
+//    }
 
     fun setLoopAdsSplash() { //Load loop splash ads when load fail if time splash < 8s
         this.isLoopAdsSplash = true
@@ -475,6 +473,7 @@ class AsyncSplash {
 
     fun setDebug(isDebug: Boolean) { //Use for TechManager or DetectTestAd
         this.isDebug = isDebug
+        Log.d("Admob", "setDebug: isDebug = $isDebug")
     }
 
     fun getDebug(): Boolean {
@@ -523,11 +522,10 @@ class AsyncSplash {
         this.adsKey = adsKey
     }
 
-    fun setListTurnOffRemoteKeys(listTurnOffRemoteKeys: MutableList<String>) {
-        this.listTurnOffRemoteKeys.clear()
-        this.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
-    }
-
+//    fun setListTurnOffRemoteKeys(listTurnOffRemoteKeys: MutableList<String>) {
+//        this.listTurnOffRemoteKeys.clear()
+//        this.listTurnOffRemoteKeys.addAll(listTurnOffRemoteKeys)
+//    }
     private fun logEventDoneInit() {
         val bundle = Bundle()
         val time = String.format(
@@ -594,15 +592,15 @@ class AsyncSplash {
                     SharePreferenceHelper.getInt(activity, EventTrackingHelper.splash_open, 1) + 1
                 )
                 //2.end increase splash open
-                if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
-                    if (isTech && !isDebug) {
-                        turnOffSomeRemoteKeys(activity)
-                    }
-                } else if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
-                    if (TechManager.getInstance().isTech(activity) && !isDebug) {
-                        turnOffSomeRemoteKeys(activity)
-                    }
-                }
+//                if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
+//                    if (isTech && !isDebug) {
+//                        turnOffSomeRemoteKeys(activity)
+//                    }
+//                } else if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
+//                    if (TechManager.getInstance().isTech(activity) && !isDebug) {
+//                        turnOffSomeRemoteKeys(activity)
+//                    }
+//                }
                 interCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
                 isTimeout = true
@@ -627,14 +625,15 @@ class AsyncSplash {
                 val asyncRemoteConfig = async { initRemoteConfig(activity) }
                 val asyncUMP = async { initAdsConsentManager(activity) }
                 val asyncBilling = async { initBilling() }
-                val asyncTechManager = async { initTechManager(activity) }
+//                val asyncTechManager = async { initTechManager(activity) }
                 try {
                     //wait to load banner splash (banner splash fix id, don't use api to reduce time load splash)
                     if (!isAsyncSplashAds) {
-                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
-                        if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
-                            turnOffSomeRemoteKeys(activity)
-                        }
+//                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling, asyncTechManager)
+                        awaitAll(asyncRemoteConfig, asyncUMP, asyncBilling)
+//                        if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
+//                            turnOffSomeRemoteKeys(activity)
+//                        }
                     } else {
                         awaitAll(asyncUMP)
                     }
@@ -694,10 +693,11 @@ class AsyncSplash {
                             interCallback)
 //                        }
                         if (isAsyncSplashAds) {
-                            awaitAll(asyncRemoteConfig, asyncTechManager)
-                            if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
-                                turnOffSomeRemoteKeys(activity)
-                            }
+//                            awaitAll(asyncRemoteConfig, asyncTechManager)
+                            awaitAll(asyncRemoteConfig)
+//                            if (useTechManagerOrDetectTestAd == TECH_MANAGER && isTech && !isDebug) {
+//                                turnOffSomeRemoteKeys(activity)
+//                            }
                         }
 //                        lifecycleCoroutineScope.launch {
                         //set list random animation
@@ -733,12 +733,12 @@ class AsyncSplash {
         }
     }
 
-    fun turnOffSomeRemoteKeys(activity: Context?) {
-        listTurnOffRemoteKeys.forEach {
-            Log.d(TAG, "turnOffSomeRemoteKeys: $it")
-            RemoteConfigHelper.getInstance().set_config(activity, it, false)
-        }
-    }
+//    fun turnOffSomeRemoteKeys(activity: Context?) {
+//        listTurnOffRemoteKeys.forEach {
+//            Log.d(TAG, "turnOffSomeRemoteKeys: $it")
+//            RemoteConfigHelper.getInstance().set_config(activity, it, false)
+//        }
+//    }
 
     fun measureDownloadSpeed(
         urlCheckInternetSpeed: String,
@@ -971,32 +971,32 @@ class AsyncSplash {
         }
 
     private var timeInitTechManager = 0L
-    private suspend fun initTechManager(activity: AppCompatActivity?) =
-        suspendCoroutine<Unit> { continuation ->
-            var isResumed = false
-            timeInitTechManager = 0L
-            val startTimeInitTechManager = System.currentTimeMillis()
-            if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
-                TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
-                    if (it) {
-                        isTech = true
-                        AppOpenManager.getInstance().isEnableResume = false
-                    }
-                    timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
-                    if (!isResumed) {
-                        isResumed = true
-                        continuation.resume(Unit)
-                        initTechManager = true
-                        Log.d(TAG, "initTechManager.")
-                    }
-                }
-            } else {
-                timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
-                continuation.resume(Unit)
-                initTechManager = true
-                Log.d(TAG, "initTechManager else.")
-            }
-        }
+//    private suspend fun initTechManager(activity: AppCompatActivity?) =
+//        suspendCoroutine<Unit> { continuation ->
+//            var isResumed = false
+//            timeInitTechManager = 0L
+//            val startTimeInitTechManager = System.currentTimeMillis()
+//            if (useTechManagerOrDetectTestAd == TECH_MANAGER) {
+//                TechManager.getInstance().getResult(isDebug, activity, adjustKey) {
+//                    if (it) {
+//                        isTech = true
+//                        AppOpenManager.getInstance().isEnableResume = false
+//                    }
+//                    timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
+//                    if (!isResumed) {
+//                        isResumed = true
+//                        continuation.resume(Unit)
+//                        initTechManager = true
+//                        Log.d(TAG, "initTechManager.")
+//                    }
+//                }
+//            } else {
+//                timeInitTechManager = System.currentTimeMillis() - startTimeInitTechManager
+//                continuation.resume(Unit)
+//                initTechManager = true
+//                Log.d(TAG, "initTechManager else.")
+//            }
+//        }
 
     private var timeInitAdmobApi = 0L
     private val PREF_CACHED_AD_IDS = "cached_ad_ids"
@@ -1272,20 +1272,20 @@ class AsyncSplash {
         if (isShowBannerSplash) {
             Log.d(TAG, "loadBannerSplash.")
             //Reset TechManager to false
-            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
-                TechManager.getInstance().detectedTech(activity, false)
-            }
+//            if (useTechManagerOrDetectTestAd == DETECT_TEST_AD) {
+//                TechManager.getInstance().detectedTech(activity, false)
+//            }
             frAdsBanner?.visibility = View.VISIBLE
             val bannerBuilder = BannerBuilder(frAdsBanner)
             bannerBuilder.setListIdAdMain(listIdBannerSplash)
             bannerBuilder.callBack = object : BannerCallback() {
                 override fun onAdImpression() {
                     super.onAdImpression()
-                    if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && TechManager.getInstance()
-                            .isTech(activity) && !isDebug
-                    ) {
-                        turnOffSomeRemoteKeys(activity)
-                    }
+//                    if (useTechManagerOrDetectTestAd == DETECT_TEST_AD && TechManager.getInstance()
+//                            .isTech(activity) && !isDebug
+//                    ) {
+//                        turnOffSomeRemoteKeys(activity)
+//                    }
                     Log.d(TAG, "showBannerSplash.")
                 }
 

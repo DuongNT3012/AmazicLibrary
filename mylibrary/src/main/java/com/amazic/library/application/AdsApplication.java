@@ -11,8 +11,13 @@ import androidx.annotation.Nullable;
 import com.adjust.sdk.Adjust;
 import com.adjust.sdk.AdjustConfig;
 import com.adjust.sdk.LogLevel;
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.Admob;
+import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.google.android.gms.ads.MobileAds;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AdsApplication extends Application implements Application.ActivityLifecycleCallbacks {
     private static final String TAG = "AdsApplication";
@@ -21,6 +26,8 @@ public abstract class AdsApplication extends Application implements Application.
     public void onCreate() {
         super.onCreate();
         Admob.getInstance().setTimeStart(System.currentTimeMillis());
+        AsyncSplash.Companion.getInstance().setDebug(getDebugTech());
+        RemoteConfigHelper.getInstance().setListTurnOnRemoteKeys(getListTurnOnRemoteKeys());
         initAdmob();
         setUpAdjust();
         registerActivityLifecycleCallbacks(this);
@@ -32,7 +39,7 @@ public abstract class AdsApplication extends Application implements Application.
             MobileAds.initialize(this, initializationStatus -> {
                 Log.d("Admob", "initAdmob: application - " + initializationStatus.getAdapterStatusMap());
                 Admob.getInstance().setIsInitAdmobDone(true);
-                Admob.getInstance().startingCheck(this);
+                Admob.getInstance().startingCheckCNL(this);
             });
         }).start();
     }
@@ -93,4 +100,10 @@ public abstract class AdsApplication extends Application implements Application.
 
     @NonNull
     public abstract Boolean buildDebug();
+
+    @NonNull
+    public abstract Boolean getDebugTech();
+
+    @NonNull
+    public abstract List<String> getListTurnOnRemoteKeys();
 }

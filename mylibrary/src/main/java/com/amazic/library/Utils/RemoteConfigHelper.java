@@ -4,12 +4,15 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
 
+import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.mylibrary.R;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigSettings;
 import com.google.firebase.remoteconfig.FirebaseRemoteConfigValue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 public class RemoteConfigHelper {
@@ -18,6 +21,12 @@ public class RemoteConfigHelper {
     private ArrayList<String> listRemoteStringName = new ArrayList<>();
     private ArrayList<String> listRemoteBooleanName = new ArrayList<>();
     private ArrayList<String> listRemoteLongName = new ArrayList<>();
+    private List<String> listTurnOnRemoteKeys = new ArrayList<>(Arrays.asList("show_all_ads","inter_splash"));
+
+    public void setListTurnOnRemoteKeys(List<String> keys) {
+        if (keys.isEmpty()) return;
+        this.listTurnOnRemoteKeys.addAll(keys);
+    }
 
     public static RemoteConfigHelper getInstance() {
         if (INSTANCE == null) {
@@ -121,6 +130,17 @@ public class RemoteConfigHelper {
     }
 
     public boolean get_config(Context context, String name_config) {
+        Log.d("Admob", "name_config = " + name_config + ", listTurnOnRemoteKeys = " + listTurnOnRemoteKeys.size() + ", debugCNL = " + AsyncSplash.Companion.getInstance().getDebug());
+        listTurnOnRemoteKeys.forEach(e -> {
+            Log.d("Admob", "name_config config ON = " + e);
+
+        });
+        if (!AsyncSplash.Companion.getInstance().getDebug()) {
+            if (!listTurnOnRemoteKeys.contains(name_config)) {
+                return false;
+            }
+        }
+
         SharedPreferences pre = context.getSharedPreferences("remote_fill", Context.MODE_PRIVATE);
         return pre.getBoolean(name_config, true);
     }

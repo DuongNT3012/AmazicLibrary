@@ -50,6 +50,8 @@ public class SplashActivity extends AppCompatActivity {
             public void onNextAction() {
                 super.onNextAction();
                 startNextAct();
+                Log.d("Admob", "startingCheck check 2");
+                Admob.getInstance().startingCheckCNL(SplashActivity.this);
             }
         };
 
@@ -132,9 +134,9 @@ public class SplashActivity extends AppCompatActivity {
         if (!isHandleAsyncSplash) {
             AsyncSplash.Companion.getInstance().init(this, interCallback, "c193nrau3dhc", "", "", jsonIdAdsDefault);
             //AsyncSplash.Companion.getInstance().setUseTechManager(); //case use TechManager Organic
-            AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
+//            AsyncSplash.Companion.getInstance().setUseDetectTestAd(); //case use DetectTestAd
             //AsyncSplash.Companion.getInstance().setUseIdAdsFromRemoteConfig(true, "id_ads");
-            AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
+//            AsyncSplash.Companion.getInstance().setDebug(true); //use for TechManager, DetectTestAd
 //            AsyncSplash.Companion.getInstance().setLoadAndShowIdInterAdSplashAsync();
             AsyncSplash.Companion.getInstance().setPreloadResumeAds(false);
 //            AsyncSplash.Companion.getInstance().setAsyncSplashAds();
@@ -151,7 +153,7 @@ public class SplashActivity extends AppCompatActivity {
 //            AsyncSplash.Companion.getInstance().setInitWelcomeBackBelowResumeAds(WelcomeBackActivity.class); //init resume ads with welcome back below
             ArrayList<String> listTurnOffRemote = new ArrayList<>();
             //listTurnOffRemote.add("native_wb");
-            AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
+//            AsyncSplash.Companion.getInstance().setListTurnOffRemoteKeys(listTurnOffRemote); //set list off remote of TechManager
             ArrayList<String> listIdBannerSplash = new ArrayList<>();
             listIdBannerSplash.add("ca-app-pub-3940256099942544/6300978111");
             AsyncSplash.Companion.getInstance().setKeyAdsInterSplash("inter_splash");

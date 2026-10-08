@@ -8,7 +8,11 @@ import com.amazic.library.ads.splash_ads.AsyncSplash;
 import com.amazic.library.application.AdsApplication;
 import com.amazic.mylibrary.BuildConfig;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Application extends AdsApplication {
+    ArrayList<String> turnOnConfig = new ArrayList<>(Arrays.asList());
     @Override
     public void onCreate() {
         super.onCreate();
@@ -32,5 +36,17 @@ public class Application extends AdsApplication {
     @Override
     public Boolean buildDebug() {
         return BuildConfig.DEBUG;
+    }
+
+    @NonNull
+    @Override
+    public Boolean getDebugTech() {
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public ArrayList<String> getListTurnOnRemoteKeys() {
+        return turnOnConfig;
     }
 }

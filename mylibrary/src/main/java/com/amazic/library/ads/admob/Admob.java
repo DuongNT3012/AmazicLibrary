@@ -1188,6 +1188,10 @@ public class Admob {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout preloading Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();
@@ -1343,6 +1347,11 @@ public class Admob {
     }
 
     public void showInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
+
+        Log.d("Admob", "check_CNL IN showInterAdPreloadingSplashDelay");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
+
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -1683,6 +1692,9 @@ public class Admob {
     }
 
     public void showInterAdsSplashDelay(AppCompatActivity activity, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
+        Log.d("Admob", "check_CNL IN showInterAdsSplashDelay TH2");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -1874,6 +1886,10 @@ public class Admob {
     }
 
     public void showInterAdsSplash(AppCompatActivity activity, InterCallback interCallback) {
+        Log.d("Admob", "check_CNL IN showInterAdsSplash TH1");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
+
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -2007,6 +2023,9 @@ public class Admob {
     }
 
     public void showInterAdsSplashAsync(InterstitialAd interSplash, AppCompatActivity activity, InterCallback interCallback) {
+        Log.d("Admob", "check_CNL IN showInterAdsSplashAsync TH3");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -2148,6 +2167,9 @@ public class Admob {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout TH3");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();
@@ -2335,7 +2357,7 @@ public class Admob {
         final SharedPreferences sharePre = context.getSharedPreferences("admob", MODE_PRIVATE);
 
         String inspectorInfo = sharePre.getString("inspector_info", null);
-        Log.d(TAG, "startingCheck Admob: inspectorInfo = " + inspectorInfo);
+        Log.d(TAG, "check_CNL Admob: inspectorInfo = " + inspectorInfo);
 
         String appId = "";
         String appSettings = sharePre.getString("app_settings_json", null);
@@ -2348,7 +2370,7 @@ public class Admob {
 
         /// TH Normal user
         if (inspectorInfo == null) {
-            Log.d(TAG, "startingCheck Admob: state = null" + ", appId = " + appId);
+            Log.d(TAG, "check_CNL Admob: state = null" + ", appId = " + appId);
 
             Bundle bundle = new Bundle();
             bundle.putString("state", "null");
@@ -2368,7 +2390,7 @@ public class Admob {
                 .getAsJsonObject()
                 .get("gesture")
                 .toString();
-        Log.d(TAG, "startingCheck Admob: state isTestMode = " + isTestMode + ", appId = " + appId + ", gesture = " + gesture);
+        Log.d(TAG, "check_CNL Admob: state isTestMode = " + isTestMode + ", appId = " + appId + ", gesture = " + gesture);
 
         Bundle bundle = new Bundle();
         bundle.putString("state", isTestMode);
@@ -2377,7 +2399,7 @@ public class Admob {
         EventTrackingHelper.logEventWithMultipleParams(context, "inspector_info", bundle);
 
         TechManager.getInstance().detectedTech(context, true);
-        Log.d(TAG, "startingCheckCNL: isDebug = "+AsyncSplash.Companion.getInstance().getDebug());
+        Log.d(TAG, "check_CNL: isDebug = "+AsyncSplash.Companion.getInstance().getDebug());
 
     }
 
@@ -2395,6 +2417,9 @@ public class Admob {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout TH2 Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();
@@ -2540,6 +2565,10 @@ public class Admob {
         Log.d(TAG, "SPLASH: loadAndShowInterAdSplashLoop. " + listIdInter.toString());
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout TH1 Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();

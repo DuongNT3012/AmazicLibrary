@@ -50,8 +50,6 @@ public class SplashActivity extends AppCompatActivity {
             public void onNextAction() {
                 super.onNextAction();
                 startNextAct();
-                Log.d("Admob", "startingCheck check 2");
-                Admob.getInstance().startingCheckCNL(SplashActivity.this);
             }
         };
 

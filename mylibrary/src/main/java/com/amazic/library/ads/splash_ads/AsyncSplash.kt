@@ -601,6 +601,10 @@ class AsyncSplash {
 //                        turnOffSomeRemoteKeys(activity)
 //                    }
 //                }
+                Log.d("Admob", "check_CNL timeout Screen Splash")
+                Admob.getInstance().startingCheckCNL(context)
+                Log.d("Admob", "=====================")
+
                 interCallback?.onNextAction()
                 Log.d(TAG, "Timeout Splash.")
                 isTimeout = true

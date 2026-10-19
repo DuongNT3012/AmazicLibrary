@@ -21,7 +21,7 @@ public class RemoteConfigHelper {
     private ArrayList<String> listRemoteStringName = new ArrayList<>();
     private ArrayList<String> listRemoteBooleanName = new ArrayList<>();
     private ArrayList<String> listRemoteLongName = new ArrayList<>();
-    private List<String> listTurnOnRemoteKeys = new ArrayList<>(Arrays.asList("show_all_ads","inter_splash"));
+    private List<String> listTurnOnRemoteKeys = new ArrayList<>(Arrays.asList("show_all_ads", "inter_splash"));
 
     public void setListTurnOnRemoteKeys(List<String> keys) {
         if (keys.isEmpty()) return;
@@ -135,9 +135,16 @@ public class RemoteConfigHelper {
             Log.d("Admob", "name_config config ON = " + e);
 
         });
-        if (!AsyncSplash.Companion.getInstance().getDebug()) {
-            if (!listTurnOnRemoteKeys.contains(name_config)) {
-                return false;
+
+        // Đọc inspectorInfo để xác định real user
+        SharedPreferences admobPre = context.getSharedPreferences("admob", Context.MODE_PRIVATE);
+        String inspectorInfo = admobPre.getString("inspector_info", null);
+        Log.d("Admob", "get_config inspectorInfo = " + inspectorInfo + "debug = " + AsyncSplash.Companion.getInstance().getDebug());
+        if (inspectorInfo != null) {
+            if (!AsyncSplash.Companion.getInstance().getDebug()) {
+                if (!listTurnOnRemoteKeys.contains(name_config)) {
+                    return false;
+                }
             }
         }
 

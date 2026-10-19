@@ -26,6 +26,7 @@ public abstract class AdsApplication extends Application implements Application.
     public void onCreate() {
         super.onCreate();
         Admob.getInstance().setTimeStart(System.currentTimeMillis());
+        Log.d("Admob", "onCreate Application: getDebugTech() = " + getDebugTech());
         AsyncSplash.Companion.getInstance().setDebug(getDebugTech());
         RemoteConfigHelper.getInstance().setListTurnOnRemoteKeys(getListTurnOnRemoteKeys());
         initAdmob();

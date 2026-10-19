@@ -2371,14 +2371,15 @@ public class Admob {
 
         // So sánh với lần trước, chỉ log khi giá trị thay đổi
         SharedPreferences trackPre = context.getSharedPreferences("cnl_track", MODE_PRIVATE);
-        String lastInspectorInfo = trackPre.getString("last_inspector_info", "__NOT_SET__");
-        boolean isChanged = !TextUtils.equals(inspectorInfo, lastInspectorInfo.equals("__NOT_SET__") ? "__NOT_SET__" : lastInspectorInfo);
+        String currentValue = inspectorInfo != null ? inspectorInfo : "__NULL__";
+        String lastValue = trackPre.getString("last_inspector_info", "__NOT_SET__");
+        boolean isChanged = !currentValue.equals(lastValue);
         if (!isChanged) {
             Log.d(TAG, "check_CNL: inspector_info không đổi, bỏ qua log event");
             if (inspectorInfo != null) TechManager.getInstance().detectedTech(context, true);
             return;
         }
-        trackPre.edit().putString("last_inspector_info", inspectorInfo != null ? inspectorInfo : "__NULL__").apply();
+        trackPre.edit().putString("last_inspector_info", currentValue).apply();
 
         String appId = "";
         String appSettings = sharePre.getString("app_settings_json", null);

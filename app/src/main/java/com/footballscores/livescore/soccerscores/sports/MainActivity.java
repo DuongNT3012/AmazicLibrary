@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.amazic.library.Utils.RemoteConfigHelper;
 import com.amazic.library.ads.admob.AdmobApi;
 import com.amazic.library.ads.app_open_ads.AppOpenManager;
 import com.amazic.library.ads.callback.AppOpenCallback;
@@ -109,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
 
         //InterManager.loadInterAds(this, "inter_all");
         binding.tvShowInter.setOnClickListener(view -> {
+            Log.d("Admob", "INTER: Start");
+
             InterManager.loadAndShowInterAds(this, "inter_all", "inter_all", new InterCallback() {
                 @Override
                 public void onNextAction() {

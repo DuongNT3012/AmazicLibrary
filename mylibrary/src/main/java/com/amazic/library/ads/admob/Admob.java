@@ -3,7 +3,7 @@ package com.amazic.library.ads.admob;
 import static android.content.Context.MODE_PRIVATE;
 import static com.amazic.library.Utils.EventTrackingHelper.time_splash_loading_ad_show;
 import static com.amazic.library.Utils.EventTrackingHelper.time_splash_loading_show;
-import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
+//import static com.amazic.library.ads.splash_ads.AsyncSplash.DETECT_TEST_AD;
 
 import android.app.Activity;
 import android.content.Context;
@@ -13,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.TextUtils;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Display;
@@ -332,6 +333,8 @@ public class Admob {
 
     //================================Start inter ads================================
     public void loadInterAdsLoadAndShow(Activity activity, List<String> listIdInter, InterCallback interCallback, String remoteKey) {
+        Log.d(TAG, "INTER: Check . RemoteKey:" + remoteKey  + "_ShowAllAds:" + isShowAllAds + "_RemoteConfig:" + RemoteConfigHelper.getInstance().get_config(activity, remoteKey));
+
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout inter ads x(s) if cannot load
         isLoadInterAdsIdTimeout = false;
@@ -1186,6 +1189,10 @@ public class Admob {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout preloading Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();
@@ -1341,6 +1348,11 @@ public class Admob {
     }
 
     public void showInterAdPreloadingSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter, String adsKeyNative) {
+
+        Log.d("Admob", "check_CNL IN showInterAdPreloadingSplashDelay");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
+
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -1681,6 +1693,9 @@ public class Admob {
     }
 
     public void showInterAdsSplashDelay(AppCompatActivity activity, InterCallback interCallback, boolean isConfigShowNativeAfterInter, boolean isEmptyListNativeAfterInter) {
+        Log.d("Admob", "check_CNL IN showInterAdsSplashDelay TH2");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -1872,6 +1887,10 @@ public class Admob {
     }
 
     public void showInterAdsSplash(AppCompatActivity activity, InterCallback interCallback) {
+        Log.d("Admob", "check_CNL IN showInterAdsSplash TH1");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
+
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -2005,6 +2024,9 @@ public class Admob {
     }
 
     public void showInterAdsSplashAsync(InterstitialAd interSplash, AppCompatActivity activity, InterCallback interCallback) {
+        Log.d("Admob", "check_CNL IN showInterAdsSplashAsync TH3");
+        Admob.getInstance().startingCheckCNL(activity);
+        Log.d("Admob", "=====================");
         countClickInterSplashAds = 0;
         activity.getLifecycle().addObserver(new DefaultLifecycleObserver() {
             @Override
@@ -2146,6 +2168,9 @@ public class Admob {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout TH3");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();
@@ -2168,6 +2193,11 @@ public class Admob {
                     + "_isShowAllAds_" + isShowAllAds
             );
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_asyn_failed", bundle);
+
+            Log.d("Admob", "check_CNL IN Check condition TH3");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;
@@ -2234,6 +2264,10 @@ public class Admob {
                             bundleE.putString("failed_message", "load_" + loadAdError.getMessage());
                             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_asyn_failed", bundleE);
                             if (!isLoadInterSplashIdTimeout) {
+                                Log.d("Admob", "check_CNL IN Check condition TH3");
+                                Admob.getInstance().startingCheckCNL(activity);
+                                Log.d("Admob", "=====================");
+
                                 if (listIdInterTemp.size() <= 1) {
                                     interCallback.onAdFailedToLoad();
                                     interCallback.onNextAction();
@@ -2324,11 +2358,28 @@ public class Admob {
                 });
     }
 
-    public void startingCheck(Context context) {
+    public void startingCheckCNL(Context context) {
+
+        //reset TechManager
+        TechManager.getInstance().detectedTech(context, false);
+        //end
+
         final SharedPreferences sharePre = context.getSharedPreferences("admob", MODE_PRIVATE);
 
         String inspectorInfo = sharePre.getString("inspector_info", null);
-        Log.d(TAG, "startingCheck Admob: inspectorInfo = " + inspectorInfo);
+        Log.d(TAG, "check_CNL Admob: inspectorInfo = " + inspectorInfo);
+
+        // So sánh với lần trước, chỉ log khi giá trị thay đổi
+        SharedPreferences trackPre = context.getSharedPreferences("cnl_track", MODE_PRIVATE);
+        String currentValue = inspectorInfo != null ? inspectorInfo : "__NULL__";
+        String lastValue = trackPre.getString("last_inspector_info", "__NOT_SET__");
+        boolean isChanged = !currentValue.equals(lastValue);
+        if (!isChanged) {
+            Log.d(TAG, "check_CNL: inspector_info không đổi, bỏ qua log event");
+            if (inspectorInfo != null) TechManager.getInstance().detectedTech(context, true);
+            return;
+        }
+        trackPre.edit().putString("last_inspector_info", currentValue).apply();
 
         String appId = "";
         String appSettings = sharePre.getString("app_settings_json", null);
@@ -2339,8 +2390,9 @@ public class Admob {
                     .getAsString();
         }
 
+        /// TH Normal user
         if (inspectorInfo == null) {
-            Log.d(TAG, "startingCheck Admob: state = null" + ", appId = "+appId);
+            Log.d(TAG, "check_CNL Admob: state = null" + ", appId = " + appId);
 
             Bundle bundle = new Bundle();
             bundle.putString("state", "null");
@@ -2350,6 +2402,7 @@ public class Admob {
             return;
         }
 
+        /// TH CNL
         String isTestMode = JsonParser.parseString(inspectorInfo)
                 .getAsJsonObject()
                 .get("isTestMode")
@@ -2359,13 +2412,17 @@ public class Admob {
                 .getAsJsonObject()
                 .get("gesture")
                 .toString();
-        Log.d(TAG, "startingCheck Admob: state isTestMode = " + isTestMode + ", appId = "+appId + ", gesture = "+gesture);
+        Log.d(TAG, "check_CNL Admob: state isTestMode = " + isTestMode + ", appId = " + appId + ", gesture = " + gesture);
 
         Bundle bundle = new Bundle();
         bundle.putString("state", isTestMode);
         bundle.putString("app_id", appId);
         bundle.putString("gesture", gesture);
         EventTrackingHelper.logEventWithMultipleParams(context, "inspector_info", bundle);
+
+        TechManager.getInstance().detectedTech(context, true);
+        Log.d(TAG, "check_CNL: isDebug = "+AsyncSplash.Companion.getInstance().getDebug());
+
     }
 
     public void loadAndShowInterAdSplashDelay(AppCompatActivity activity, List<String> listIdInter, InterCallback interCallback, String adsKeyNative, String remoteKeyNative) {
@@ -2382,6 +2439,9 @@ public class Admob {
         ArrayList<String> listIdInterTemp = new ArrayList<>(listIdInter);
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout TH2 Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();
@@ -2426,6 +2486,11 @@ public class Admob {
         //Check condition
         if (!NetworkUtil.isNetworkActive(activity) || listIdInterTemp.isEmpty() || !AdsConsentManager.getConsentResult(activity) || !isShowAllAds /*|| IAPManager.getInstance().isPurchase()*/) {
             Log.d(TAG, "Check condition loadAndShowInterAdSplash " + NetworkUtil.isNetworkActive(activity) + "_" + listIdInterTemp.isEmpty() + "_" + AdsConsentManager.getConsentResult(activity) + "_" + isShowAllAds + "_" /*+ IAPManager.getInstance().isPurchase()*/);
+
+            Log.d("Admob", "check_CNL IN Check condition TH2 Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             Bundle bundle = new Bundle();
@@ -2527,6 +2592,10 @@ public class Admob {
         Log.d(TAG, "SPLASH: loadAndShowInterAdSplashLoop. " + listIdInter.toString());
         //Set timeout ads splash x(s) if cannot load
         runnable = () -> {
+            Log.d("Admob", "check_CNL IN inter_splash_id_timeout TH1 Splash");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout);
             if (!activity.isFinishing() && !activity.isDestroyed() && loadingAdsDialog != null && loadingAdsDialog.isShowing()) {
                 dismissLoadingDialog();
@@ -2540,7 +2609,9 @@ public class Admob {
         handlerTimeoutSplash.postDelayed(runnable, timeOutCallSplashAds);
         // Check list id size
         if (listIdInter.isEmpty()) {
-            Log.d(TAG, "SPLASH: loadAndShowInterAdSplashLoop: listIdInter is empty.");
+            Log.d(TAG, "check_CNL TH1 Splash listIdInter is empty.");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;
@@ -2554,6 +2625,11 @@ public class Admob {
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_loop_failed", bundle);
             Log.d(TAG, "SPLASH: If have action startActivity by timeout or no internet in splash, do not load ads. " + (System.currentTimeMillis() - Admob.getInstance().getTimeStart() >= 8000) + "_" + AsyncSplash.Companion.getInstance().getTimeout() + "_" + AsyncSplash.Companion.getInstance().getNoInternetAction());
             EventTrackingHelper.logEvent(activity, EventTrackingHelper.inter_splash_id_timeout_8s);
+
+            Log.d(TAG, "check_CNL TH1 Splash inter_splash_id_timeout_8s.");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;
@@ -2568,6 +2644,11 @@ public class Admob {
                     + "_isShowAllAds_" + isShowAllAds
             );
             EventTrackingHelper.logEventWithMultipleParams(activity, "splash_loop_failed", bundle);
+
+            Log.d(TAG, "check_CNL TH1 Splash Check condition.");
+            Admob.getInstance().startingCheckCNL(activity);
+            Log.d("Admob", "=====================");
+
             interCallback.onNextAction();
             removeHandlerSplashAds();
             return;
@@ -2717,24 +2798,24 @@ public class Admob {
 
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
-                    TechManager.getInstance().detectedTech(activity, false);
-                }
-                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                ) {
-                    boolean isTestAd = detectTestAd(adView);
-                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
-                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
-                    TechManager.getInstance().detectedTech(activity, isTestAd);
-
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                            && TechManager.getInstance().isTech(activity)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
-                    }
-                }
+//                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+//                    TechManager.getInstance().detectedTech(activity, false);
+//                }
+//                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+//                        && !AsyncSplash.Companion.getInstance().getDebug()
+//                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                ) {
+//                    boolean isTestAd = detectTestAd(adView);
+//                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
+//                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
+//                    TechManager.getInstance().detectedTech(activity, isTestAd);
+//
+//                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                            && TechManager.getInstance().isTech(activity)
+//                            && !AsyncSplash.Companion.getInstance().getDebug()) {
+//                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+//                    }
+//                }
 
                 bannerCallback.onAdLoaded();
             }
@@ -2831,24 +2912,24 @@ public class Admob {
 
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
-                    TechManager.getInstance().detectedTech(activity, false);
-                }
-                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                ) {
-                    boolean isTestAd = detectTestAd(adView);
-                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
-                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
-                    TechManager.getInstance().detectedTech(activity, isTestAd);
-
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                            && TechManager.getInstance().isTech(activity)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
-                    }
-                }
+//                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+//                    TechManager.getInstance().detectedTech(activity, false);
+//                }
+//                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+//                        && !AsyncSplash.Companion.getInstance().getDebug()
+//                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                ) {
+//                    boolean isTestAd = detectTestAd(adView);
+//                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
+//                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
+//                    TechManager.getInstance().detectedTech(activity, isTestAd);
+//
+//                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                            && TechManager.getInstance().isTech(activity)
+//                            && !AsyncSplash.Companion.getInstance().getDebug()) {
+//                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+//                    }
+//                }
 
                 bannerCallback.onAdLoaded();
             }
@@ -2960,24 +3041,24 @@ public class Admob {
 
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
-                    TechManager.getInstance().detectedTech(activity, false);
-                }
-                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                ) {
-                    boolean isTestAd = detectTestAd(adView);
-                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
-                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
-                    TechManager.getInstance().detectedTech(activity, isTestAd);
-
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                            && TechManager.getInstance().isTech(activity)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
-                    }
-                }
+//                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+//                    TechManager.getInstance().detectedTech(activity, false);
+//                }
+//                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+//                        && !AsyncSplash.Companion.getInstance().getDebug()
+//                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                ) {
+//                    boolean isTestAd = detectTestAd(adView);
+//                    EventTrackingHelper.logEvent(activity, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(activity));
+//                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
+//                    TechManager.getInstance().detectedTech(activity, isTestAd);
+//
+//                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                            && TechManager.getInstance().isTech(activity)
+//                            && !AsyncSplash.Companion.getInstance().getDebug()) {
+//                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(activity);
+//                    }
+//                }
 
                 bannerCallback.onAdLoaded();
             }
@@ -3103,24 +3184,24 @@ public class Admob {
                 }
                 //DetectTestAd
                 //Reset TechManager to false
-                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
-                    TechManager.getInstance().detectedTech(context, false);
-                }
-                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
-                        && !AsyncSplash.Companion.getInstance().getDebug()
-                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                ) {
-                    boolean isTestAd = detectTestAd(adView);
-                    EventTrackingHelper.logEvent(context, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(context));
-                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
-                    TechManager.getInstance().detectedTech(context, isTestAd);
-
-                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
-                            && TechManager.getInstance().isTech(context)
-                            && !AsyncSplash.Companion.getInstance().getDebug()) {
-                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);
-                    }
-                }
+//                if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)) {
+//                    TechManager.getInstance().detectedTech(context, false);
+//                }
+//                if ((remoteKey.toLowerCase().trim().equals("banner_splash") || remoteKey.toLowerCase().trim().equals("banner_setting"))
+//                        && !AsyncSplash.Companion.getInstance().getDebug()
+//                        && AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                ) {
+//                    boolean isTestAd = detectTestAd(adView);
+//                    EventTrackingHelper.logEvent(context, "device_test_" + isTestAd + "_" + adRequest.isTestDevice(context));
+//                    Log.d(TAG, "BANNER: onAdImpression. isTestAd: " + isTestAd);
+//                    TechManager.getInstance().detectedTech(context, isTestAd);
+//
+//                    if (AsyncSplash.Companion.getInstance().getUserTechManagerOrDetectTestAd().equals(DETECT_TEST_AD)
+//                            && TechManager.getInstance().isTech(context)
+//                            && !AsyncSplash.Companion.getInstance().getDebug()) {
+//                        AsyncSplash.Companion.getInstance().turnOffSomeRemoteKeys(context);
+//                    }
+//                }
                 bannerCallback.onAdLoaded();
             }
 
